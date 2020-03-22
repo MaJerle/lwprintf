@@ -58,6 +58,7 @@ typedef struct lwprintf_int {
     const size_t buff_size;                     /*!< Buffer size of input buffer (when used) */
     size_t n;                                   /*!< Full length of formatted text */
     prv_output_fn out_fn;                       /*!< Output internal function */
+    char* buff_tmp;                             /*!< Pointer to temporary buffer for number conversion */
 
     /* This must all be reset every time new % is detected */
     struct {
@@ -73,6 +74,7 @@ typedef struct lwprintf_int {
             /* Length modified flags */
             uint8_t longlong : 2;               /*!< Flag indicatin long-long number */
             uint8_t uc : 1;                     /*!< Uppercase flag */
+            uint8_t is_negative : 1;            /*!< Status if number is negative */
         } flags;
         int precision;                          /*!< Selected precision */
         int width;                              /*!< Text width indicator */
@@ -154,12 +156,29 @@ prv_parse_num(const char** format) {
 static int
 prv_out_str(lwprintf_int_t* p, const char* buff, size_t buff_size) {
     /* Output string */
+
+    /* Check for width */
+    if (p->m.width > 0 && p->m.flags.is_negative) {
+        --p->m.width;
+    }
+    
+    /* Add negative sign before when zeros are used to fill width */
+    if (p->m.flags.is_negative && p->m.flags.zero) {
+        p->out_fn(p, '-');
+    }
+
     /* Right alignment, spaces or zeros */
-    if (!p->m.flags.left_align) {
+    if (!p->m.flags.left_align && p->m.width > 0) {
         for (size_t i = buff_size; !p->m.flags.left_align && i < p->m.width; ++i) {
             p->out_fn(p, p->m.flags.zero ? '0' : ' ');
         }
     }
+
+    /* Add negative sign here when spaces are used for width */
+    if (p->m.flags.is_negative && !p->m.flags.zero) {
+        p->out_fn(p, '-');
+    }
+
     /* Actual value */
     for (uint8_t i = 0; i < buff_size; ++i) {
         p->out_fn(p, buff[i]);
@@ -175,7 +194,6 @@ prv_out_str(lwprintf_int_t* p, const char* buff, size_t buff_size) {
 
 static int
 unsigned_int_to_str(lwprintf_int_t* p, unsigned int num) {
-    char buff[12];
     unsigned int d;
     uint8_t digits_cnt;
     char c;
@@ -184,17 +202,17 @@ unsigned_int_to_str(lwprintf_int_t* p, unsigned int num) {
     for (digits_cnt = 0; num > 0; num /= p->m.base, ++digits_cnt) {
         d = num % p->m.base;
         c = d + (d >= 10 ? ((p->m.flags.uc ? 'A' : 'a') - 10) : '0');
-        buff[digits_cnt] = c;
+        p->buff_tmp[digits_cnt] = c;
     }
-    prv_rotate_string(buff, digits_cnt);        /* Rotate string as it was written in opposite direction */
-    prv_out_str(p, buff, digits_cnt);           /* Output generated string */
+    p->buff_tmp[digits_cnt] = 0;
+    prv_rotate_string(p->buff_tmp, digits_cnt); /* Rotate string as it was written in opposite direction */
+    prv_out_str(p, p->buff_tmp, digits_cnt);    /* Output generated string */
 
     return 1;
 }
 
 static int
 unsigned_long_int_to_str(lwprintf_int_t* p, unsigned long int num) {
-    char buff[12];
     unsigned long int d;
     uint8_t digits_cnt;
     char c;
@@ -203,17 +221,17 @@ unsigned_long_int_to_str(lwprintf_int_t* p, unsigned long int num) {
     for (digits_cnt = 0; num > 0; num /= p->m.base, ++digits_cnt) {
         d = num % p->m.base;
         c = d + (d >= 10 ? ((p->m.flags.uc ? 'A' : 'a') - 10) : '0');
-        buff[digits_cnt] = c;
+        p->buff_tmp[digits_cnt] = c;
     }
-    prv_rotate_string(buff, digits_cnt);        /* Rotate string as it was written in opposite direction */
-    prv_out_str(p, buff, digits_cnt);           /* Output generated string */
+    p->buff_tmp[digits_cnt] = 0;
+    prv_rotate_string(p->buff_tmp, digits_cnt); /* Rotate string as it was written in opposite direction */
+    prv_out_str(p, p->buff_tmp, digits_cnt);    /* Output generated string */
 
     return 1;
 }
 
 static int
 unsigned_longlong_int_to_str(lwprintf_int_t* p, unsigned long long int num) {
-    char buff[23];
     unsigned long long int d;
     uint8_t digits_cnt;
     char c;
@@ -222,19 +240,49 @@ unsigned_longlong_int_to_str(lwprintf_int_t* p, unsigned long long int num) {
     for (digits_cnt = 0; num > 0; num /= p->m.base, ++digits_cnt) {
         d = num % p->m.base;
         c = d + (d >= 10 ? ((p->m.flags.uc ? 'A' : 'a') - 10) : '0');
-        buff[digits_cnt] = c;
+        p->buff_tmp[digits_cnt] = c;
     }
-    prv_rotate_string(buff, digits_cnt);        /* Rotate string as it was written in opposite direction */
-    prv_out_str(p, buff, digits_cnt);           /* Output generated string */
+    p->buff_tmp[digits_cnt] = 0;
+    prv_rotate_string(p->buff_tmp, digits_cnt); /* Rotate string as it was written in opposite direction */
+    prv_out_str(p, p->buff_tmp, digits_cnt);    /* Output generated string */
 
     return 1;
+}
+
+static int
+signed_int_to_str(lwprintf_int_t* p, signed int num) {
+    if (num < 0) {
+        p->m.flags.is_negative = 1;
+        num = -num;
+    }
+    return unsigned_int_to_str(p, num);
+}
+
+static int
+signed_long_int_to_str(lwprintf_int_t* p, signed long int num) {
+    if (num < 0) {
+        p->m.flags.is_negative = 1;
+        num = -num;
+    }
+    return unsigned_long_int_to_str(p, num);
+}
+
+static int
+signed_longlong_int_to_str(lwprintf_int_t* p, signed long long int num) {
+    if (num < 0) {
+        p->m.flags.is_negative = 1;
+        num = -num;
+    }
+    return unsigned_longlong_int_to_str(p, num);
 }
 
 static uint8_t
 prv_format(lwprintf_int_t* p, va_list vl) {
     uint8_t detected = 0;
+    char buff_tmp[23];
     const char* fmt = p->fmt;
 
+    p->buff_tmp = buff_tmp;
     while (fmt != NULL && *fmt != '\0') {
         /* Parse format */
         /* %[flags][width][.precision][length]type */
@@ -311,9 +359,15 @@ prv_format(lwprintf_int_t* p, va_list vl) {
                 break;
             case 'd':
             case 'i': {
+                /* Check for different length parameters */
                 p->m.base = 10;
-                int num = va_arg(vl, int);
-                p->out_fn(p, 'd');
+                if (p->m.flags.longlong == 0) {
+                    signed_int_to_str(p, (signed int)va_arg(vl, signed int));
+                } else if (p->m.flags.longlong == 2) {
+                    signed_longlong_int_to_str(p, (signed long long int)va_arg(vl, signed long long int));
+                } else if (p->m.flags.longlong == 1) {
+                    signed_long_int_to_str(p, (signed long int)va_arg(vl, signed long int));
+                }
                 break;
             }
             case 'b':
