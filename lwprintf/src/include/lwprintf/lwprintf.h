@@ -61,6 +61,8 @@ uint8_t     lwprintf_init(lwprintf_t* lw, lwprintf_output_fn out_fn);
 int         lwprintf_printf(lwprintf_t* const lw, const char* fmt, ...);
 int         lwprintf_snprintf(lwprintf_t* const lw, char* buff, size_t buff_size, const char* fmt, ...);
 
+#define     lwprintf_sprintf(lw, buff, fmt, ...)    lwprintf_snprintf(lw, buff, SIZE_MAX, fmt, #__VA_ARGS__)
+
 /**
  * \}
  */

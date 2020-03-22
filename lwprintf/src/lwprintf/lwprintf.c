@@ -80,6 +80,23 @@ typedef struct lwprintf_int {
     } m;
 } lwprintf_int_t;
 
+static int
+prv_rotate_string(char* str, size_t len) {
+    /* Get length if 0 */
+    if (len == 0) {
+        len = strlen(str);
+    }
+
+    /* Rotate string */
+    for (size_t i = 0; i < len / 2; ++i) {
+        char t = str[i];
+        str[i] = str[len - i - 1];
+        str[len - i - 1] = t;
+    }
+
+    return 1;
+}
+
 /**
  * \brief           Output function to print data
  * \param[in]       lwi: Internal working structure
@@ -126,6 +143,36 @@ prv_parse_num(const char** format) {
     return n;
 }
 
+/**
+ * \brief           Output generate string from numbers/digits
+ * Paddings before and after are applied at this stage
+ * \param[in]       p: Internal working structure
+ * \param[in]       buff: Buffer string
+ * \param[in]       buff_size: Length of buffer to output
+ * \return          `1` on success, `0` otherwise
+ */
+static int
+prv_out_str(lwprintf_int_t* p, const char* buff, size_t buff_size) {
+    /* Output string */
+    /* Right alignment, spaces or zeros */
+    if (!p->m.flags.left_align) {
+        for (size_t i = buff_size; !p->m.flags.left_align && i < p->m.width; ++i) {
+            p->out_fn(p, p->m.flags.zero ? '0' : ' ');
+        }
+    }
+    /* Actual value */
+    for (uint8_t i = 0; i < buff_size; ++i) {
+        p->out_fn(p, buff[i]);
+    }
+    /* Left alignment, but only with spaces */
+    if (p->m.flags.left_align) {
+        for (size_t i = buff_size; i < p->m.width; ++i) {
+            p->out_fn(p, ' ');
+        }
+    }
+    return 1;
+}
+
 static int
 unsigned_int_to_str(lwprintf_int_t* p, unsigned int num) {
     char buff[12];
@@ -136,32 +183,51 @@ unsigned_int_to_str(lwprintf_int_t* p, unsigned int num) {
     /* Format string */
     for (digits_cnt = 0; num > 0; num /= p->m.base, ++digits_cnt) {
         d = num % p->m.base;
-        c = d + (d > 10 ? ((p->m.flags.uc ? 'A' : 'a') - 10) : '0');
+        c = d + (d >= 10 ? ((p->m.flags.uc ? 'A' : 'a') - 10) : '0');
         buff[digits_cnt] = c;
     }
-    
-    /* Rotate string */
-    for (uint8_t i = 0; i < digits_cnt / 2; ++i) {
-        char t = buff[i];
-        buff[i] = buff[digits_cnt - i - 1];
-        buff[digits_cnt - i - 1] = t;
-    }
+    prv_rotate_string(buff, digits_cnt);        /* Rotate string as it was written in opposite direction */
+    prv_out_str(p, buff, digits_cnt);           /* Output generated string */
 
-    /* Output string */
-    for (uint8_t i = 0; i < digits_cnt; ++i) {
-        p->out_fn(p, buff[i]);
-    }
-    return digits_cnt;
+    return 1;
 }
 
 static int
 unsigned_long_int_to_str(lwprintf_int_t* p, unsigned long int num) {
+    char buff[12];
+    unsigned long int d;
+    uint8_t digits_cnt;
+    char c;
 
+    /* Format string */
+    for (digits_cnt = 0; num > 0; num /= p->m.base, ++digits_cnt) {
+        d = num % p->m.base;
+        c = d + (d >= 10 ? ((p->m.flags.uc ? 'A' : 'a') - 10) : '0');
+        buff[digits_cnt] = c;
+    }
+    prv_rotate_string(buff, digits_cnt);        /* Rotate string as it was written in opposite direction */
+    prv_out_str(p, buff, digits_cnt);           /* Output generated string */
+
+    return 1;
 }
 
 static int
 unsigned_longlong_int_to_str(lwprintf_int_t* p, unsigned long long int num) {
+    char buff[23];
+    unsigned long long int d;
+    uint8_t digits_cnt;
+    char c;
 
+    /* Format string */
+    for (digits_cnt = 0; num > 0; num /= p->m.base, ++digits_cnt) {
+        d = num % p->m.base;
+        c = d + (d >= 10 ? ((p->m.flags.uc ? 'A' : 'a') - 10) : '0');
+        buff[digits_cnt] = c;
+    }
+    prv_rotate_string(buff, digits_cnt);        /* Rotate string as it was written in opposite direction */
+    prv_out_str(p, buff, digits_cnt);           /* Output generated string */
+
+    return 1;
 }
 
 static uint8_t
@@ -252,22 +318,31 @@ prv_format(lwprintf_int_t* p, va_list vl) {
             }
             case 'b':
             case 'B':
-                p->m.base = 2;
-                unsigned_int_to_str(p, va_arg(vl, unsigned int));
-                break;
             case 'o':
-                p->m.base = 8;
-                unsigned_int_to_str(p, va_arg(vl, unsigned int));
-                break;
             case 'u':
-                p->m.base = 10;
-                unsigned_int_to_str(p, va_arg(vl, unsigned int));
-                break;
             case 'x':
             case 'X':
-                p->m.base = 16;
-                p->m.flags.uc = *fmt == 'X';    /* Select if uppercase text shall be printed */
-                unsigned_int_to_str(p, va_arg(vl, unsigned int));
+                if (*fmt == 'b' || *fmt == 'B') {
+                    p->m.base = 2;
+                } else if (*fmt == 'o') {
+                    p->m.base = 8;
+                } else if (*fmt == 'u') {
+                    p->m.base = 10;
+                } else if (*fmt == 'x' || *fmt == 'X') {
+                    p->m.base = 16;
+                    p->m.flags.uc = *fmt == 'X';/* Select if uppercase text shall be printed */
+                }
+
+                /* TODO: base 2 will overflow when more than buff size bits are used */
+                
+                /* Check for different length parameters */
+                if (p->m.flags.longlong == 0 || p->m.base == 2) {
+                    unsigned_int_to_str(p, (unsigned int)va_arg(vl, unsigned int));
+                } else if (p->m.flags.longlong == 2) {
+                    unsigned_longlong_int_to_str(p, (unsigned long long int)va_arg(vl, unsigned long long int));
+                } else if (p->m.flags.longlong == 1) {
+                    unsigned_long_int_to_str(p, (unsigned long int)va_arg(vl, unsigned long int));
+                }
                 break;
             case '%':
                 p->out_fn(p, '%');
