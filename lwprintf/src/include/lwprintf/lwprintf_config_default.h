@@ -65,6 +65,23 @@ extern "C" {
 #endif
 
 /**
+ * \brief           Enables `1` or disables `0` support for `long long int` type, signed or unsigned.
+ *
+ */
+#ifndef LWPRINTF_CFG_SUPPORT_LONG_LONG
+#define LWPRINTF_CFG_SUPPORT_LONG_LONG              1
+#endif
+
+/**
+ * \brief           Enables `1` or disables `0` support `%p` pointer print type
+ *
+ * When enabled, architecture must support `uintptr_t` type, normally available with C11 standard
+ */
+#ifndef LWPRINTF_CFG_SUPPORT_TYPE_POINTER
+#define LWPRINTF_CFG_SUPPORT_TYPE_POINTER           1
+#endif
+
+/**
  * \}
  */
 
