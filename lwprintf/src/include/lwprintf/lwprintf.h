@@ -49,6 +49,8 @@ extern "C" {
  * \{
  */
 
+#define LWPRINTF_UNUSED(x)          ((void)(x))
+
 struct lwprintf;
 
 typedef int (*lwprintf_output_fn)(int ch, struct lwprintf* lw);
@@ -58,8 +60,10 @@ typedef struct lwprintf {
 } lwprintf_t;
 
 uint8_t     lwprintf_init(lwprintf_t* lw, lwprintf_output_fn out_fn);
+int         lwprintf_vprintf(lwprintf_t* const lw, const char* fmt, va_list va);
 int         lwprintf_printf(lwprintf_t* const lw, const char* fmt, ...);
 int         lwprintf_snprintf(lwprintf_t* const lw, char* buff, size_t buff_size, const char* fmt, ...);
+int         lwprintf_vsnprintf(lwprintf_t* const lw, char* buff, size_t buff_size, const char* fmt, va_list va);
 
 #define     lwprintf_sprintf(lw, buff, fmt, ...)    lwprintf_snprintf(lw, buff, SIZE_MAX, fmt, #__VA_ARGS__)
 
