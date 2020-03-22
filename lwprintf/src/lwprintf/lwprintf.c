@@ -51,12 +51,15 @@ struct lwprintf_int;
  */
 typedef int (*prv_output_fn)(struct lwprintf_int* lwi, const char c);
 
+/**
+ * \brief           Internal structure
+ */
 typedef struct lwprintf_int {
     lwprintf_t* lw;                             /*!< Instance */
     const char* fmt;                            /*!< Format strin */
     char* const buff;                           /*!< Pointer to buffer when not using print option */
     const size_t buff_size;                     /*!< Buffer size of input buffer (when used) */
-    size_t n;                                   /*!< Full length of formatted text */
+    int n;                                      /*!< Full length of formatted text */
     prv_output_fn out_fn;                       /*!< Output internal function */
     char* buff_tmp;                             /*!< Pointer to temporary buffer for number conversion */
 
@@ -68,11 +71,13 @@ typedef struct lwprintf_int {
             uint8_t space : 1;                  /*!< Prepend spaces. Not used with plus modifier */
             uint8_t zero : 1;                   /*!< Zero pad flag detection, add zeros if number length is less than width modifier */
             uint8_t thousands : 1;              /*!< Thousands has grouping applied */
-            uint8_t hash : 1;
+            uint8_t alt : 1;                    /*!< Alternate form with hash */
             uint8_t precision : 1;              /*!< Precision flag has been used */
 
             /* Length modified flags */
-            uint8_t longlong : 2;               /*!< Flag indicatin long-long number */
+            uint8_t longlong : 2;               /*!< Flag indicatin long-long number, used with 'l' (1) or 'll' (2) mode */
+            uint8_t char_short : 2;             /*!< Used for 'h' (1 = short) or 'hh' (2 = char) length modifier */
+
             uint8_t uc : 1;                     /*!< Uppercase flag */
             uint8_t is_negative : 1;            /*!< Status if number is negative */
         } flags;
@@ -82,6 +87,41 @@ typedef struct lwprintf_int {
     } m;
 } lwprintf_int_t;
 
+/**
+ * \brief           Get LwPRINTF instance based on user input
+ * \param[in]       in_lw: LwPRINTF instance. Set to `NULL` for default instance
+ */
+#define LWPRINTF_GET_LW(in_lw)          ((in_lw) != NULL ? (in_lw) : (&lwprintf_default))
+
+/**
+ * \brief           Output function for lwprintf printf function
+ * \param[in]       ch: Character to print
+ * \param[in]       lw: LwPRINTF instance
+ * \return          `ch` value on success, `0` otherwise
+ */
+int
+prv_default_output_func(int ch, struct lwprintf* lw) {
+    LWPRINTF_UNUSED(ch);
+    LWPRINTF_UNUSED(lw);
+    return 0;
+}
+
+/**
+ * \brief           LwPRINTF default structure used by application
+ */
+static lwprintf_t lwprintf_default = {
+    .out = prv_default_output_func
+};
+
+/**
+ * \brief           Rotate string of the input buffer in place
+ * It rotates string from "abcdef" to "fedcba"
+ *
+ * \param[in,out]   str: Input and output string to be rotated
+ * \param[in]       len: String length, optional parameter if 
+ *                      length is known in advance. Use `0` if not used
+ * \return          `1` on success, `0` otherwise
+ */
 static int
 prv_rotate_string(char* str, size_t len) {
     /* Get length if 0 */
@@ -164,10 +204,34 @@ prv_out_str(lwprintf_int_t* p, const char* buff, size_t buff_size) {
     if (p->m.width > 0 && p->m.flags.is_negative) {
         --p->m.width;
     }
+    /* Check for alternate mode */
+    if (p->m.flags.alt) {
+        if (p->m.base == 8) {
+            if (p->m.width > 0) {
+                --p->m.width;
+            }
+        } else if (p->m.base == 16) {
+            if (p->m.width > 2) {
+                p->m.width -= 2;
+            } else {
+                p->m.width = 0;
+            }
+        }
+    }
     
     /* Add negative sign before when zeros are used to fill width */
     if (p->m.flags.is_negative && p->m.flags.zero) {
         p->out_fn(p, '-');
+    }
+
+    /* Check for flags output */
+    if (p->m.flags.alt) {
+        if (p->m.base == 8) {
+            p->out_fn(p, '0');
+        } else if (p->m.base == 16) {
+            p->out_fn(p, '0');
+            p->out_fn(p, p->m.flags.uc ? 'X' : 'x');
+        }
     }
 
     /* Right alignment, spaces or zeros */
@@ -204,7 +268,7 @@ unsigned_int_to_str(lwprintf_int_t* p, unsigned int num) {
     /* Format string */
     for (digits_cnt = 0; num > 0; num /= p->m.base, ++digits_cnt) {
         d = num % p->m.base;
-        c = d + (d >= 10 ? ((p->m.flags.uc ? 'A' : 'a') - 10) : '0');
+        c = (char)d + (char)(d >= 10 ? ((p->m.flags.uc ? 'A' : 'a') - 10) : '0');
         p->buff_tmp[digits_cnt] = c;
     }
     p->buff_tmp[digits_cnt] = 0;
@@ -223,7 +287,7 @@ unsigned_long_int_to_str(lwprintf_int_t* p, unsigned long int num) {
     /* Format string */
     for (digits_cnt = 0; num > 0; num /= p->m.base, ++digits_cnt) {
         d = num % p->m.base;
-        c = d + (d >= 10 ? ((p->m.flags.uc ? 'A' : 'a') - 10) : '0');
+        c = (char)d + (char)(d >= 10 ? ((p->m.flags.uc ? 'A' : 'a') - 10) : '0');
         p->buff_tmp[digits_cnt] = c;
     }
     p->buff_tmp[digits_cnt] = 0;
@@ -232,6 +296,8 @@ unsigned_long_int_to_str(lwprintf_int_t* p, unsigned long int num) {
 
     return 1;
 }
+
+#if LWPRINTF_CFG_SUPPORT_LONG_LONG
 
 static int
 unsigned_longlong_int_to_str(lwprintf_int_t* p, unsigned long long int num) {
@@ -242,7 +308,7 @@ unsigned_longlong_int_to_str(lwprintf_int_t* p, unsigned long long int num) {
     /* Format string */
     for (digits_cnt = 0; num > 0; num /= p->m.base, ++digits_cnt) {
         d = num % p->m.base;
-        c = d + (d >= 10 ? ((p->m.flags.uc ? 'A' : 'a') - 10) : '0');
+        c = (char)d + (char)(d >= 10 ? ((p->m.flags.uc ? 'A' : 'a') - 10) : '0');
         p->buff_tmp[digits_cnt] = c;
     }
     p->buff_tmp[digits_cnt] = 0;
@@ -251,6 +317,8 @@ unsigned_longlong_int_to_str(lwprintf_int_t* p, unsigned long long int num) {
 
     return 1;
 }
+
+#endif /* LWPRINTF_CFG_SUPPORT_LONG_LONG */
 
 static int
 signed_int_to_str(lwprintf_int_t* p, signed int num) {
@@ -270,6 +338,8 @@ signed_long_int_to_str(lwprintf_int_t* p, signed long int num) {
     return unsigned_long_int_to_str(p, num);
 }
 
+#if LWPRINTF_CFG_SUPPORT_LONG_LONG
+
 static int
 signed_longlong_int_to_str(lwprintf_int_t* p, signed long long int num) {
     if (num < 0) {
@@ -279,10 +349,12 @@ signed_longlong_int_to_str(lwprintf_int_t* p, signed long long int num) {
     return unsigned_longlong_int_to_str(p, num);
 }
 
+#endif /* LWPRINTF_CFG_SUPPORT_LONG_LONG */
+
 static uint8_t
 prv_format(lwprintf_int_t* p, va_list vl) {
     uint8_t detected = 0;
-    char buff_tmp[23];
+    char buff_tmp[33];
     const char* fmt = p->fmt;
 
     p->buff_tmp = buff_tmp;
@@ -310,7 +382,7 @@ prv_format(lwprintf_int_t* p, va_list vl) {
                 case ' ':   p->m.flags.space = 1;       break;
                 case '0':   p->m.flags.zero = 1;        break;
                 case '\'':  p->m.flags.thousands = 1;   break;
-                case '#':   p->m.flags.hash = 1;        break;
+                case '#':   p->m.flags.alt = 1;         break;
                 default:    detected = 0;               break;
             }
             if (detected) {
@@ -336,13 +408,14 @@ prv_format(lwprintf_int_t* p, va_list vl) {
 
         /* Check [.precision] */
         p->m.precision = 0;
-        if (*fmt == '.') {
+        if (*fmt == '.') {                      /* Precision flag is detected */
             p->m.flags.precision = 1;
             ++fmt;
-            if (*fmt == '*') {
+            if (*fmt == '*') {                  /* Variable check */
                 const int pr = (int)va_arg(vl, int);
                 p->m.precision = pr > 0 ? pr : 0;
-            } else if (CHARISNUM(*fmt)) {
+                ++fmt;
+            } else if (CHARISNUM(*fmt)) {       /* Directly in the string */
                 p->m.precision = prv_parse_num(&fmt);
             }
         }
@@ -350,6 +423,13 @@ prv_format(lwprintf_int_t* p, va_list vl) {
         /* Check [length] */
         detected = 1;
         switch (*fmt) {
+            case 'h':
+                p->m.flags.char_short = 1;      /* Single h detected */
+                ++fmt;
+                if (*fmt == 'h') {              /* Does it follow by another h? */
+                    p->m.flags.char_short = 2;  /* Second h detected */
+                    ++fmt;
+                }
             case 'l':
                 p->m.flags.longlong = 1;
                 ++fmt;
@@ -376,11 +456,14 @@ prv_format(lwprintf_int_t* p, va_list vl) {
                 p->m.base = 10;
                 if (p->m.flags.longlong == 0) {
                     signed_int_to_str(p, (signed int)va_arg(vl, signed int));
-                } else if (p->m.flags.longlong == 2) {
-                    signed_longlong_int_to_str(p, (signed long long int)va_arg(vl, signed long long int));
                 } else if (p->m.flags.longlong == 1) {
                     signed_long_int_to_str(p, (signed long int)va_arg(vl, signed long int));
                 }
+#if LWPRINTF_CFG_SUPPORT_LONG_LONG
+                else if (p->m.flags.longlong == 2) {
+                    signed_longlong_int_to_str(p, (signed long long int)va_arg(vl, signed long long int));
+                }
+#endif /* LWPRINTF_CFG_SUPPORT_LONG_LONG */
                 break;
             }
             case 'b':
@@ -404,20 +487,62 @@ prv_format(lwprintf_int_t* p, va_list vl) {
                 
                 /* Check for different length parameters */
                 if (p->m.flags.longlong == 0 || p->m.base == 2) {
-                    unsigned_int_to_str(p, (unsigned int)va_arg(vl, unsigned int));
-                } else if (p->m.flags.longlong == 2) {
-                    unsigned_longlong_int_to_str(p, (unsigned long long int)va_arg(vl, unsigned long long int));
+                    unsigned int v;
+                    switch (p->m.flags.char_short) {
+                        case 2:     v = (unsigned int)((unsigned char)va_arg(vl, unsigned int)); break;
+                        case 1:     v = (unsigned int)((unsigned short int)va_arg(vl, unsigned int)); break;
+                        default:    v = (unsigned int)((unsigned int)va_arg(vl, unsigned int)); break;
+                    }
+                    unsigned_int_to_str(p, v);
                 } else if (p->m.flags.longlong == 1) {
                     unsigned_long_int_to_str(p, (unsigned long int)va_arg(vl, unsigned long int));
                 }
+#if LWPRINTF_CFG_SUPPORT_LONG_LONG
+                else if (p->m.flags.longlong == 2) {
+                    unsigned_longlong_int_to_str(p, (unsigned long long int)va_arg(vl, unsigned long long int));
+                }
+#endif /* LWPRINTF_CFG_SUPPORT_LONG_LONG */
                 break;
             case 's': {
-                char* b = p->buff_tmp;
-                p->buff_tmp = va_arg(vl, const char *);
-                prv_out_str(p, p->buff_tmp, 0);
-                p->buff_tmp = b;
+                const char* b = va_arg(vl, const char *);
+                size_t len = strlen(b);
+
+                /* Precision gives maximum output len */
+                if (p->m.flags.precision) {
+                    if (len > p->m.precision) {
+                        len = p->m.precision;
+                    }
+                }
+                prv_out_str(p, b, len);
                 break;
             }
+#if LWPRINTF_CFG_SUPPORT_TYPE_POINTER
+            case 'p': {
+                p->m.base = 16;                 /* Go to hex format */
+                p->m.flags.uc = 1;              /* Uppercase numbers */
+                p->m.flags.zero = 1;            /* Zero padding */
+                p->m.width = sizeof(void *) * 2;/* Number is in hex format and byte is represented with 2 letters */
+
+#if LWPRINTF_CFG_SUPPORT_LONG_LONG
+                if (sizeof(void *) == sizeof(unsigned long long int)) {
+                    unsigned_longlong_int_to_str(p, (unsigned long long int)((uintptr_t)va_arg(vl, void *)));
+                } else
+#endif /* LWPRINTF_CFG_SUPPORT_LONG_LONG */
+                if (sizeof(void *) == sizeof(unsigned long int)) {
+                    unsigned_long_int_to_str(p, (unsigned long int)((uintptr_t)va_arg(vl, void *)));
+                } else {
+                    unsigned_int_to_str(p, (unsigned int)((uintptr_t)va_arg(vl, void *)));
+                }
+                break;
+            }
+#endif /* LWPRINTF_CFG_SUPPORT_TYPE_POINTER */
+            case 'f':
+            case 'F':
+            case 'e':
+            case 'E':
+            case 'g':
+            case 'G':
+                break;
             case '%':
                 p->out_fn(p, '%');
                 break;
@@ -437,8 +562,21 @@ prv_format(lwprintf_int_t* p, va_list vl) {
  */
 uint8_t
 lwprintf_init(lwprintf_t* lw, lwprintf_output_fn out_fn) {
-    lw->out = out_fn;
+    LWPRINTF_GET_LW(lw)->out = out_fn;
     return 1;
+}
+
+int
+lwprintf_vprintf(lwprintf_t* const lw, const char* fmt, va_list va) {
+    lwprintf_int_t format = {
+        .lw = LWPRINTF_GET_LW(lw),
+        .out_fn = prv_out_fn_print,
+        .fmt = fmt,
+        .buff = NULL,
+        .buff_size = 0
+    };
+    prv_format(&format, va);
+    return format.n;
 }
 
 /**
@@ -452,35 +590,36 @@ lwprintf_init(lwprintf_t* lw, lwprintf_output_fn out_fn) {
 int
 lwprintf_printf(lwprintf_t* const lw, const char* fmt, ...) {
     va_list va;
-    lwprintf_int_t format = {
-        .lw = lw,
-        .out_fn = prv_out_fn_print,
-        .fmt = fmt,
-        .buff = NULL,
-        .buff_size = 0
-    };
+    int n;
 
     va_start(va, fmt);
-    prv_format(&format, va);
+    n = lwprintf_vprintf(lw, fmt, va);
     va_end(va);
 
+    return n;
+}
+
+int
+lwprintf_vsnprintf(lwprintf_t* const lw, char* buff, size_t buff_size, const char* fmt, va_list va) {
+    lwprintf_int_t format = {
+        .lw = LWPRINTF_GET_LW(lw),
+        .out_fn = prv_out_fn_write_buff,
+        .fmt = fmt,
+        .buff = buff,
+        .buff_size = buff_size
+    };
+    prv_format(&format, va);
     return format.n;
 }
 
 int
 lwprintf_snprintf(lwprintf_t* const lw, char* buff, size_t buff_size, const char* fmt, ...) {
     va_list va;
-    lwprintf_int_t format = {
-        .lw = lw,
-        .out_fn = prv_out_fn_write_buff,
-        .fmt = fmt,
-        .buff = buff,
-        .buff_size = buff_size
-    };
+    int n;
 
     va_start(va, fmt);
-    prv_format(&format, va);
+    n = lwprintf_vsnprintf(lw, buff, buff_size, fmt, va);
     va_end(va);
 
-    return format.n;
+    return n;
 }
