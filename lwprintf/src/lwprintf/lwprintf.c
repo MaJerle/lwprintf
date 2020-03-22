@@ -320,8 +320,18 @@ prv_format(lwprintf_int_t* p, va_list vl) {
 
         /* Check [width] */
         p->m.width = 0;
-        if (CHARISNUM(*fmt)) {
-            p->m.width = prv_parse_num(&fmt);
+        if (CHARISNUM(*fmt)) {                  /* Fixed width check */
+            /* If number is negative, it has been captured from previous step (left align) */
+            p->m.width = prv_parse_num(&fmt);   /* Number from string directly */
+        } else if (*fmt == '*') {               /* Or variable check */
+            const int w = (int)va_arg(vl, int);
+            if (w < 0) {
+                p->m.flags.left_align = 1;      /* Negative width means left aligned */
+                p->m.width = -w;
+            } else {
+                p->m.width = w;
+            }
+            ++fmt;
         }
 
         /* Check [.precision] */
