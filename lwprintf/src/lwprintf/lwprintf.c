@@ -156,6 +156,9 @@ prv_parse_num(const char** format) {
 static int
 prv_out_str(lwprintf_int_t* p, const char* buff, size_t buff_size) {
     /* Output string */
+    if (buff_size == 0) {
+        buff_size = strlen(buff);
+    }
 
     /* Check for width */
     if (p->m.width > 0 && p->m.flags.is_negative) {
