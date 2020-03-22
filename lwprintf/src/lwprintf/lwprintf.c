@@ -411,6 +411,13 @@ prv_format(lwprintf_int_t* p, va_list vl) {
                     unsigned_long_int_to_str(p, (unsigned long int)va_arg(vl, unsigned long int));
                 }
                 break;
+            case 's': {
+                char* b = p->buff_tmp;
+                p->buff_tmp = va_arg(vl, const char *);
+                prv_out_str(p, p->buff_tmp, 0);
+                p->buff_tmp = b;
+                break;
+            }
             case '%':
                 p->out_fn(p, '%');
                 break;
