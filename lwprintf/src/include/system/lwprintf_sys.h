@@ -34,13 +34,13 @@
 #ifndef LWPRINTF_HDR_SYS_H
 #define LWPRINTF_HDR_SYS_H
 
-#ifdef __cplusplus
-extern "C" {
-#endif /* __cplusplus */
-
 #include <stdint.h>
 #include <stddef.h>
 #include "lwprintf/lwprintf.h"
+
+#ifdef __cplusplus
+extern "C" {
+#endif /* __cplusplus */
 
 /**
  * \defgroup        LWPRINTF_SYS System functions

@@ -31,8 +31,8 @@
  * Author:          Tilen MAJERLE <tilen@majerle.eu>
  * Version:         $_version_$
  */
-#include "lwprintf/lwprintf.h"
 #include <limits.h>
+#include "lwprintf/lwprintf.h"
 
 #if LWPRINTF_CFG_OS
 #include "system/lwprintf_sys.h"
@@ -118,7 +118,7 @@ static lwprintf_t lwprintf_default = {
  * It rotates string from "abcdef" to "fedcba"
  *
  * \param[in,out]   str: Input and output string to be rotated
- * \param[in]       len: String length, optional parameter if 
+ * \param[in]       len: String length, optional parameter if
  *                      length is known in advance. Use `0` if not used
  * \return          `1` on success, `0` otherwise
  */
@@ -218,7 +218,7 @@ prv_out_str(lwprintf_int_t* p, const char* buff, size_t buff_size) {
             }
         }
     }
-    
+
     /* Add negative sign before when zeros are used to fill width */
     if (p->m.flags.is_negative && p->m.flags.zero) {
         p->out_fn(p, '-');
@@ -489,7 +489,7 @@ prv_format(lwprintf_int_t* p, va_list vl) {
                 }
 
                 /* TODO: base 2 will overflow when more than buff size bits are used */
-                
+
                 /* Check for different length parameters */
                 if (p->m.flags.longlong == 0 || p->m.base == 2) {
                     unsigned int v;

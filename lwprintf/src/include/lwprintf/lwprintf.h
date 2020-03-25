@@ -34,14 +34,14 @@
 #ifndef LWPRINTF_HDR_H
 #define LWPRINTF_HDR_H
 
-#ifdef __cplusplus
-extern "C" {
-#endif /* __cplusplus */
-
 #include <string.h>
 #include <stdint.h>
 #include <limits.h>
 #include "lwprintf_config.h"
+
+#ifdef __cplusplus
+extern "C" {
+#endif /* __cplusplus */
 
 /**
  * \defgroup        LWPRINTF Lightweight stdio manager
