@@ -29,6 +29,7 @@ size_t tests_passed, tests_failed;
 /**
  * \brief           Run printf with built-in and custom implementation.
  * Compare results on returned length and actual content
+ *
  * \param[in]       fmt: Format to use
  * \param[in]       ...: Optional parameters
  */
@@ -65,7 +66,12 @@ printf_run(const char* fmt, ...) {
 
 int
 main(void) {
+    double num = 2123213213142.032;
+
     lwprintf_init(NULL, lwprintf_output);
+
+    printf("%lf\r\n", num);
+    printf("%lf\r\n", num - (double)((long)(num)));
 
     printf_run("% 3u", 28);
     printf_run("% 3u", 123456);
@@ -73,8 +79,6 @@ main(void) {
     printf_run("%03u", 123456);
     printf_run("%-010uabc", 123456);
     printf_run("%010uabc", 123456);
-    printf_run("%llb abc", 123);
-    printf_run("%llb abc", 123);
     printf_run("%-10d", -123);
     printf_run("%10d", -123);
     printf_run("%-06d", -1234567);
@@ -92,6 +96,8 @@ main(void) {
     printf_run("%-6.10s", "This is my string");
     printf_run("%6.10s", "Th");
     printf_run("%-6.10s", "Th");
+    printf_run("%*.*s", -6, 10, "Th");
+    printf_run("%*.*s", 6, 10, "Th");
 
     printf_run("%.4s", "This is my string");
     printf_run("%.6s", "1234");
@@ -111,6 +117,15 @@ main(void) {
     printf_run("%p", &tests_passed);
     printf_run("0X%p", &tests_passed);
     printf_run("0x%p", &tests_passed);
+
+    /* Binary */
+    printf_run("%llb abc", 123);
+    printf_run("%llb abc", 123);
+
+    /* Floats */
+    printf_run("%f", 12.13);
+    printf_run("%.3f", 12.1337);
+    printf_run("%.25f", 12.1337);
 
     /* Print final output */
     printf("----\r\n\r\n");

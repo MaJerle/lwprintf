@@ -81,6 +81,14 @@ extern "C" {
 #define LWPRINTF_CFG_SUPPORT_TYPE_POINTER           1
 #endif
 
+#ifndef LWPRINTF_CFG_SUPPORT_TYPE_FLOAT
+#define LWPRINTF_CFG_SUPPORT_TYPE_FLOAT             1
+#endif
+
+#ifndef LWPRINTF_CFG_FLOAT_DEFAULT_PRECISION
+#define LWPRINTF_CFG_FLOAT_DEFAULT_PRECISION        6
+#endif
+
 /**
  * \}
  */

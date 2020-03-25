@@ -351,6 +351,11 @@ signed_longlong_int_to_str(lwprintf_int_t* p, signed long long int num) {
 
 #endif /* LWPRINTF_CFG_SUPPORT_LONG_LONG */
 
+static int
+double_to_str(lwprintf_int_t* p, double num) {
+
+}
+
 static uint8_t
 prv_format(lwprintf_int_t* p, va_list vl) {
     uint8_t detected = 0;
@@ -538,6 +543,8 @@ prv_format(lwprintf_int_t* p, va_list vl) {
 #endif /* LWPRINTF_CFG_SUPPORT_TYPE_POINTER */
             case 'f':
             case 'F':
+                double_to_str(p, (double)va_arg(vl, double));
+                break;
             case 'e':
             case 'E':
             case 'g':
