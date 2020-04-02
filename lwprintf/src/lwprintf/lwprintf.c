@@ -259,6 +259,12 @@ prv_out_str(lwprintf_int_t* p, const char* buff, size_t buff_size) {
     return 1;
 }
 
+/**
+ * \brief           Convert unsigned int to string
+ * \param[in]       p: LwPRINTF instance
+ * \param[in]       num: Number to convert to string
+ * \return          `1` on success, `0` otherwise
+ */
 static int
 unsigned_int_to_str(lwprintf_int_t* p, unsigned int num) {
     unsigned int d;
@@ -278,6 +284,12 @@ unsigned_int_to_str(lwprintf_int_t* p, unsigned int num) {
     return 1;
 }
 
+/**
+ * \brief           Convert unsigned long to string
+ * \param[in]       p: LwPRINTF instance
+ * \param[in]       num: Number to convert to string
+ * \return          `1` on success, `0` otherwise
+ */
 static int
 unsigned_long_int_to_str(lwprintf_int_t* p, unsigned long int num) {
     unsigned long int d;
@@ -299,6 +311,12 @@ unsigned_long_int_to_str(lwprintf_int_t* p, unsigned long int num) {
 
 #if LWPRINTF_CFG_SUPPORT_LONG_LONG
 
+/**
+ * \brief           Convert unsigned long-long to string
+ * \param[in]       p: LwPRINTF instance
+ * \param[in]       num: Number to convert to string
+ * \return          `1` on success, `0` otherwise
+ */
 static int
 unsigned_longlong_int_to_str(lwprintf_int_t* p, unsigned long long int num) {
     unsigned long long int d;
@@ -320,6 +338,12 @@ unsigned_longlong_int_to_str(lwprintf_int_t* p, unsigned long long int num) {
 
 #endif /* LWPRINTF_CFG_SUPPORT_LONG_LONG */
 
+/**
+ * \brief           Convert signed int to string
+ * \param[in]       p: LwPRINTF instance
+ * \param[in]       num: Number to convert to string
+ * \return          `1` on success, `0` otherwise
+ */
 static int
 signed_int_to_str(lwprintf_int_t* p, signed int num) {
     if (num < 0) {
@@ -329,6 +353,12 @@ signed_int_to_str(lwprintf_int_t* p, signed int num) {
     return unsigned_int_to_str(p, num);
 }
 
+/**
+ * \brief           Convert signed long to string
+ * \param[in]       p: LwPRINTF instance
+ * \param[in]       num: Number to convert to string
+ * \return          `1` on success, `0` otherwise
+ */
 static int
 signed_long_int_to_str(lwprintf_int_t* p, signed long int num) {
     if (num < 0) {
@@ -340,6 +370,12 @@ signed_long_int_to_str(lwprintf_int_t* p, signed long int num) {
 
 #if LWPRINTF_CFG_SUPPORT_LONG_LONG
 
+/**
+ * \brief           Convert signed long-long to string
+ * \param[in]       p: LwPRINTF instance
+ * \param[in]       num: Number to convert to string
+ * \return          `1` on success, `0` otherwise
+ */
 static int
 signed_longlong_int_to_str(lwprintf_int_t* p, signed long long int num) {
     if (num < 0) {
@@ -356,6 +392,12 @@ double_to_str(lwprintf_int_t* p, double num) {
 
 }
 
+/**
+ * \brief           Process format string and parse variable parameters
+ * \param[in]       p: LwPRINTF instance
+ * \param[in        vl: Variable parameters list
+ * \return          `1` on success, `0` otherwise
+ */
 static uint8_t
 prv_format(lwprintf_int_t* p, va_list vl) {
     uint8_t detected = 0;
@@ -365,7 +407,7 @@ prv_format(lwprintf_int_t* p, va_list vl) {
     p->buff_tmp = buff_tmp;
     while (fmt != NULL && *fmt != '\0') {
         /* Parse format */
-        /* %[flags][width][.precision][length]type */
+        /* %[parameter][flags][width][.precision][length]type */
         /* Go to https://en.wikipedia.org/wiki/Printf_format_string for more info */
         memset(&p->m, 0x00, sizeof(p->m));      /* Reset structure */
 
@@ -376,6 +418,9 @@ prv_format(lwprintf_int_t* p, va_list vl) {
             continue;
         }
         ++fmt;
+
+        /* Check [parameter] */
+        /* Not used */
 
         /* Check [flags] */
         /* It can have multiple flags in any order */
@@ -436,10 +481,10 @@ prv_format(lwprintf_int_t* p, va_list vl) {
                     ++fmt;
                 }
             case 'l':
-                p->m.flags.longlong = 1;
+                p->m.flags.longlong = 1;        /* Single l detected */
                 ++fmt;
-                if (*fmt == 'l') {
-                    p->m.flags.longlong = 2;
+                if (*fmt == 'l') {              /* Does it follow by another l? */
+                    p->m.flags.longlong = 2;    /* Second l detected */
                     ++fmt;
                 }
                 break;
