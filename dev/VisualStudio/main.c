@@ -45,7 +45,7 @@ printf_run(const char* fmt, ...) {
     /* Generate both strings with original and custom printf */
     va_start(va, fmt);
     l1 = vsnprintf(b1, sizeof(b1), fmt, va);
-    l2 = lwprintf_vsnprintf(&lw, b2, sizeof(b2), fmt, va);
+    l2 = lwprintf_vsnprintf_ex(&lw, b2, sizeof(b2), fmt, va);
     va_end(va);
 
     printf("Format: \"%s\"\r\n", fmt);
