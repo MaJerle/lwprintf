@@ -1,5 +1,5 @@
 /**
- * \file            lwprintff.c
+ * \file            lwprintf.c
  * \brief           Lightweight stdio manager
  */
 
@@ -80,11 +80,11 @@ typedef struct lwprintf_int {
 
             uint8_t uc : 1;                     /*!< Uppercase flag */
             uint8_t is_negative : 1;            /*!< Status if number is negative */
-        } flags;
+        } flags;                                /*!< List of flags */
         int precision;                          /*!< Selected precision */
         int width;                              /*!< Text width indicator */
         uint8_t base;                           /*!< Base for number format output */
-    } m;
+    } m;                                        /*!< Block that is reset on every start of format */
 } lwprintf_int_t;
 
 /**
@@ -412,12 +412,12 @@ prv_double_to_str(lwprintf_int_t* p, double num) {
 
 /**
  * \brief           Process format string and parse variable parameters
- * \param[in]       p: LwPRINTF instance
- * \param[in]       vl: Variable parameters list
+ * \param[in,out]   p: LwPRINTF instance
+ * \param[in]       arg: Variable parameters list
  * \return          `1` on success, `0` otherwise
  */
 static uint8_t
-prv_format(lwprintf_int_t* p, va_list vl) {
+prv_format(lwprintf_int_t* p, va_list arg) {
     uint8_t detected = 0;
     char buff_tmp[33];
     const char* fmt = p->fmt;
@@ -464,7 +464,7 @@ prv_format(lwprintf_int_t* p, va_list vl) {
             /* If number is negative, it has been captured from previous step (left align) */
             p->m.width = prv_parse_num(&fmt);   /* Number from string directly */
         } else if (*fmt == '*') {               /* Or variable check */
-            const int w = (int)va_arg(vl, int);
+            const int w = (int)va_arg(arg, int);
             if (w < 0) {
                 p->m.flags.left_align = 1;      /* Negative width means left aligned */
                 p->m.width = -w;
@@ -480,7 +480,7 @@ prv_format(lwprintf_int_t* p, va_list vl) {
             p->m.flags.precision = 1;
             ++fmt;
             if (*fmt == '*') {                  /* Variable check */
-                const int pr = (int)va_arg(vl, int);
+                const int pr = (int)va_arg(arg, int);
                 p->m.precision = pr > 0 ? pr : 0;
                 ++fmt;
             } else if (CHARISNUM(*fmt)) {       /* Directly in the string */
@@ -516,19 +516,19 @@ prv_format(lwprintf_int_t* p, va_list vl) {
         /* Check type */
         switch (*fmt) {
             case 'c':
-                p->out_fn(p, va_arg(vl, char));
+                p->out_fn(p, va_arg(arg, char));
                 break;
             case 'd':
             case 'i': {
                 /* Check for different length parameters */
                 p->m.base = 10;
                 if (p->m.flags.longlong == 0) {
-                    prv_signed_int_to_str(p, (signed int)va_arg(vl, signed int));
+                    prv_signed_int_to_str(p, (signed int)va_arg(arg, signed int));
                 } else if (p->m.flags.longlong == 1) {
-                    prv_signed_long_int_to_str(p, (signed long int)va_arg(vl, signed long int));
+                    prv_signed_long_int_to_str(p, (signed long int)va_arg(arg, signed long int));
 #if LWPRINTF_CFG_SUPPORT_LONG_LONG
                 } else if (p->m.flags.longlong == 2) {
-                    prv_signed_longlong_int_to_str(p, (signed long long int)va_arg(vl, signed long long int));
+                    prv_signed_longlong_int_to_str(p, (signed long long int)va_arg(arg, signed long long int));
                 }
 #endif /* LWPRINTF_CFG_SUPPORT_LONG_LONG */
                 break;
@@ -556,22 +556,22 @@ prv_format(lwprintf_int_t* p, va_list vl) {
                 if (p->m.flags.longlong == 0 || p->m.base == 2) {
                     unsigned int v;
                     switch (p->m.flags.char_short) {
-                        case 2:     v = (unsigned int)((unsigned char)va_arg(vl, unsigned int)); break;
-                        case 1:     v = (unsigned int)((unsigned short int)va_arg(vl, unsigned int)); break;
-                        default:    v = (unsigned int)((unsigned int)va_arg(vl, unsigned int)); break;
+                        case 2:     v = (unsigned int)((unsigned char)va_arg(arg, unsigned int)); break;
+                        case 1:     v = (unsigned int)((unsigned short int)va_arg(arg, unsigned int)); break;
+                        default:    v = (unsigned int)((unsigned int)va_arg(arg, unsigned int)); break;
                     }
                     prv_unsigned_int_to_str(p, v);
                 } else if (p->m.flags.longlong == 1) {
-                    prv_unsigned_long_int_to_str(p, (unsigned long int)va_arg(vl, unsigned long int));
+                    prv_unsigned_long_int_to_str(p, (unsigned long int)va_arg(arg, unsigned long int));
                 }
 #if LWPRINTF_CFG_SUPPORT_LONG_LONG
                 else if (p->m.flags.longlong == 2) {
-                    prv_unsigned_longlong_int_to_str(p, (unsigned long long int)va_arg(vl, unsigned long long int));
+                    prv_unsigned_longlong_int_to_str(p, (unsigned long long int)va_arg(arg, unsigned long long int));
                 }
 #endif /* LWPRINTF_CFG_SUPPORT_LONG_LONG */
                 break;
             case 's': {
-                const char* b = va_arg(vl, const char *);
+                const char* b = va_arg(arg, const char *);
                 size_t len = strlen(b);
 
                 /* Precision gives maximum output len */
@@ -592,20 +592,20 @@ prv_format(lwprintf_int_t* p, va_list vl) {
 
 #if LWPRINTF_CFG_SUPPORT_LONG_LONG
                 if (sizeof(void *) == sizeof(unsigned long long int)) {
-                    prv_unsigned_longlong_int_to_str(p, (unsigned long long int)((uintptr_t)va_arg(vl, void *)));
+                    prv_unsigned_longlong_int_to_str(p, (unsigned long long int)((uintptr_t)va_arg(arg, void *)));
                 } else
 #endif /* LWPRINTF_CFG_SUPPORT_LONG_LONG */
                 if (sizeof(void *) == sizeof(unsigned long int)) {
-                    prv_unsigned_long_int_to_str(p, (unsigned long int)((uintptr_t)va_arg(vl, void *)));
+                    prv_unsigned_long_int_to_str(p, (unsigned long int)((uintptr_t)va_arg(arg, void *)));
                 } else {
-                    prv_unsigned_int_to_str(p, (unsigned int)((uintptr_t)va_arg(vl, void *)));
+                    prv_unsigned_int_to_str(p, (unsigned int)((uintptr_t)va_arg(arg, void *)));
                 }
                 break;
             }
 #endif /* LWPRINTF_CFG_SUPPORT_TYPE_POINTER */
             case 'f':
             case 'F':
-                prv_double_to_str(p, (double)va_arg(vl, double));
+                prv_double_to_str(p, (double)va_arg(arg, double));
                 break;
             case 'e':
             case 'E':
@@ -637,7 +637,7 @@ lwprintf_init(lwprintf_t* lw, lwprintf_output_fn out_fn) {
 
 /**
  * \brief           Print formatted data from variable argument list to the output
- * \param[in,out]    lw: LwPRINTF instance. Set to `NULL` to use default instance
+ * \param[in,out]   lw: LwPRINTF instance. Set to `NULL` to use default instance
  * \param[in]       format: C string that contains the text to be written to output
  * \param[in]       arg: A value identifying a variable arguments list initialized with `va_start`.
  *                      `va_list` is a special type defined in `<cstdarg>`.
@@ -660,7 +660,8 @@ lwprintf_vprintf_ex(lwprintf_t* const lw, const char* format, va_list arg) {
  * \brief           Print formatted data to the output
  * \param[in,out]   lw: LwPRINTF instance. Set to `NULL` to use default instance
  * \param[in]       format: C string that contains the text to be written to output
- * \param[in]       ...: Optional arguments for format string
+ *                  
+ *                  ...: Optional arguments for format string
  * \return          `1` on success, `0` otherwise
  */
 int
@@ -711,7 +712,8 @@ lwprintf_vsnprintf_ex(lwprintf_t* const lw, char* s, size_t n, const char* forma
  *                      The generated string has a length of at most `n - 1`,
  *                      leaving space for the additional terminating null character
  * \param[in]       format: C string that contains a format string that follows the same specifications as format in printf
- * \param[in]       ...: Optional arguments for format string
+ *           
+ *                  ...: Optional arguments for format string
  * \return          The number of characters that would have been written if `n` had been sufficiently large,
  *                      not counting the terminating null character.
  */
