@@ -48,15 +48,17 @@ struct lwprintf_int;
 
 /**
  * \brief           Private output function declaration
+ * \param[in]       lwi: Internal working structure
+ * \param[in]       c: Character to print
  */
-typedef int (*prv_output_fn)(struct lwprintf_int* lwi, const char c);
+typedef int (*prv_output_fn)(struct lwprintf_int* p, const char c);
 
 /**
  * \brief           Internal structure
  */
 typedef struct lwprintf_int {
-    lwprintf_t* lw;                             /*!< Instance */
-    const char* fmt;                            /*!< Format strin */
+    lwprintf_t* lw;                             /*!< Instance handle */
+    const char* fmt;                            /*!< Format string */
     char* const buff;                           /*!< Pointer to buffer when not using print option */
     const size_t buff_size;                     /*!< Buffer size of input buffer (when used) */
     int n;                                      /*!< Full length of formatted text */
@@ -89,9 +91,10 @@ typedef struct lwprintf_int {
 
 /**
  * \brief           Get LwPRINTF instance based on user input
- * \param[in]       in_lw: LwPRINTF instance. Set to `NULL` for default instance
+ * \param[in]       p: LwPRINTF instance.
+ *                      Set to `NULL` for default instance
  */
-#define LWPRINTF_GET_LW(in_lw)          ((in_lw) != NULL ? (in_lw) : (&lwprintf_default))
+#define LWPRINTF_GET_LW(p)              ((p) != NULL ? (p) : (&lwprintf_default))
 
 /**
  * \brief           Output function for lwprintf printf function
@@ -115,7 +118,7 @@ static lwprintf_t lwprintf_default = {
 
 /**
  * \brief           Rotate string of the input buffer in place
- * It rotates string from "abcdef" to "fedcba"
+ * It rotates string from "abcdef" to "fedcba".
  *
  * \param[in,out]   str: Input and output string to be rotated
  * \param[in]       len: String length, optional parameter if
@@ -141,28 +144,28 @@ prv_rotate_string(char* str, size_t len) {
 
 /**
  * \brief           Output function to print data
- * \param[in]       lwi: Internal working structure
+ * \param[in]       p: LwPRINTF internal instance
  * \param[in]       c: Character to print
  * \return          `1` on success, `0` otherwise
  */
 static int
-prv_out_fn_print(lwprintf_int_t* lwi, const char c) {
-    lwi->lw->out(c, lwi->lw);                   /*!< Send character to output */
-    ++lwi->n;
+prv_out_fn_print(lwprintf_int_t* p, const char c) {
+    p->lw->out(c, p->lw);                       /*!< Send character to output */
+    ++p->n;
     return 1;
 }
 
 /**
  * \brief           Output function to generate buffer data
- * \param[in]       lwi: Internal working structure
+ * \param[in]       p: LwPRINTF internal instance
  * \param[in]       c: Character to write
  * \return          `1` on success, `0` otherwise
  */
 static int
-prv_out_fn_write_buff(lwprintf_int_t* lwi, const char c) {
-    if (lwi->n < (lwi->buff_size - 1)) {
-        lwi->buff[lwi->n++] = c;
-        lwi->buff[lwi->n] = '\0';
+prv_out_fn_write_buff(lwprintf_int_t* p, const char c) {
+    if (p->n < (p->buff_size - 1)) {
+        p->buff[p->n++] = c;
+        p->buff[p->n] = '\0';
         return 1;
     }
     return 0;
@@ -189,7 +192,7 @@ prv_parse_num(const char** format) {
  * \brief           Output generate string from numbers/digits
  * Paddings before and after are applied at this stage
  *
- * \param[in]       p: Internal working structure
+ * \param[in,out]   p: LwPRINTF internal instance
  * \param[in]       buff: Buffer string
  * \param[in]       buff_size: Length of buffer to output
  * \return          `1` on success, `0` otherwise
@@ -262,7 +265,7 @@ prv_out_str(lwprintf_int_t* p, const char* buff, size_t buff_size) {
 
 /**
  * \brief           Convert unsigned int to string
- * \param[in]       p: LwPRINTF instance
+ * \param[in,out]   p: LwPRINTF internal instance
  * \param[in]       num: Number to convert to string
  * \return          `1` on success, `0` otherwise
  */
@@ -287,7 +290,7 @@ prv_unsigned_int_to_str(lwprintf_int_t* p, unsigned int num) {
 
 /**
  * \brief           Convert unsigned long to string
- * \param[in]       p: LwPRINTF instance
+ * \param[in,out]   p: LwPRINTF internal instance
  * \param[in]       num: Number to convert to string
  * \return          `1` on success, `0` otherwise
  */
@@ -314,7 +317,7 @@ prv_unsigned_long_int_to_str(lwprintf_int_t* p, unsigned long int num) {
 
 /**
  * \brief           Convert unsigned long-long to string
- * \param[in]       p: LwPRINTF instance
+ * \param[in,out]   p: LwPRINTF internal instance
  * \param[in]       num: Number to convert to string
  * \return          `1` on success, `0` otherwise
  */
@@ -341,7 +344,7 @@ prv_unsigned_longlong_int_to_str(lwprintf_int_t* p, unsigned long long int num) 
 
 /**
  * \brief           Convert signed int to string
- * \param[in]       p: LwPRINTF instance
+ * \param[in,out]   p: LwPRINTF internal instance
  * \param[in]       num: Number to convert to string
  * \return          `1` on success, `0` otherwise
  */
@@ -356,7 +359,7 @@ prv_signed_int_to_str(lwprintf_int_t* p, signed int num) {
 
 /**
  * \brief           Convert signed long to string
- * \param[in]       p: LwPRINTF instance
+ * \param[in,out]   p: LwPRINTF instance
  * \param[in]       num: Number to convert to string
  * \return          `1` on success, `0` otherwise
  */
@@ -373,7 +376,7 @@ prv_signed_long_int_to_str(lwprintf_int_t* p, signed long int num) {
 
 /**
  * \brief           Convert signed long-long to string
- * \param[in]       p: LwPRINTF instance
+ * \param[in,out]   p: LwPRINTF internal instance
  * \param[in]       num: Number to convert to string
  * \return          `1` on success, `0` otherwise
  */
@@ -390,7 +393,7 @@ prv_signed_longlong_int_to_str(lwprintf_int_t* p, signed long long int num) {
 
 /**
  * \brief           Convert float number to string
- * \param[in]       p: LwPRINTF instance
+ * \param[in,out]   p: LwPRINTF internal instance
  * \param[in]       num: Number to convert to string
  * \return          `1` on success, `0` otherwise
  */
@@ -401,7 +404,7 @@ prv_float_to_str(lwprintf_int_t* p, float num) {
 
 /**
  * \brief           Convert double number to string
- * \param[in]       p: LwPRINTF instance
+ * \param[in,out]   p: LwPRINTF internal instance
  * \param[in]       num: Number to convert to string
  * \return          `1` on success, `0` otherwise
  */
@@ -412,7 +415,7 @@ prv_double_to_str(lwprintf_int_t* p, double num) {
 
 /**
  * \brief           Process format string and parse variable parameters
- * \param[in,out]   p: LwPRINTF instance
+ * \param[in,out]   p: LwPRINTF internal instance
  * \param[in]       arg: Variable parameters list
  * \return          `1` on success, `0` otherwise
  */
@@ -454,7 +457,7 @@ prv_format(lwprintf_int_t* p, va_list arg) {
                 default:    detected = 0;               break;
             }
             if (detected) {
-                fmt++;
+                ++fmt;
             }
         } while (detected);
 
