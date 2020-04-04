@@ -60,12 +60,12 @@ typedef struct lwprintf {
 } lwprintf_t;
 
 uint8_t     lwprintf_init(lwprintf_t* lw, lwprintf_output_fn out_fn);
-int         lwprintf_vprintf(lwprintf_t* const lw, const char* fmt, va_list va);
-int         lwprintf_printf(lwprintf_t* const lw, const char* fmt, ...);
-int         lwprintf_snprintf(lwprintf_t* const lw, char* buff, size_t buff_size, const char* fmt, ...);
-int         lwprintf_vsnprintf(lwprintf_t* const lw, char* buff, size_t buff_size, const char* fmt, va_list va);
+int         lwprintf_vprintf_ex(lwprintf_t* const lw, const char* format, va_list arg);
+int         lwprintf_printf_ex(lwprintf_t* const lw, const char* format, ...);
+int         lwprintf_vsnprintf_ex(lwprintf_t* const lw, char* s, size_t n, const char* format, va_list arg);
+int         lwprintf_snprintf_ex(lwprintf_t* const lw, char* s, size_t n, const char* format, ...);
 
-#define     lwprintf_sprintf(lw, buff, fmt, ...)    lwprintf_snprintf(lw, buff, SIZE_MAX, fmt, #__VA_ARGS__)
+#define     lwprintf_sprintf(lw, s, format, ...)    lwprintf_snprintf(lw, buff, SIZE_MAX, fmt, #__VA_ARGS__)
 
 /**
  * \}

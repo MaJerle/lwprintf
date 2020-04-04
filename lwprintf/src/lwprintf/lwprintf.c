@@ -188,6 +188,7 @@ prv_parse_num(const char** format) {
 /**
  * \brief           Output generate string from numbers/digits
  * Paddings before and after are applied at this stage
+ *
  * \param[in]       p: Internal working structure
  * \param[in]       buff: Buffer string
  * \param[in]       buff_size: Length of buffer to output
@@ -266,7 +267,7 @@ prv_out_str(lwprintf_int_t* p, const char* buff, size_t buff_size) {
  * \return          `1` on success, `0` otherwise
  */
 static int
-unsigned_int_to_str(lwprintf_int_t* p, unsigned int num) {
+prv_unsigned_int_to_str(lwprintf_int_t* p, unsigned int num) {
     unsigned int d;
     uint8_t digits_cnt;
     char c;
@@ -291,7 +292,7 @@ unsigned_int_to_str(lwprintf_int_t* p, unsigned int num) {
  * \return          `1` on success, `0` otherwise
  */
 static int
-unsigned_long_int_to_str(lwprintf_int_t* p, unsigned long int num) {
+prv_unsigned_long_int_to_str(lwprintf_int_t* p, unsigned long int num) {
     unsigned long int d;
     uint8_t digits_cnt;
     char c;
@@ -318,7 +319,7 @@ unsigned_long_int_to_str(lwprintf_int_t* p, unsigned long int num) {
  * \return          `1` on success, `0` otherwise
  */
 static int
-unsigned_longlong_int_to_str(lwprintf_int_t* p, unsigned long long int num) {
+prv_unsigned_longlong_int_to_str(lwprintf_int_t* p, unsigned long long int num) {
     unsigned long long int d;
     uint8_t digits_cnt;
     char c;
@@ -345,12 +346,12 @@ unsigned_longlong_int_to_str(lwprintf_int_t* p, unsigned long long int num) {
  * \return          `1` on success, `0` otherwise
  */
 static int
-signed_int_to_str(lwprintf_int_t* p, signed int num) {
+prv_signed_int_to_str(lwprintf_int_t* p, signed int num) {
     if (num < 0) {
         p->m.flags.is_negative = 1;
         num = -num;
     }
-    return unsigned_int_to_str(p, num);
+    return prv_unsigned_int_to_str(p, num);
 }
 
 /**
@@ -360,12 +361,12 @@ signed_int_to_str(lwprintf_int_t* p, signed int num) {
  * \return          `1` on success, `0` otherwise
  */
 static int
-signed_long_int_to_str(lwprintf_int_t* p, signed long int num) {
+prv_signed_long_int_to_str(lwprintf_int_t* p, signed long int num) {
     if (num < 0) {
         p->m.flags.is_negative = 1;
         num = -num;
     }
-    return unsigned_long_int_to_str(p, num);
+    return prv_unsigned_long_int_to_str(p, num);
 }
 
 #if LWPRINTF_CFG_SUPPORT_LONG_LONG
@@ -377,25 +378,42 @@ signed_long_int_to_str(lwprintf_int_t* p, signed long int num) {
  * \return          `1` on success, `0` otherwise
  */
 static int
-signed_longlong_int_to_str(lwprintf_int_t* p, signed long long int num) {
+prv_signed_longlong_int_to_str(lwprintf_int_t* p, signed long long int num) {
     if (num < 0) {
         p->m.flags.is_negative = 1;
         num = -num;
     }
-    return unsigned_longlong_int_to_str(p, num);
+    return prv_unsigned_longlong_int_to_str(p, num);
 }
 
 #endif /* LWPRINTF_CFG_SUPPORT_LONG_LONG */
 
+/**
+ * \brief           Convert float number to string
+ * \param[in]       p: LwPRINTF instance
+ * \param[in]       num: Number to convert to string
+ * \return          `1` on success, `0` otherwise
+ */
 static int
-double_to_str(lwprintf_int_t* p, double num) {
+prv_float_to_str(lwprintf_int_t* p, float num) {
+    return 0;
+}
 
+/**
+ * \brief           Convert double number to string
+ * \param[in]       p: LwPRINTF instance
+ * \param[in]       num: Number to convert to string
+ * \return          `1` on success, `0` otherwise
+ */
+static int
+prv_double_to_str(lwprintf_int_t* p, double num) {
+    return 0;
 }
 
 /**
  * \brief           Process format string and parse variable parameters
  * \param[in]       p: LwPRINTF instance
- * \param[in        vl: Variable parameters list
+ * \param[in]       vl: Variable parameters list
  * \return          `1` on success, `0` otherwise
  */
 static uint8_t
@@ -505,13 +523,12 @@ prv_format(lwprintf_int_t* p, va_list vl) {
                 /* Check for different length parameters */
                 p->m.base = 10;
                 if (p->m.flags.longlong == 0) {
-                    signed_int_to_str(p, (signed int)va_arg(vl, signed int));
+                    prv_signed_int_to_str(p, (signed int)va_arg(vl, signed int));
                 } else if (p->m.flags.longlong == 1) {
-                    signed_long_int_to_str(p, (signed long int)va_arg(vl, signed long int));
-                }
+                    prv_signed_long_int_to_str(p, (signed long int)va_arg(vl, signed long int));
 #if LWPRINTF_CFG_SUPPORT_LONG_LONG
-                else if (p->m.flags.longlong == 2) {
-                    signed_longlong_int_to_str(p, (signed long long int)va_arg(vl, signed long long int));
+                } else if (p->m.flags.longlong == 2) {
+                    prv_signed_longlong_int_to_str(p, (signed long long int)va_arg(vl, signed long long int));
                 }
 #endif /* LWPRINTF_CFG_SUPPORT_LONG_LONG */
                 break;
@@ -543,13 +560,13 @@ prv_format(lwprintf_int_t* p, va_list vl) {
                         case 1:     v = (unsigned int)((unsigned short int)va_arg(vl, unsigned int)); break;
                         default:    v = (unsigned int)((unsigned int)va_arg(vl, unsigned int)); break;
                     }
-                    unsigned_int_to_str(p, v);
+                    prv_unsigned_int_to_str(p, v);
                 } else if (p->m.flags.longlong == 1) {
-                    unsigned_long_int_to_str(p, (unsigned long int)va_arg(vl, unsigned long int));
+                    prv_unsigned_long_int_to_str(p, (unsigned long int)va_arg(vl, unsigned long int));
                 }
 #if LWPRINTF_CFG_SUPPORT_LONG_LONG
                 else if (p->m.flags.longlong == 2) {
-                    unsigned_longlong_int_to_str(p, (unsigned long long int)va_arg(vl, unsigned long long int));
+                    prv_unsigned_longlong_int_to_str(p, (unsigned long long int)va_arg(vl, unsigned long long int));
                 }
 #endif /* LWPRINTF_CFG_SUPPORT_LONG_LONG */
                 break;
@@ -575,20 +592,20 @@ prv_format(lwprintf_int_t* p, va_list vl) {
 
 #if LWPRINTF_CFG_SUPPORT_LONG_LONG
                 if (sizeof(void *) == sizeof(unsigned long long int)) {
-                    unsigned_longlong_int_to_str(p, (unsigned long long int)((uintptr_t)va_arg(vl, void *)));
+                    prv_unsigned_longlong_int_to_str(p, (unsigned long long int)((uintptr_t)va_arg(vl, void *)));
                 } else
 #endif /* LWPRINTF_CFG_SUPPORT_LONG_LONG */
                 if (sizeof(void *) == sizeof(unsigned long int)) {
-                    unsigned_long_int_to_str(p, (unsigned long int)((uintptr_t)va_arg(vl, void *)));
+                    prv_unsigned_long_int_to_str(p, (unsigned long int)((uintptr_t)va_arg(vl, void *)));
                 } else {
-                    unsigned_int_to_str(p, (unsigned int)((uintptr_t)va_arg(vl, void *)));
+                    prv_unsigned_int_to_str(p, (unsigned int)((uintptr_t)va_arg(vl, void *)));
                 }
                 break;
             }
 #endif /* LWPRINTF_CFG_SUPPORT_TYPE_POINTER */
             case 'f':
             case 'F':
-                double_to_str(p, (double)va_arg(vl, double));
+                prv_double_to_str(p, (double)va_arg(vl, double));
                 break;
             case 'e':
             case 'E':
@@ -618,60 +635,94 @@ lwprintf_init(lwprintf_t* lw, lwprintf_output_fn out_fn) {
     return 1;
 }
 
-int
-lwprintf_vprintf(lwprintf_t* const lw, const char* fmt, va_list va) {
-    lwprintf_int_t format = {
-        .lw = LWPRINTF_GET_LW(lw),
-        .out_fn = prv_out_fn_print,
-        .fmt = fmt,
-        .buff = NULL,
-        .buff_size = 0
-    };
-    prv_format(&format, va);
-    return format.n;
-}
-
 /**
- * \brief           Print data to the output directly
- * \param[in,out]   lw: LwPRINTF working instance.
- *                      Set to `NULL` to use default one
- * \param[in]       fmt: Format string
- * \param[in]       ... Optional arguments for format
+ * \brief           Print formatted data from variable argument list to the output
+ * \param[in,out]    lw: LwPRINTF instance. Set to `NULL` to use default instance
+ * \param[in]       format: C string that contains the text to be written to output
+ * \param[in]       arg: A value identifying a variable arguments list initialized with `va_start`.
+ *                      `va_list` is a special type defined in `<cstdarg>`.
  * \return          `1` on success, `0` otherwise
  */
 int
-lwprintf_printf(lwprintf_t* const lw, const char* fmt, ...) {
+lwprintf_vprintf_ex(lwprintf_t* const lw, const char* format, va_list arg) {
+    lwprintf_int_t f = {
+        .lw = LWPRINTF_GET_LW(lw),
+        .out_fn = prv_out_fn_print,
+        .fmt = arg,
+        .buff = NULL,
+        .buff_size = 0
+    };
+    prv_format(&f, arg);
+    return f.n;
+}
+
+/**
+ * \brief           Print formatted data to the output
+ * \param[in,out]   lw: LwPRINTF instance. Set to `NULL` to use default instance
+ * \param[in]       format: C string that contains the text to be written to output
+ * \param[in]       ...: Optional arguments for format string
+ * \return          `1` on success, `0` otherwise
+ */
+int
+lwprintf_printf_ex(lwprintf_t* const lw, const char* format, ...) {
     va_list va;
     int n;
 
-    va_start(va, fmt);
-    n = lwprintf_vprintf(lw, fmt, va);
+    va_start(va, format);
+    n = lwprintf_vprintf_ex(lw, format, va);
     va_end(va);
 
     return n;
 }
 
+/**
+ * \brief           Write formatted data from variable argument list to sized buffer
+ * \param[in,out]   lw: LwPRINTF instance. Set to `NULL` to use default instance
+ * \param[in]       s: Pointer to a buffer where the resulting C-string is stored.
+ *                      The buffer should have a size of at least `n` characters
+ * \param[in]       n: Maximum number of bytes to be used in the buffer.
+ *                      The generated string has a length of at most `n - 1`,
+ *                      leaving space for the additional terminating null character
+ * \param[in]       format: C string that contains a format string that follows the same specifications as format in printf
+ * \param[in]       arg: A value identifying a variable arguments list initialized with `va_start`.
+ *                      `va_list` is a special type defined in `<cstdarg>`.
+ * \return          The number of characters that would have been written if `n` had been sufficiently large,
+ *                      not counting the terminating null character.
+ */
 int
-lwprintf_vsnprintf(lwprintf_t* const lw, char* buff, size_t buff_size, const char* fmt, va_list va) {
-    lwprintf_int_t format = {
+lwprintf_vsnprintf_ex(lwprintf_t* const lw, char* s, size_t n, const char* format, va_list arg) {
+    lwprintf_int_t f = {
         .lw = LWPRINTF_GET_LW(lw),
         .out_fn = prv_out_fn_write_buff,
-        .fmt = fmt,
-        .buff = buff,
-        .buff_size = buff_size
+        .fmt = format,
+        .buff = s,
+        .buff_size = n
     };
-    prv_format(&format, va);
-    return format.n;
+    prv_format(&f, arg);
+    return f.n;
 }
 
+/**
+ * \brief           Write formatted data from variable argument list to sized buffer
+ * \param[in,out]   lw: LwPRINTF instance. Set to `NULL` to use default instance
+ * \param[in]       s: Pointer to a buffer where the resulting C-string is stored.
+ *                      The buffer should have a size of at least `n` characters
+ * \param[in]       n: Maximum number of bytes to be used in the buffer.
+ *                      The generated string has a length of at most `n - 1`,
+ *                      leaving space for the additional terminating null character
+ * \param[in]       format: C string that contains a format string that follows the same specifications as format in printf
+ * \param[in]       ...: Optional arguments for format string
+ * \return          The number of characters that would have been written if `n` had been sufficiently large,
+ *                      not counting the terminating null character.
+ */
 int
-lwprintf_snprintf(lwprintf_t* const lw, char* buff, size_t buff_size, const char* fmt, ...) {
+lwprintf_snprintf_ex(lwprintf_t* const lw, char* s, size_t n, const char* format, ...) {
     va_list va;
-    int n;
+    int len;
 
-    va_start(va, fmt);
-    n = lwprintf_vsnprintf(lw, buff, buff_size, fmt, va);
+    va_start(va, format);
+    len = lwprintf_vsnprintf_ex(lw, s, n, format, va);
     va_end(va);
 
-    return n;
+    return len;
 }
