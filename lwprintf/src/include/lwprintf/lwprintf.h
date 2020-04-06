@@ -71,14 +71,19 @@ typedef struct lwprintf {
     lwprintf_output_fn out;                     /*!< Output function for direct print operations */
 } lwprintf_t;
 
-
-uint8_t     lwprintf_init(lwprintf_t* lw, lwprintf_output_fn out_fn);
+uint8_t     lwprintf_init_ex(lwprintf_t* lw, lwprintf_output_fn out_fn);
 int         lwprintf_vprintf_ex(lwprintf_t* const lw, const char* format, va_list arg);
 int         lwprintf_printf_ex(lwprintf_t* const lw, const char* format, ...);
 int         lwprintf_vsnprintf_ex(lwprintf_t* const lw, char* s, size_t n, const char* format, va_list arg);
 int         lwprintf_snprintf_ex(lwprintf_t* const lw, char* s, size_t n, const char* format, ...);
+#define     lwprintf_sprintf_ex(lw, s, format, ...)     lwprintf_snprintf((lw), (s), SIZE_MAX, (format), # __VA_ARGS__)
 
-#define     lwprintf_sprintf(lw, s, format, ...)    lwprintf_snprintf(lw, s, SIZE_MAX, format, #__VA_ARGS__)
+#define     lwprintf_init(out_fn)                       lwprintf_init_ex(NULL, (out_fn))
+#define     lwprintf_vprintf(format, arg)               lwprintf_vprintf_ex(NULL, (format), (arg))
+#define     lwprintf_printf(format, ...)                lwprintf_printf_ex(NULL, (format), # __VA_ARGS__)
+#define     lwprintf_vsnprintf(s, n, format, arg)       lwprintf_vsnprintf_ex(NULL, (s), (n), (format), (arg))
+#define     lwprintf_snprintf(s, n, format, ...)        lwprintf_snprintf_ex(NULL, (s), (n), (format), # __VA_ARGS__)
+#define     lwprintf_sprintf(s, format, ...)            lwprintf_sprintf(NULL, (s), (format), # __VA_ARGS__)
 
 /**
  * \}

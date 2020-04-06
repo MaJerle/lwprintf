@@ -63,7 +63,6 @@ typedef struct lwprintf_int {
     const size_t buff_size;                     /*!< Buffer size of input buffer (when used) */
     int n;                                      /*!< Full length of formatted text */
     prv_output_fn out_fn;                       /*!< Output internal function */
-    char* buff_tmp;                             /*!< Pointer to temporary buffer for number conversion */
 
     /* This must all be reset every time new % is detected */
     struct {
@@ -189,25 +188,18 @@ prv_parse_num(const char** format) {
 }
 
 /**
- * \brief           Output generate string from numbers/digits
- * Paddings before and after are applied at this stage
- *
+ * \brief           Format data that are printed before actual value
  * \param[in,out]   p: LwPRINTF internal instance
- * \param[in]       buff: Buffer string
- * \param[in]       buff_size: Length of buffer to output
+ * \param[in]       buff_size: Expected buffer size of output string
  * \return          `1` on success, `0` otherwise
  */
 static int
-prv_out_str(lwprintf_int_t* p, const char* buff, size_t buff_size) {
-    /* Output string */
-    if (buff_size == 0) {
-        buff_size = strlen(buff);
-    }
-
+prv_out_str_before(lwprintf_int_t* p, size_t buff_size) {
     /* Check for width */
     if (p->m.width > 0 && p->m.flags.is_negative) {
         --p->m.width;
     }
+
     /* Check for alternate mode */
     if (p->m.flags.alt) {
         if (p->m.base == 8) {
@@ -250,16 +242,54 @@ prv_out_str(lwprintf_int_t* p, const char* buff, size_t buff_size) {
         p->out_fn(p, '-');
     }
 
-    /* Actual value */
-    for (uint8_t i = 0; i < buff_size; ++i) {
-        p->out_fn(p, buff[i]);
-    }
+    return 1;
+}
+
+/**
+ * \brief           Format data that are printed after actual value
+ * \param[in,out]   p: LwPRINTF internal instance
+ * \param[in]       buff_size: Expected buffer size of output string
+ * \return          `1` on success, `0` otherwise
+ */
+static int
+prv_out_str_after(lwprintf_int_t* p, size_t buff_size) {
     /* Left alignment, but only with spaces */
     if (p->m.flags.left_align) {
         for (size_t i = buff_size; i < p->m.width; ++i) {
             p->out_fn(p, ' ');
         }
     }
+
+    return 1;
+}
+
+/**
+ * \brief           Output generate string from numbers/digits
+ * Paddings before and after are applied at this stage
+ *
+ * \param[in,out]   p: LwPRINTF internal instance
+ * \param[in]       buff: Buffer string
+ * \param[in]       buff_size: Length of buffer to output
+ * \return          `1` on success, `0` otherwise
+ */
+static int
+prv_out_str(lwprintf_int_t* p, const char* buff, size_t buff_size) {
+    /* Output string */
+    if (buff_size == 0) {
+        buff_size = strlen(buff);
+    }
+
+    /* Pre-value */
+    prv_out_str_before(p, buff_size);
+
+    /* Actual value */
+    for (uint8_t i = 0; i < buff_size; ++i) {
+        p->out_fn(p, buff[i]);
+    }
+
+    /* Post-value */
+    prv_out_str_after(p, buff_size);
+
     return 1;
 }
 
@@ -271,20 +301,24 @@ prv_out_str(lwprintf_int_t* p, const char* buff, size_t buff_size) {
  */
 static int
 prv_unsigned_int_to_str(lwprintf_int_t* p, unsigned int num) {
-    unsigned int d;
-    uint8_t digits_cnt;
+    unsigned int d, digit;
+    size_t digits_cnt;
     char c;
 
-    /* Format string */
-    for (digits_cnt = 0; num > 0; num /= p->m.base, ++digits_cnt) {
-        d = num % p->m.base;
-        c = (char)d + (char)(d >= 10 ? ((p->m.flags.uc ? 'A' : 'a') - 10) : '0');
-        p->buff_tmp[digits_cnt] = c;
-    }
-    p->buff_tmp[digits_cnt] = 0;
-    prv_rotate_string(p->buff_tmp, digits_cnt); /* Rotate string as it was written in opposite direction */
-    prv_out_str(p, p->buff_tmp, digits_cnt);    /* Output generated string */
+    /* Get maximum number to start with */
+    for (digits_cnt = 0, d = num; d > 0; ++digits_cnt, d /= p->m.base) {}
+    for (d = 1; (num / d) >= p->m.base; d *= p->m.base) {}
 
+    /* Print pre-number */
+    prv_out_str_before(p, digits_cnt);
+    for (; d > 0; ) {
+        digit = num / d;
+        num = num % d;
+        d = d / p->m.base;
+        c = (char)digit + (char)(digit >= 10 ? ((p->m.flags.uc ? 'A' : 'a') - 10) : '0');
+        p->out_fn(p, c);
+    }
+    prv_out_str_after(p, digits_cnt);
     return 1;
 }
 
@@ -296,20 +330,24 @@ prv_unsigned_int_to_str(lwprintf_int_t* p, unsigned int num) {
  */
 static int
 prv_unsigned_long_int_to_str(lwprintf_int_t* p, unsigned long int num) {
-    unsigned long int d;
+    unsigned long int d, digit;
     uint8_t digits_cnt;
     char c;
 
-    /* Format string */
-    for (digits_cnt = 0; num > 0; num /= p->m.base, ++digits_cnt) {
-        d = num % p->m.base;
-        c = (char)d + (char)(d >= 10 ? ((p->m.flags.uc ? 'A' : 'a') - 10) : '0');
-        p->buff_tmp[digits_cnt] = c;
-    }
-    p->buff_tmp[digits_cnt] = 0;
-    prv_rotate_string(p->buff_tmp, digits_cnt); /* Rotate string as it was written in opposite direction */
-    prv_out_str(p, p->buff_tmp, digits_cnt);    /* Output generated string */
+    /* Get maximum number to start with */
+    for (digits_cnt = 0, d = num; d > 0; ++digits_cnt, d /= p->m.base) {}
+    for (d = 1; (num / d) >= p->m.base; d *= p->m.base) {}
 
+    /* Print pre-number */
+    prv_out_str_before(p, digits_cnt);
+    for (; d > 0; ) {
+        digit = num / d;
+        num = num % d;
+        d = d / p->m.base;
+        c = (char)digit + (char)(digit >= 10 ? ((p->m.flags.uc ? 'A' : 'a') - 10) : '0');
+        p->out_fn(p, c);
+    }
+    prv_out_str_after(p, digits_cnt);
     return 1;
 }
 
@@ -323,20 +361,24 @@ prv_unsigned_long_int_to_str(lwprintf_int_t* p, unsigned long int num) {
  */
 static int
 prv_unsigned_longlong_int_to_str(lwprintf_int_t* p, unsigned long long int num) {
-    unsigned long long int d;
+    unsigned long long int d, digit;
     uint8_t digits_cnt;
     char c;
 
-    /* Format string */
-    for (digits_cnt = 0; num > 0; num /= p->m.base, ++digits_cnt) {
-        d = num % p->m.base;
-        c = (char)d + (char)(d >= 10 ? ((p->m.flags.uc ? 'A' : 'a') - 10) : '0');
-        p->buff_tmp[digits_cnt] = c;
-    }
-    p->buff_tmp[digits_cnt] = 0;
-    prv_rotate_string(p->buff_tmp, digits_cnt); /* Rotate string as it was written in opposite direction */
-    prv_out_str(p, p->buff_tmp, digits_cnt);    /* Output generated string */
+    /* Get maximum number to start with */
+    for (digits_cnt = 0, d = num; d > 0; ++digits_cnt, d /= p->m.base) {}
+    for (d = 1; (num / d) >= p->m.base; d *= p->m.base) {}
 
+    /* Print pre-number */
+    prv_out_str_before(p, digits_cnt);
+    for (; d > 0; ) {
+        digit = num / d;
+        num = num % d;
+        d = d / p->m.base;
+        c = (char)digit + (char)(digit >= 10 ? ((p->m.flags.uc ? 'A' : 'a') - 10) : '0');
+        p->out_fn(p, c);
+    }
+    prv_out_str_after(p, digits_cnt);
     return 1;
 }
 
@@ -422,10 +464,8 @@ prv_double_to_str(lwprintf_int_t* p, double num) {
 static uint8_t
 prv_format(lwprintf_int_t* p, va_list arg) {
     uint8_t detected = 0;
-    char buff_tmp[33];
     const char* fmt = p->fmt;
 
-    p->buff_tmp = buff_tmp;
     while (fmt != NULL && *fmt != '\0') {
         /* Parse format */
         /* %[parameter][flags][width][.precision][length]type */
@@ -445,8 +485,8 @@ prv_format(lwprintf_int_t* p, va_list arg) {
 
         /* Check [flags] */
         /* It can have multiple flags in any order */
+        detected = 1;
         do {
-            detected = 1;
             switch (*fmt) {
                 case '-':   p->m.flags.left_align = 1;  break;
                 case '+':   p->m.flags.plus = 1;        break;
@@ -553,8 +593,6 @@ prv_format(lwprintf_int_t* p, va_list arg) {
                     p->m.flags.uc = *fmt == 'X';/* Select if uppercase text shall be printed */
                 }
 
-                /* TODO: base 2 will overflow when more than buff size bits are used */
-
                 /* Check for different length parameters */
                 if (p->m.flags.longlong == 0 || p->m.base == 2) {
                     unsigned int v;
@@ -633,7 +671,7 @@ prv_format(lwprintf_int_t* p, va_list arg) {
  * \return          `1` on success, `0` otherwise
  */
 uint8_t
-lwprintf_init(lwprintf_t* lw, lwprintf_output_fn out_fn) {
+lwprintf_init_ex(lwprintf_t* lw, lwprintf_output_fn out_fn) {
     LWPRINTF_GET_LW(lw)->out = out_fn;
     return 1;
 }
@@ -644,7 +682,8 @@ lwprintf_init(lwprintf_t* lw, lwprintf_output_fn out_fn) {
  * \param[in]       format: C string that contains the text to be written to output
  * \param[in]       arg: A value identifying a variable arguments list initialized with `va_start`.
  *                      `va_list` is a special type defined in `<cstdarg>`.
- * \return          `1` on success, `0` otherwise
+ * \return          The number of characters that would have been written if `n` had been sufficiently large,
+ *                      not counting the terminating null character.
  */
 int
 lwprintf_vprintf_ex(lwprintf_t* const lw, const char* format, va_list arg) {
@@ -665,7 +704,8 @@ lwprintf_vprintf_ex(lwprintf_t* const lw, const char* format, va_list arg) {
  * \param[in]       format: C string that contains the text to be written to output
  *                  
  *                  ...: Optional arguments for format string
- * \return          `1` on success, `0` otherwise
+ * \return          The number of characters that would have been written if `n` had been sufficiently large,
+ *                      not counting the terminating null character.
  */
 int
 lwprintf_printf_ex(lwprintf_t* const lw, const char* format, ...) {
