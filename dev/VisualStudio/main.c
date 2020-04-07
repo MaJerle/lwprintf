@@ -17,11 +17,6 @@ lwprintf_output(int ch, struct lwprintf* lw) {
 }
 
 /**
- * \brief           LwPRINTF instance
- */
-lwprintf_t lw;
-
-/**
  * \brief           Tests numbers
  */
 size_t tests_passed, tests_failed;
@@ -45,7 +40,7 @@ printf_run(const char* fmt, ...) {
     /* Generate both strings with original and custom printf */
     va_start(va, fmt);
     l1 = vsnprintf(b1, sizeof(b1), fmt, va);
-    l2 = lwprintf_vsnprintf_ex(&lw, b2, sizeof(b2), fmt, va);
+    l2 = lwprintf_vsnprintf(b2, sizeof(b2), fmt, va);
     va_end(va);
 
     printf("Format: \"%s\"\r\n", fmt);
@@ -68,7 +63,7 @@ int
 main(void) {
     double num = 2123213213142.032;
 
-    lwprintf_init(NULL, lwprintf_output);
+    lwprintf_init(lwprintf_output);
 
     printf("%lf\r\n", num);
     printf("%lf\r\n", num - (double)((long)(num)));
@@ -84,7 +79,6 @@ main(void) {
     printf_run("%-06d", -1234567);
     printf_run("%06d", -1234567);
     printf_run("%s", "This is my string");
-    printf_run("%10s", "This is my string");
     printf_run("%10s", "This is my string");
     printf_run("%0*d", 10, -123);
 
@@ -121,6 +115,7 @@ main(void) {
     /* Binary */
     printf_run("%llb abc", 123);
     printf_run("%llb abc", 123);
+    printf_run("%b", 4);
 
     /* Floats */
     printf_run("%f", 12.13);
