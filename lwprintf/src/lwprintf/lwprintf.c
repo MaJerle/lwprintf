@@ -433,6 +433,8 @@ prv_signed_longlong_int_to_str(lwprintf_int_t* p, signed long long int num) {
 
 #endif /* LWPRINTF_CFG_SUPPORT_LONG_LONG */
 
+#if LWPRINTF_CFG_SUPPORT_TYPE_FLOAT
+
 /**
  * \brief           Convert float number to string
  * \param[in,out]   p: LwPRINTF internal instance
@@ -454,6 +456,8 @@ static int
 prv_double_to_str(lwprintf_int_t* p, double num) {
     return 0;
 }
+
+#endif /* LWPRINTF_CFG_SUPPORT_TYPE_FLOAT */
 
 /**
  * \brief           Process format string and parse variable parameters
@@ -644,10 +648,12 @@ prv_format(lwprintf_int_t* p, va_list arg) {
                 break;
             }
 #endif /* LWPRINTF_CFG_SUPPORT_TYPE_POINTER */
+#if LWPRINTF_CFG_SUPPORT_TYPE_FLOAT
             case 'f':
             case 'F':
                 prv_double_to_str(p, (double)va_arg(arg, double));
                 break;
+#endif /* LWPRINTF_CFG_SUPPORT_TYPE_FLOAT */
             case 'e':
             case 'E':
             case 'g':
