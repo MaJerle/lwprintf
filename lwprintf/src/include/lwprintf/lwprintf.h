@@ -49,6 +49,10 @@ extern "C" {
  * \{
  */
 
+/**
+ * \brief           Unused variable macro
+ * \param[in]       x: Unused variable
+ */
 #define LWPRINTF_UNUSED(x)          ((void)(x))
 
 /**
