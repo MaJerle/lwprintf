@@ -707,7 +707,7 @@ lwprintf_vprintf_ex(lwprintf_t* const lw, const char* format, va_list arg) {
 /**
  * \brief           Print formatted data to the output
  * \param[in,out]   lw: LwPRINTF instance. Set to `NULL` to use default instance
- * \param[in]       format: C string that contains the text to be written to output            
+ * \param[in]       format: C string that contains the text to be written to output
  * \param[in]       ...: Optional arguments for format string
  * \return          The number of characters that would have been written if `n` had been sufficiently large,
  *                      not counting the terminating null character.
