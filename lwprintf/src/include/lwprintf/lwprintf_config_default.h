@@ -73,7 +73,7 @@ extern "C" {
 #endif
 
 /**
- * \brief           Enables `1` or disables `0` support `%p` pointer print type
+ * \brief           Enables `1` or disables `0` support `%%p` pointer print type
  *
  * When enabled, architecture must support `uintptr_t` type, normally available with C11 standard
  */
@@ -82,7 +82,7 @@ extern "C" {
 #endif
 
  /**
-  * \brief           Enables `1` or disables `0` support `%f` float type
+  * \brief           Enables `1` or disables `0` support `%%f` float type
   *
   */
 #ifndef LWPRINTF_CFG_SUPPORT_TYPE_FLOAT
