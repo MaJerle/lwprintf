@@ -576,8 +576,8 @@ prv_format(lwprintf_int_t* p, va_list arg) {
 #if LWPRINTF_CFG_SUPPORT_LONG_LONG
                 } else if (p->m.flags.longlong == 2) {
                     prv_signed_longlong_int_to_str(p, (signed long long int)va_arg(arg, signed long long int));
-                }
 #endif /* LWPRINTF_CFG_SUPPORT_LONG_LONG */
+                }
                 break;
             }
             case 'b':
@@ -608,12 +608,11 @@ prv_format(lwprintf_int_t* p, va_list arg) {
                     prv_unsigned_int_to_str(p, v);
                 } else if (p->m.flags.longlong == 1) {
                     prv_unsigned_long_int_to_str(p, (unsigned long int)va_arg(arg, unsigned long int));
-                }
 #if LWPRINTF_CFG_SUPPORT_LONG_LONG
-                else if (p->m.flags.longlong == 2) {
+                } else if (p->m.flags.longlong == 2) {
                     prv_unsigned_longlong_int_to_str(p, (unsigned long long int)va_arg(arg, unsigned long long int));
-                }
 #endif /* LWPRINTF_CFG_SUPPORT_LONG_LONG */
+                }
                 break;
             case 's': {
                 const char* b = va_arg(arg, const char *);
