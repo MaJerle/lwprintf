@@ -53,22 +53,22 @@ At this point it is assumed that you have successfully download library, either 
 * Copy ``lwprintf`` folder to your project
 * Add ``lwprintf/src/include`` folder to `include path` of your toolchain
 * Add source files from ``lwprintf/src/`` folder to toolchain build
-* Copy ``lwprintf/src/include/lwprintf/lwprintf_config_template.h`` to project folder and rename it to ``lwprintf_config.h``
+* Copy ``lwprintf/src/include/lwprintf/lwprintf_opts_template.h`` to project folder and rename it to ``lwprintf_opts.h``
 * Build the project
 
 Configuration file
 ^^^^^^^^^^^^^^^^^^
 
 Library comes with template config file, which can be modified according to needs.
-This file shall be named ``lwprintf_config.h`` and its default template looks like the one below:
+This file shall be named ``lwprintf_opts.h`` and its default template looks like the one below:
 
 .. tip::
-    Check :ref:`api_lwprintf_config` section for possible configuration settings
+    Check :ref:`api_lwprintf_opt` section for possible configuration settings
 
-.. literalinclude:: ../../lwprintf/src/include/lwprintf/lwprintf_config_template.h
+.. literalinclude:: ../../lwprintf/src/include/lwprintf/lwprintf_opts_template.h
     :language: c
     :linenos:
-    :caption: Config file template
+    :caption: Template options file
 
 Minimal example code
 ^^^^^^^^^^^^^^^^^^^^

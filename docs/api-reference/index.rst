@@ -9,5 +9,5 @@ List of all the modules:
 	:maxdepth: 2
 
 	lwprintf
-	lwprintf_config
+	lwprintf_opts
 	lwprintf_sys

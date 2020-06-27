@@ -1,6 +1,6 @@
 /**
- * \file            lwprintf_config_default.h
- * \brief           LwPRINTF default config
+ * \file            lwprintf_opt.h
+ * \brief           LwPRINTF options
  */
 
 /*
@@ -31,16 +31,19 @@
  * Author:          Tilen MAJERLE <tilen@majerle.eu>
  * Version:         $_version_$
  */
-#ifndef LWPRINTF_HDR_CONFIG_DEFAULT_H
-#define LWPRINTF_HDR_CONFIG_DEFAULT_H
+#ifndef LWPRINTF_HDR_OPT_H
+#define LWPRINTF_HDR_OPT_H
+
+/* Include application options */
+#include "lwprintf_opts.h"
 
 #ifdef __cplusplus
 extern "C" {
 #endif /* __cplusplus */
 
 /**
- * \defgroup        LWPRINTF_CONFIG Configuration
- * \brief           Configuration for LwPRINTF library
+ * \defgroup        LWPRINTF_OPT Configuration
+ * \brief           LwPRINTf options
  * \{
  */
 
@@ -105,4 +108,4 @@ extern "C" {
 }
 #endif /* __cplusplus */
 
-#endif /* LWPRINTF_HDR_CONFIG_DEFAULT_H */
+#endif /* LWPRINTF_HDR_OPT_H */

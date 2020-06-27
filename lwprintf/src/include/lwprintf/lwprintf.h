@@ -37,7 +37,7 @@
 #include <string.h>
 #include <stdint.h>
 #include <limits.h>
-#include "lwprintf_config.h"
+#include "lwprintf/lwprintf_opt.h"
 
 #ifdef __cplusplus
 extern "C" {
