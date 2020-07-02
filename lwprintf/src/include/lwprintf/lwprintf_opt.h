@@ -84,10 +84,10 @@ extern "C" {
 #define LWPRINTF_CFG_SUPPORT_TYPE_POINTER           1
 #endif
 
- /**
-  * \brief           Enables `1` or disables `0` support `%%f` float type
-  *
-  */
+/**
+ * \brief           Enables `1` or disables `0` support `%%f` float type
+ *
+ */
 #ifndef LWPRINTF_CFG_SUPPORT_TYPE_FLOAT
 #define LWPRINTF_CFG_SUPPORT_TYPE_FLOAT             1
 #endif
