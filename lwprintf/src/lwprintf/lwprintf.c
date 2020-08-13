@@ -720,7 +720,7 @@ lwprintf_vprintf_ex(lwprintf_t* const lw, const char* format, va_list arg) {
     lwprintf_int_t f = {
         .lw = LWPRINTF_GET_LW(lw),
         .out_fn = prv_out_fn_print,
-        .fmt = arg,
+        .fmt = format,
         .buff = NULL,
         .buff_size = 0
     };
