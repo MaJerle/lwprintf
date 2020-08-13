@@ -111,7 +111,8 @@ prv_default_output_func(int ch, struct lwprintf* lw) {
 /**
  * \brief           LwPRINTF default structure used by application
  */
-static lwprintf_t lwprintf_default = {
+static lwprintf_t
+lwprintf_default = {
     .out = prv_default_output_func
 };
 
@@ -264,7 +265,7 @@ prv_out_str_after(lwprintf_int_t* p, size_t buff_size) {
 }
 
 /**
- * \brief           Output generate string from numbers/digits
+ * \brief           Output generated string from numbers/digits
  * Paddings before and after are applied at this stage
  *
  * \param[in,out]   p: LwPRINTF internal instance
@@ -582,7 +583,7 @@ prv_format(lwprintf_int_t* p, va_list arg) {
         /* Check type */
         switch (*fmt) {
             case 'c':
-                p->out_fn(p, va_arg(arg, char));
+                p->out_fn(p, (char)va_arg(arg, char));
                 break;
             case 'd':
             case 'i': {
@@ -720,7 +721,7 @@ lwprintf_vprintf_ex(lwprintf_t* const lw, const char* format, va_list arg) {
     lwprintf_int_t f = {
         .lw = LWPRINTF_GET_LW(lw),
         .out_fn = prv_out_fn_print,
-        .fmt = arg,
+        .fmt = format,
         .buff = NULL,
         .buff_size = 0
     };
