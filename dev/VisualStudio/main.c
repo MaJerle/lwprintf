@@ -126,7 +126,7 @@ main(void) {
     printf("----\r\n\r\n");
     printf("Number of tests passed: %d\r\n", (int)tests_passed);
     printf("Number of tests failed: %d\r\n", (int)tests_failed);
-    printf("Coverage: %f %%\r\n", (float)((tests_passed) / (float)(tests_passed + tests_failed) * 100));
+    printf("Coverage: %f %%\r\n", (float)((tests_passed) / ((float)(tests_passed + tests_failed)) * 100));
     printf("----\r\n\r\n");
 
     return 0;
