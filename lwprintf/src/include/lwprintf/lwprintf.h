@@ -88,7 +88,7 @@ int         lwprintf_snprintf_ex(lwprintf_t* const lw, char* s, size_t n, const 
 #define     lwprintf_printf(format, ...)                lwprintf_printf_ex(NULL, (format), # __VA_ARGS__)
 #define     lwprintf_vsnprintf(s, n, format, arg)       lwprintf_vsnprintf_ex(NULL, (s), (n), (format), (arg))
 #define     lwprintf_snprintf(s, n, format, ...)        lwprintf_snprintf_ex(NULL, (s), (n), (format), # __VA_ARGS__)
-#define     lwprintf_sprintf(s, format, ...)            lwprintf_sprintf(NULL, (s), (format), # __VA_ARGS__)
+#define     lwprintf_sprintf(s, format, ...)            lwprintf_sprintf_ex(NULL, (s), (format), # __VA_ARGS__)
 
 /**
  * \}

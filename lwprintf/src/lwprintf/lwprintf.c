@@ -42,6 +42,38 @@
 #define CHARTONUM(x)                    ((x) - '0')
 
 /**
+ * \brief           Outputs any integer type to stream
+ * Implemented as big macro since `d`, `digit` and `num` are of different types vs int size
+ */
+#define OUTPUT_ANY_INT_TYPE             {                               \
+    uint8_t digits_cnt;                                                 \
+    char c;                                                             \
+     /* Start with digits length */                                     \
+    for (digits_cnt = 0, d = num; d > 0; ++digits_cnt, d /= p->m.base) {}   \
+    for (d = 1; (num / d) >= p->m.base; d *= p->m.base) {}              \
+                                                                        \
+    prv_out_str_before(p, digits_cnt);                                  \
+    for (; d > 0; ) {                                                   \
+        digit = num / d;                                                \
+        num = num % d;                                                  \
+        d = d / p->m.base;                                              \
+        c = (char)digit + (char)(digit >= 10 ? ((p->m.flags.uc ? 'A' : 'a') - 10) : '0');   \
+        p->out_fn(p, c);                                                \
+    }                                                                   \
+    prv_out_str_after(p, digits_cnt);                                   \
+}
+
+/**
+ * \brief           Check for negative input number before outputting signed integers
+ */
+#define SIGNED_INT_CHECK_NEGATIVE {         \
+    if (num < 0) {                          \
+        p->m.flags.is_negative = 1;         \
+        num = -num;                         \
+    }                                       \
+}
+
+/**
  * \brief           Forward declaration
  */
 struct lwprintf_int;
@@ -279,17 +311,12 @@ prv_out_str(lwprintf_int_t* p, const char* buff, size_t buff_size) {
     if (buff_size == 0) {
         buff_size = strlen(buff);
     }
-
-    /* Pre-value */
-    prv_out_str_before(p, buff_size);
-
-    /* Actual value */
+                                                
+    prv_out_str_before(p, buff_size);           /* Implement pre-format */
     for (uint8_t i = 0; i < buff_size; ++i) {
         p->out_fn(p, buff[i]);
     }
-
-    /* Post-value */
-    prv_out_str_after(p, buff_size);
+    prv_out_str_after(p, buff_size);            /* Implement post-format */
 
     return 1;
 }
@@ -303,23 +330,7 @@ prv_out_str(lwprintf_int_t* p, const char* buff, size_t buff_size) {
 static int
 prv_unsigned_int_to_str(lwprintf_int_t* p, unsigned int num) {
     unsigned int d, digit;
-    size_t digits_cnt;
-    char c;
-
-    /* Get maximum number to start with */
-    for (digits_cnt = 0, d = num; d > 0; ++digits_cnt, d /= p->m.base) {}
-    for (d = 1; (num / d) >= p->m.base; d *= p->m.base) {}
-
-    /* Print pre-number */
-    prv_out_str_before(p, digits_cnt);
-    for (; d > 0; ) {
-        digit = num / d;
-        num = num % d;
-        d = d / p->m.base;
-        c = (char)digit + (char)(digit >= 10 ? ((p->m.flags.uc ? 'A' : 'a') - 10) : '0');
-        p->out_fn(p, c);
-    }
-    prv_out_str_after(p, digits_cnt);
+    OUTPUT_ANY_INT_TYPE;
     return 1;
 }
 
@@ -332,23 +343,7 @@ prv_unsigned_int_to_str(lwprintf_int_t* p, unsigned int num) {
 static int
 prv_unsigned_long_int_to_str(lwprintf_int_t* p, unsigned long int num) {
     unsigned long int d, digit;
-    uint8_t digits_cnt;
-    char c;
-
-    /* Get maximum number to start with */
-    for (digits_cnt = 0, d = num; d > 0; ++digits_cnt, d /= p->m.base) {}
-    for (d = 1; (num / d) >= p->m.base; d *= p->m.base) {}
-
-    /* Print pre-number */
-    prv_out_str_before(p, digits_cnt);
-    for (; d > 0; ) {
-        digit = num / d;
-        num = num % d;
-        d = d / p->m.base;
-        c = (char)digit + (char)(digit >= 10 ? ((p->m.flags.uc ? 'A' : 'a') - 10) : '0');
-        p->out_fn(p, c);
-    }
-    prv_out_str_after(p, digits_cnt);
+    OUTPUT_ANY_INT_TYPE;
     return 1;
 }
 
@@ -363,23 +358,7 @@ prv_unsigned_long_int_to_str(lwprintf_int_t* p, unsigned long int num) {
 static int
 prv_unsigned_longlong_int_to_str(lwprintf_int_t* p, unsigned long long int num) {
     unsigned long long int d, digit;
-    uint8_t digits_cnt;
-    char c;
-
-    /* Get maximum number to start with */
-    for (digits_cnt = 0, d = num; d > 0; ++digits_cnt, d /= p->m.base) {}
-    for (d = 1; (num / d) >= p->m.base; d *= p->m.base) {}
-
-    /* Print pre-number */
-    prv_out_str_before(p, digits_cnt);
-    for (; d > 0; ) {
-        digit = num / d;
-        num = num % d;
-        d = d / p->m.base;
-        c = (char)digit + (char)(digit >= 10 ? ((p->m.flags.uc ? 'A' : 'a') - 10) : '0');
-        p->out_fn(p, c);
-    }
-    prv_out_str_after(p, digits_cnt);
+    OUTPUT_ANY_INT_TYPE;
     return 1;
 }
 
@@ -393,42 +372,33 @@ prv_unsigned_longlong_int_to_str(lwprintf_int_t* p, unsigned long long int num) 
  */
 static int
 prv_signed_int_to_str(lwprintf_int_t* p, signed int num) {
-    if (num < 0) {
-        p->m.flags.is_negative = 1;
-        num = -num;
-    }
+    SIGNED_INT_CHECK_NEGATIVE;
     return prv_unsigned_int_to_str(p, num);
 }
 
 /**
- * \brief           Convert signed long to string
+ * \brief           Convert signed long int to string
  * \param[in,out]   p: LwPRINTF instance
  * \param[in]       num: Number to convert to string
  * \return          `1` on success, `0` otherwise
  */
 static int
 prv_signed_long_int_to_str(lwprintf_int_t* p, signed long int num) {
-    if (num < 0) {
-        p->m.flags.is_negative = 1;
-        num = -num;
-    }
+    SIGNED_INT_CHECK_NEGATIVE;
     return prv_unsigned_long_int_to_str(p, num);
 }
 
 #if LWPRINTF_CFG_SUPPORT_LONG_LONG
 
 /**
- * \brief           Convert signed long-long to string
+ * \brief           Convert signed long-long int to string
  * \param[in,out]   p: LwPRINTF internal instance
  * \param[in]       num: Number to convert to string
  * \return          `1` on success, `0` otherwise
  */
 static int
 prv_signed_longlong_int_to_str(lwprintf_int_t* p, signed long long int num) {
-    if (num < 0) {
-        p->m.flags.is_negative = 1;
-        num = -num;
-    }
+    SIGNED_INT_CHECK_NEGATIVE;
     return prv_unsigned_longlong_int_to_str(p, num);
 }
 
