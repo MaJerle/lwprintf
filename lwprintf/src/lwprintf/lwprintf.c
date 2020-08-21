@@ -48,19 +48,28 @@
 #define OUTPUT_ANY_INT_TYPE             {                               \
     uint8_t digits_cnt;                                                 \
     char c;                                                             \
-     /* Start with digits length */                                     \
-    for (digits_cnt = 0, d = num; d > 0; ++digits_cnt, d /= p->m.base) {}   \
-    for (d = 1; (num / d) >= p->m.base; d *= p->m.base) {}              \
                                                                         \
-    prv_out_str_before(p, digits_cnt);                                  \
-    for (; d > 0; ) {                                                   \
-        digit = num / d;                                                \
-        num = num % d;                                                  \
-        d = d / p->m.base;                                              \
-        c = (char)digit + (char)(digit >= 10 ? ((p->m.flags.uc ? 'A' : 'a') - 10) : '0');   \
-        p->out_fn(p, c);                                                \
+    /* Check if number is zero */                                       \
+    p->m.flags.is_num_zero = num == 0;                                  \
+    if (num == 0) {                                                     \
+        prv_out_str_before(p, 1);                                       \
+        p->out_fn(p, '0');                                              \
+        prv_out_str_after(p, 1);                                        \
+    } else {                                                            \
+        /* Start with digits length */                                  \
+        for (digits_cnt = 0, d = num; d > 0; ++digits_cnt, d /= p->m.base) {}   \
+        for (d = 1; (num / d) >= p->m.base; d *= p->m.base) {}          \
+                                                                        \
+        prv_out_str_before(p, digits_cnt);                              \
+        for (; d > 0; ) {                                               \
+            digit = num / d;                                            \
+            num = num % d;                                              \
+            d = d / p->m.base;                                          \
+            c = (char)digit + (char)(digit >= 10 ? ((p->m.flags.uc ? 'A' : 'a') - 10) : '0');   \
+            p->out_fn(p, c);                                            \
+        }                                                               \
+        prv_out_str_after(p, digits_cnt);                               \
     }                                                                   \
-    prv_out_str_after(p, digits_cnt);                                   \
 }
 
 /**
@@ -113,6 +122,7 @@ typedef struct lwprintf_int {
 
             uint8_t uc : 1;                     /*!< Uppercase flag */
             uint8_t is_negative : 1;            /*!< Status if number is negative */
+            uint8_t is_num_zero : 1;            /*!< Status if input number is zero */
         } flags;                                /*!< List of flags */
         int precision;                          /*!< Selected precision */
         int width;                              /*!< Text width indicator */
@@ -234,7 +244,7 @@ prv_out_str_before(lwprintf_int_t* p, size_t buff_size) {
     }
 
     /* Check for alternate mode */
-    if (p->m.flags.alt) {
+    if (p->m.flags.alt && !p->m.flags.is_num_zero) {
         if (p->m.base == 8) {
             if (p->m.width > 0) {
                 --p->m.width;
@@ -258,7 +268,7 @@ prv_out_str_before(lwprintf_int_t* p, size_t buff_size) {
     }
 
     /* Check for flags output */
-    if (p->m.flags.alt) {
+    if (p->m.flags.alt && !p->m.flags.is_num_zero) {
         if (p->m.base == 8) {
             p->out_fn(p, '0');
         } else if (p->m.base == 16) {
@@ -562,6 +572,11 @@ prv_format(lwprintf_int_t* p, va_list arg) {
         switch (*fmt) {
             case 'a':
             case 'A':
+                /* Double in hexadecimal notation */
+                (void)va_arg(arg, double);      /* Read argument to ignore it and move to next one */
+                p->out_fn(p, 'N');
+                p->out_fn(p, 'a');
+                p->out_fn(p, 'N');
                 break;
             case 'c':
                 p->out_fn(p, (char)va_arg(arg, char));
