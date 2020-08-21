@@ -248,9 +248,13 @@ prv_out_str_before(lwprintf_int_t* p, size_t buff_size) {
         }
     }
 
-    /* Add negative sign before when zeros are used to fill width */
-    if (p->m.flags.is_negative && p->m.flags.zero) {
-        p->out_fn(p, '-');
+    /* Add negative sign (or positive in case of + flag) before when zeros are used to fill width */
+    if (p->m.flags.zero) {
+        if (p->m.flags.is_negative) {
+            p->out_fn(p, '-');
+        } else if (p->m.flags.plus) {
+            p->out_fn(p, '+');
+        }
     }
 
     /* Check for flags output */
@@ -271,8 +275,12 @@ prv_out_str_before(lwprintf_int_t* p, size_t buff_size) {
     }
 
     /* Add negative sign here when spaces are used for width */
-    if (p->m.flags.is_negative && !p->m.flags.zero) {
-        p->out_fn(p, '-');
+    if (!p->m.flags.zero) {
+        if (p->m.flags.is_negative) {
+            p->out_fn(p, '-');
+        } else if (p->m.flags.plus) {
+            p->out_fn(p, '+');
+        }
     }
 
     return 1;
@@ -633,16 +641,16 @@ prv_format(lwprintf_int_t* p, va_list arg) {
                 p->m.flags.zero = 1;            /* Zero padding */
                 p->m.width = sizeof(void*) * 2; /* Number is in hex format and byte is represented with 2 letters */
 
+                if (0) {
 #if LWPRINTF_CFG_SUPPORT_LONG_LONG
-                if (sizeof(void*) == sizeof(unsigned long long int)) {
+                } else if (sizeof(void*) == sizeof(unsigned long long int)) {
                     prv_unsigned_longlong_int_to_str(p, (unsigned long long int)((uintptr_t)va_arg(arg, void*)));
-                } else
 #endif /* LWPRINTF_CFG_SUPPORT_LONG_LONG */
-                    if (sizeof(void*) == sizeof(unsigned long int)) {
-                        prv_unsigned_long_int_to_str(p, (unsigned long int)((uintptr_t)va_arg(arg, void*)));
-                    } else {
-                        prv_unsigned_int_to_str(p, (unsigned int)((uintptr_t)va_arg(arg, void*)));
-                    }
+                } else if (sizeof(void*) == sizeof(unsigned long int)) {
+                    prv_unsigned_long_int_to_str(p, (unsigned long int)((uintptr_t)va_arg(arg, void*)));
+                } else {
+                    prv_unsigned_int_to_str(p, (unsigned int)((uintptr_t)va_arg(arg, void*)));
+                }
                 break;
             }
 #endif /* LWPRINTF_CFG_SUPPORT_TYPE_POINTER */
@@ -660,6 +668,33 @@ prv_format(lwprintf_int_t* p, va_list arg) {
             case '%':
                 p->out_fn(p, '%');
                 break;
+            /*
+             * This is to print unsigned-char formatted pointer in hex string
+             *
+             * char arr[] = {0, 1, 2, 3, 255};
+             * "%5K" would produce 00010203FF
+             */
+            case 'k':
+            case 'K': {
+                unsigned char* ptr = (void *)va_arg(arg, unsigned char *);  /* Get input parameter as unsigned char pointer */
+                int len = p->m.width;
+
+                p->m.flags.uc = *fmt == 'K';    /* Set if uppercase */
+                p->m.flags.precision = 1;       /* We use precision flag */
+                p->m.precision = 2;             /* 2 bytes output, 0 prepend if necessary */
+                p->m.flags.zero = 1;            /* Prepend with zeros */
+                p->m.width = 2;                 /* Each number is 2 chars min/max */
+                p->m.base = 16;                 /* Hex format */
+
+                /* Output byte by byte w/o hex prefix */
+                for (int i = 0; i < len; ++i) {
+                    prv_unsigned_int_to_str(p, (unsigned int)*ptr++);
+                    if (p->m.flags.space && i < (len - 1)) {
+                        p->out_fn(p, ' ');      /* Generate space between numbers */
+                    }
+                }
+                break;   
+            }
             default:
                 p->out_fn(p, *fmt);
         }

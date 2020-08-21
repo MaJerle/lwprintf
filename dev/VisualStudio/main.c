@@ -68,12 +68,14 @@ main(void) {
     printf("%lf\r\n", num);
     printf("%lf\r\n", num - (double)((long)(num)));
 
-    printf_run("% 3u", 28);
-    printf_run("% 3u", 123456);
-    printf_run("%03u", 28);
-    printf_run("%03u", 123456);
-    printf_run("%-010uabc", 123456);
-    printf_run("%010uabc", 123456);
+    printf_run("% 3u", (unsigned)28);
+    printf_run("% 3u", (unsigned)123456);
+    printf_run("%03u", (unsigned)28);
+    printf_run("%+03u", (unsigned)28);
+    printf_run("%+3u", (unsigned)28);
+    printf_run("%03u", (unsigned)123456);
+    printf_run("%-010uabc", (unsigned)123456);
+    printf_run("%010uabc", (unsigned)123456);
     printf_run("%-10d", -123);
     printf_run("%10d", -123);
     printf_run("%-06d", -1234567);
@@ -121,6 +123,12 @@ main(void) {
     printf_run("%f", 12.13);
     printf_run("%.3f", 12.1337);
     printf_run("%.25f", 12.1337);
+
+    /* Array test */
+    uint8_t my_arr[] = { 0x00, 0x01, 0x02, 0x03, 0x04 };
+    printf_run("%5K", my_arr);              /* Print fixed length */
+    printf_run("%*K", 3, my_arr);           /* Print only first 3 elements of array */
+    printf_run("% *K", 3, my_arr);          /* Print only first 3 elements of array with spaces between bytes */
 
     /* Print final output */
     printf("----\r\n\r\n");
