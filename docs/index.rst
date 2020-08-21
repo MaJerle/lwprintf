@@ -13,7 +13,10 @@ LwPRINTF is lightweight stdio manager optimized for embedded systems.
 Features
 ^^^^^^^^
 
-* Written in ANSI C99, compatible with ``size_t`` for size data types
+* Written in ANSI C99, compatible with ``size_t`` and ``uintmax_t`` types for some specifiers
+* Implements output functions
+* Suitable for embedded systems
+* Added additional specifiers
 * User friendly MIT license
 
 Requirements
