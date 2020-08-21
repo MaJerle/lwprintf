@@ -32,6 +32,7 @@
  * Version:         $_version_$
  */
 #include <limits.h>
+#include <stdint.h>
 #include "lwprintf/lwprintf.h"
 
 #if LWPRINTF_CFG_OS
@@ -119,6 +120,8 @@ typedef struct lwprintf_int {
             /* Length modified flags */
             uint8_t longlong : 2;               /*!< Flag indicatin long-long number, used with 'l' (1) or 'll' (2) mode */
             uint8_t char_short : 2;             /*!< Used for 'h' (1 = short) or 'hh' (2 = char) length modifier */
+            uint8_t sz_t : 1;                   /*!< Status for size_t length integer type */
+            uint8_t umax_t : 1;                 /*!< Status for uintmax_z length integer type */
 
             uint8_t uc : 1;                     /*!< Uppercase flag */
             uint8_t is_negative : 1;            /*!< Status if number is negative */
@@ -315,6 +318,21 @@ prv_out_str_after(lwprintf_int_t* p, size_t buff_size) {
 }
 
 /**
+ * \brief           Output raw string without any formatting
+ * \param[in,out]   p: LwPRINTF internal instance
+ * \param[in]       buff: Buffer string
+ * \param[in]       buff_size: Length of buffer to output
+ * \return          `1` on success, `0` otherwise
+ */
+static int
+prv_out_str_raw(lwprintf_int_t* p, const char* buff, size_t buff_size) {
+    for (size_t i = 0; i < buff_size; ++i) {
+        p->out_fn(p, buff[i]);
+    }
+    return 1;
+}
+
+/**
  * \brief           Output generated string from numbers/digits
  * Paddings before and after are applied at this stage
  *
@@ -331,16 +349,14 @@ prv_out_str(lwprintf_int_t* p, const char* buff, size_t buff_size) {
     }
                                                 
     prv_out_str_before(p, buff_size);           /* Implement pre-format */
-    for (uint8_t i = 0; i < buff_size; ++i) {
-        p->out_fn(p, buff[i]);
-    }
+    prv_out_str_raw(p, buff, buff_size);        /* Print actual string */
     prv_out_str_after(p, buff_size);            /* Implement post-format */
 
     return 1;
 }
 
 /**
- * \brief           Convert unsigned int to string
+ * \brief           Convert `unsigned int` to string
  * \param[in,out]   p: LwPRINTF internal instance
  * \param[in]       num: Number to convert to string
  * \return          `1` on success, `0` otherwise
@@ -353,7 +369,7 @@ prv_unsigned_int_to_str(lwprintf_int_t* p, unsigned int num) {
 }
 
 /**
- * \brief           Convert unsigned long to string
+ * \brief           Convert `unsigned long` to string
  * \param[in,out]   p: LwPRINTF internal instance
  * \param[in]       num: Number to convert to string
  * \return          `1` on success, `0` otherwise
@@ -368,7 +384,7 @@ prv_unsigned_long_int_to_str(lwprintf_int_t* p, unsigned long int num) {
 #if LWPRINTF_CFG_SUPPORT_LONG_LONG
 
 /**
- * \brief           Convert unsigned long-long to string
+ * \brief           Convert `unsigned long-long` to string
  * \param[in,out]   p: LwPRINTF internal instance
  * \param[in]       num: Number to convert to string
  * \return          `1` on success, `0` otherwise
@@ -381,6 +397,32 @@ prv_unsigned_longlong_int_to_str(lwprintf_int_t* p, unsigned long long int num) 
 }
 
 #endif /* LWPRINTF_CFG_SUPPORT_LONG_LONG */
+
+/**
+ * \brief           Convert `size_t` number to string
+ * \param[in,out]   p: LwPRINTF internal instance
+ * \param[in]       num: Number to convert to string
+ * \return          `1` on success, `0` otherwise
+ */
+static int
+prv_sizet_to_str(lwprintf_int_t* p, size_t num) {
+    size_t d, digit;
+    OUTPUT_ANY_INT_TYPE;
+    return 1;
+}
+
+/**
+ * \brief           Convert `uintmax_t` number to string
+ * \param[in,out]   p: LwPRINTF internal instance
+ * \param[in]       num: Number to convert to string
+ * \return          `1` on success, `0` otherwise
+ */
+static int
+prv_umaxt_to_str(lwprintf_int_t* p, uintmax_t num) {
+    uintmax_t d, digit;
+    OUTPUT_ANY_INT_TYPE;
+    return 1;
+}
 
 /**
  * \brief           Convert signed int to string
@@ -559,8 +601,12 @@ prv_format(lwprintf_int_t* p, va_list arg) {
             case 'L':
                 break;
             case 'z':
+                p->m.flags.sz_t = 1;            /* Size T flag */
+                ++fmt;
                 break;
             case 'j':
+                p->m.flags.umax_t = 1;          /* uintmax_t flag */
+                ++fmt;
                 break;
             case 't':
                 break;
@@ -574,9 +620,7 @@ prv_format(lwprintf_int_t* p, va_list arg) {
             case 'A':
                 /* Double in hexadecimal notation */
                 (void)va_arg(arg, double);      /* Read argument to ignore it and move to next one */
-                p->out_fn(p, 'N');
-                p->out_fn(p, 'a');
-                p->out_fn(p, 'N');
+                prv_out_str_raw(p, "NaN", 3);   /* Print string */
                 break;
             case 'c':
                 p->out_fn(p, (char)va_arg(arg, char));
@@ -614,7 +658,13 @@ prv_format(lwprintf_int_t* p, va_list arg) {
                 }
 
                 /* Check for different length parameters */
-                if (p->m.flags.longlong == 0 || p->m.base == 2) {
+                if (0) {
+
+                } else if (p->m.flags.sz_t) {
+                    prv_sizet_to_str(p, (size_t)va_arg(arg, size_t));
+                } else if (p->m.flags.sz_t) {
+                    prv_umaxt_to_str(p, (uintmax_t)va_arg(arg, uintmax_t));
+                } else if (p->m.flags.longlong == 0 || p->m.base == 2) {
                     unsigned int v;
                     switch (p->m.flags.char_short) {
                         case 2:

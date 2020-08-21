@@ -83,6 +83,8 @@ main(void) {
     printf_run("%s", "This is my string");
     printf_run("%10s", "This is my string");
     printf_run("%0*d", 10, -123);
+    printf_run("%zu", (size_t)10);
+    printf_run("%ju", (uintmax_t)10);
 
     /* string */
     printf_run("%*.*s", 8, 12, "This is my string");
@@ -102,12 +104,18 @@ main(void) {
     printf_run("%.4.2s", "123456");
     printf_run("%.*s", 3, "123456");
     printf_run("%.3s", "");
-    printf_run("%kunknown");
+    printf_run("%yunknown");
 
     /* Alternate form */
     printf_run("%#2X", 123);
     printf_run("%#2x", 123);
     printf_run("%#2o", 123);
+    printf_run("%#2X", 1);
+    printf_run("%#2x", 1);
+    printf_run("%#2o", 1);
+    printf_run("%#2X", 0);
+    printf_run("%#2x", 0);
+    printf_run("%#2o", 0);
 
     /* Pointers */
     printf_run("%p", &tests_passed);
