@@ -552,6 +552,9 @@ prv_format(lwprintf_int_t* p, va_list arg) {
 
         /* Check type */
         switch (*fmt) {
+            case 'a':
+            case 'A':
+                break;
             case 'c':
                 p->out_fn(p, (char)va_arg(arg, char));
                 break;

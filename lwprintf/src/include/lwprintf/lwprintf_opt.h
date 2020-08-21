@@ -35,7 +35,9 @@
 #define LWPRINTF_HDR_OPT_H
 
 /* Include application options */
+#ifndef LWPRINTF_IGNORE_USER_OPTS
 #include "lwprintf_opts.h"
+#endif /* LWPRINTF_IGNORE_USER_OPTS */
 
 #ifdef __cplusplus
 extern "C" {
@@ -43,7 +45,7 @@ extern "C" {
 
 /**
  * \defgroup        LWPRINTF_OPT Configuration
- * \brief           LwPRINTf options
+ * \brief           LwPRINTF options
  * \{
  */
 

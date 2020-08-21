@@ -6,5 +6,4 @@ User manual
 .. toctree::
     :maxdepth: 2
 
-    how-it-works
-    instances
+    format-specifier
