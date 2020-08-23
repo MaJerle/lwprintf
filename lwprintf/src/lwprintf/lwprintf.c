@@ -587,15 +587,13 @@ prv_format(lwprintf_int_t* p, va_list arg) {
         switch (*fmt) {
             case 'h':
                 p->m.flags.char_short = 1;      /* Single h detected */
-                ++fmt;
-                if (*fmt == 'h') {              /* Does it follow by another h? */
+                if (*++fmt == 'h') {            /* Does it follow by another h? */
                     p->m.flags.char_short = 2;  /* Second h detected */
                     ++fmt;
                 }
             case 'l':
                 p->m.flags.longlong = 1;        /* Single l detected */
-                ++fmt;
-                if (*fmt == 'l') {              /* Does it follow by another l? */
+                if (*++fmt == 'l') {            /* Does it follow by another l? */
                     p->m.flags.longlong = 2;    /* Second l detected */
                     ++fmt;
                 }
