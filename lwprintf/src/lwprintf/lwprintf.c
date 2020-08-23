@@ -709,12 +709,12 @@ prv_format(lwprintf_int_t* p, va_list arg) {
                 if (0) {
 #if LWPRINTF_CFG_SUPPORT_LONG_LONG
                 } else if (sizeof(void*) == sizeof(unsigned long long int)) {
-                    prv_unsigned_longlong_int_to_str(p, (unsigned long long int)((uintptr_t)va_arg(arg, void*)));
+                    prv_unsigned_longlong_int_to_str(p, (unsigned long long int)va_arg(arg, void*));
 #endif /* LWPRINTF_CFG_SUPPORT_LONG_LONG */
                 } else if (sizeof(void*) == sizeof(unsigned long int)) {
-                    prv_unsigned_long_int_to_str(p, (unsigned long int)((uintptr_t)va_arg(arg, void*)));
+                    prv_unsigned_long_int_to_str(p, (unsigned long int)va_arg(arg, void*));
                 } else {
-                    prv_unsigned_int_to_str(p, (unsigned int)((uintptr_t)va_arg(arg, void*)));
+                    prv_unsigned_int_to_str(p, (unsigned int)va_arg(arg, void*));
                 }
                 break;
             }
