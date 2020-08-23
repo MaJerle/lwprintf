@@ -11,7 +11,7 @@
  * \return          `ch` value on success, `0` otherwise
  */
 int
-lwprintf_output(int ch, struct lwprintf* lw) {
+lwprintf_output(int ch, lwprintf_t* lw) {
     printf("%c", (char)ch);
     return ch;
 }
