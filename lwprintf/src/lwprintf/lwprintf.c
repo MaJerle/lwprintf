@@ -730,6 +730,12 @@ prv_format(lwprintf_int_t* p, va_list arg) {
             case 'g':
             case 'G':
                 break;
+            case 'n': {
+                int* ptr = (void*)va_arg(arg, int*);
+                *ptr = p->n;                    /* Write current length */
+
+                break;
+            }
             case '%':
                 p->out_fn(p, '%');
                 break;
