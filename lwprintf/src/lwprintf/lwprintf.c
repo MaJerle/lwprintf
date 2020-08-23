@@ -158,7 +158,7 @@ prv_default_output_func(int ch, struct lwprintf* lw) {
  */
 static lwprintf_t
 lwprintf_default = {
-    .out = prv_default_output_func
+    .out_fn = prv_default_output_func
 };
 
 /**
@@ -195,7 +195,7 @@ prv_rotate_string(char* str, size_t len) {
  */
 static int
 prv_out_fn_print(lwprintf_int_t* p, const char c) {
-    p->lw->out(c, p->lw);                       /*!< Send character to output */
+    p->lw->out_fn(c, p->lw);                    /*!< Send character to output */
     ++p->n;
     return 1;
 }
@@ -503,10 +503,17 @@ prv_format(lwprintf_int_t* p, va_list arg) {
     uint8_t detected = 0;
     const char* fmt = p->fmt;
 
+#if LWPRINTF_CFG_OS
+    if (!lwprintf_sys_mutex_isvalid(&p->lw)     /* Invalid mutex handle */
+        || !lwprintf_sys_mutex_wait(&p->lw)) {  /* Cannot acquire mutex */
+        return 0;
+    }
+#endif /* LWPRINTF_CFG_OS */
+
     while (fmt != NULL && *fmt != '\0') {
         /* Parse format */
-        /* %[parameter][flags][width][.precision][length]type */
-        /* Go to https://en.wikipedia.org/wiki/Printf_format_string for more info */
+        /* %[flags][width][.precision][length]type */
+        /* Go to https://docs.majerle.eu for more info about supported features */
         memset(&p->m, 0x00, sizeof(p->m));      /* Reset structure */
 
         /* Detect beginning */
@@ -771,6 +778,9 @@ prv_format(lwprintf_int_t* p, va_list arg) {
         }
         ++fmt;
     }
+#if LWPRINTF_CFG_OS
+    lwprintf_sys_mutex_release(&p->lw);
+#endif /* LWPRINTF_CFG_OS */
     return 1;
 }
 
@@ -782,7 +792,15 @@ prv_format(lwprintf_int_t* p, va_list arg) {
  */
 uint8_t
 lwprintf_init_ex(lwprintf_t* lw, lwprintf_output_fn out_fn) {
-    LWPRINTF_GET_LW(lw)->out = out_fn;
+    LWPRINTF_GET_LW(lw)->out_fn = out_fn;
+
+#if LWPRINTF_CFG_OS
+    /* Create system mutex */
+    if (lwprintf_sys_mutex_isvalid(&LWPRINTF_GET_LW(lw)->mutex)
+        || !lwprintf_sys_mutex_create(&LWPRINTF_GET_LW(lw)->mutex)) {
+        return 0;
+    }
+#endif /* LWPRINTF_CFG_OS */
     return 1;
 }
 

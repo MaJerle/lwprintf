@@ -73,7 +73,10 @@ typedef int (*lwprintf_output_fn)(int ch, struct lwprintf* lw);
  * \brief           LwPRINTF instance
  */
 typedef struct lwprintf {
-    lwprintf_output_fn out;                     /*!< Output function for direct print operations */
+    lwprintf_output_fn out_fn;                  /*!< Output function for direct print operations */
+#if LWPRINTF_CFG_OS || __DOXYGEN__
+    LWPRINTF_CFG_OS_MUTEX_HANDLE mutex;         /*!< OS mutex handle */
+#endif /* LWPRINTF_CFG_OS || __DOXYGEN__ */
 } lwprintf_t;
 
 uint8_t     lwprintf_init_ex(lwprintf_t* lw, lwprintf_output_fn out_fn);
