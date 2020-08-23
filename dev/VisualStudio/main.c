@@ -59,6 +59,7 @@ printf_run(const char* fmt, ...) {
     printf("----\r\n");
 }
 
+int n;
 int
 main(void) {
     double num = 2123213213142.032;
@@ -70,9 +71,12 @@ main(void) {
 
     printf_run("% 3u", (unsigned)28);
     printf_run("% 3u", (unsigned)123456);
-    printf_run("%03u", (unsigned)28);
-    printf_run("%+03u", (unsigned)28);
-    printf_run("%+3u", (unsigned)28);
+    printf_run("%03d", (unsigned)28);
+    printf_run("%+03d", (unsigned)28);
+    printf_run("%+3d", (unsigned)28);
+    printf_run("%03d", -28);
+    printf_run("%+03d", -28);
+    printf_run("%+3d", -28);
     printf_run("%03u", (unsigned)123456);
     printf_run("%-010uabc", (unsigned)123456);
     printf_run("%010uabc", (unsigned)123456);
