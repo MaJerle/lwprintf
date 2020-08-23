@@ -242,7 +242,9 @@ prv_parse_num(const char** format) {
 static int
 prv_out_str_before(lwprintf_int_t* p, size_t buff_size) {
     /* Check for width */
-    if (p->m.width > 0 && p->m.flags.is_negative) {
+    if (p->m.width > 0 
+        /* If number is negative, add negative sign or if positive and has plus sign forced*/
+        && (p->m.flags.is_negative || p->m.flags.plus)) {
         --p->m.width;
     }
 
