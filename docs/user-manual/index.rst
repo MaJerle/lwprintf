@@ -7,3 +7,4 @@ User manual
     :maxdepth: 2
 
     format-specifier
+    thread-safety
