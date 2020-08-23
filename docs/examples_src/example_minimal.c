@@ -11,7 +11,7 @@ lwprintf_out(int ch, lwprintf_t* lwp) {
 
 int
 main(void) {
-	/* Initialize default lwprintf instance with output function */
+    /* Initialize default lwprintf instance with output function */
     lwprintf_init(lwprintf_out);
 
     /* Print first text */
