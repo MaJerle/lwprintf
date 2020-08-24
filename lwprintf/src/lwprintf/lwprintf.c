@@ -196,7 +196,9 @@ prv_rotate_string(char* str, size_t len) {
 static int
 prv_out_fn_print(lwprintf_int_t* p, const char c) {
     p->lw->out_fn(c, p->lw);                    /*!< Send character to output */
-    ++p->n;
+    if (c != '\0') {
+        ++p->n;
+    }
     return 1;
 }
 
@@ -349,7 +351,6 @@ prv_out_str(lwprintf_int_t* p, const char* buff, size_t buff_size) {
     if (buff_size == 0) {
         buff_size = strlen(buff);
     }
-                                                
     prv_out_str_before(p, buff_size);           /* Implement pre-format */
     prv_out_str_raw(p, buff, buff_size);        /* Print actual string */
     prv_out_str_after(p, buff_size);            /* Implement post-format */
@@ -778,6 +779,7 @@ prv_format(lwprintf_int_t* p, va_list arg) {
         }
         ++fmt;
     }
+    p->out_fn(p, '\0');                         /* Output last zero number */
 #if LWPRINTF_CFG_OS
     lwprintf_sys_mutex_release(&p->lw);
 #endif /* LWPRINTF_CFG_OS */
