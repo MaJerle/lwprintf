@@ -4,6 +4,7 @@ LwPRINTF |version| documentation
 Welcome to the documentation for version |version|.
 
 LwPRINTF is lightweight stdio manager optimized for embedded systems.
+It includes implementation of standard output functions such as ``printf``, ``vprintf``, ``snprintf``, ``sprintf`` and ``vsnprintf`` in an embedded-systems optimized way.
 
 .. rst-class:: center
 .. rst-class:: index_links
@@ -14,15 +15,20 @@ Features
 ^^^^^^^^
 
 * Written in ANSI C99, compatible with ``size_t`` and ``uintmax_t`` types for some specifiers
-* Implements output functions
-* Suitable for embedded systems
-* Added additional specifiers
+* Implements output functions compatible with ``printf``, ``vprintf``, ``snprintf``, ``sprintf`` and ``vsnprintf``
+* Low-memory footprint, suitable for embedded systems
+* Reentrant access to all API functions
+* Requires single output function to be implemented by user for ``printf``-like API calls
+* With optional functions for operating systems to protect multiple threads printing to the same output stream
+* Allows multiple output stream functions (unlike standard ``printf`` which supports only one) to separate parts of application
+* Added additional specifiers vs original features
 * User friendly MIT license
 
 Requirements
 ^^^^^^^^^^^^
 
 * C compiler
+* Few kB of non-volatile memory
 
 Contribute
 ^^^^^^^^^^

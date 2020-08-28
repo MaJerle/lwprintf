@@ -65,7 +65,7 @@ struct lwprintf;
  * \brief           Callback function for character output
  * \param[in]       ch: Character to print
  * \param[in]       lw: LwPRINTF instance
- * \return          `ch` on success, `0` to terminate
+ * \return          `ch` on success, `0` to terminate further string processing
  */
 typedef int (*lwprintf_output_fn)(int ch, struct lwprintf* lw);
 
@@ -84,13 +84,84 @@ int         lwprintf_vprintf_ex(lwprintf_t* const lw, const char* format, va_lis
 int         lwprintf_printf_ex(lwprintf_t* const lw, const char* format, ...);
 int         lwprintf_vsnprintf_ex(lwprintf_t* const lw, char* s, size_t n, const char* format, va_list arg);
 int         lwprintf_snprintf_ex(lwprintf_t* const lw, char* s, size_t n, const char* format, ...);
+
+/**
+ * \brief           Write formatted data from variable argument list to sized buffer
+ * \param[in,out]   lw: LwPRINTF instance. Set to `NULL` to use default instance
+ * \param[in]       s: Pointer to a buffer where the resulting C-string is stored.
+ *                      The buffer should have a size of at least `n` characters
+ * \param[in]       format: C string that contains a format string that follows the same specifications as format in printf
+ * \param[in]       ...: Optional arguments for format string
+ * \return          The number of characters that would have been written,
+ *                      not counting the terminating null character.
+ */
 #define     lwprintf_sprintf_ex(lw, s, format, ...)     lwprintf_snprintf((lw), (s), SIZE_MAX, (format), # __VA_ARGS__)
 
+/**
+ * \brief           Initialize default LwPRINTF instance
+ * \param[in]       out_fn: Output function used for print operation
+ * \return          `1` on success, `0` otherwise
+ * \sa              lwprintf_init_ex
+ */
 #define     lwprintf_init(out_fn)                       lwprintf_init_ex(NULL, (out_fn))
+
+/**
+ * \brief           Print formatted data from variable argument list to the output at default LwPRINTF instance
+ * \param[in]       format: C string that contains the text to be written to output
+ * \param[in]       arg: A value identifying a variable arguments list initialized with `va_start`.
+ *                      `va_list` is a special type defined in `<cstdarg>`.
+ * \return          The number of characters that would have been written if `n` had been sufficiently large,
+ *                      not counting the terminating null character.
+ */
 #define     lwprintf_vprintf(format, arg)               lwprintf_vprintf_ex(NULL, (format), (arg))
+
+/**
+ * \brief           Print formatted data to the output at default LwPRINTF instance
+ * \param[in]       format: C string that contains the text to be written to output
+ * \param[in]       ...: Optional arguments for format string
+ * \return          The number of characters that would have been written if `n` had been sufficiently large,
+ *                      not counting the terminating null character.
+ */
 #define     lwprintf_printf(format, ...)                lwprintf_printf_ex(NULL, (format), # __VA_ARGS__)
+
+/**
+ * \brief           Write formatted data from variable argument list to sized buffer at default LwPRINTF instance
+ * \param[in]       s: Pointer to a buffer where the resulting C-string is stored.
+ *                      The buffer should have a size of at least `n` characters
+ * \param[in]       n: Maximum number of bytes to be used in the buffer.
+ *                      The generated string has a length of at most `n - 1`,
+ *                      leaving space for the additional terminating null character
+ * \param[in]       format: C string that contains a format string that follows the same specifications as format in printf
+ * \param[in]       arg: A value identifying a variable arguments list initialized with `va_start`.
+ *                      `va_list` is a special type defined in `<cstdarg>`.
+ * \return          The number of characters that would have been written if `n` had been sufficiently large,
+ *                      not counting the terminating null character.
+ */
 #define     lwprintf_vsnprintf(s, n, format, arg)       lwprintf_vsnprintf_ex(NULL, (s), (n), (format), (arg))
+
+/**
+ * \brief           Write formatted data from variable argument list to sized buffer at default LwPRINTF instance
+ * \param[in]       s: Pointer to a buffer where the resulting C-string is stored.
+ *                      The buffer should have a size of at least `n` characters
+ * \param[in]       n: Maximum number of bytes to be used in the buffer.
+ *                      The generated string has a length of at most `n - 1`,
+ *                      leaving space for the additional terminating null character
+ * \param[in]       format: C string that contains a format string that follows the same specifications as format in printf
+ * \param[in]       ...: Optional arguments for format string
+ * \return          The number of characters that would have been written if `n` had been sufficiently large,
+ *                      not counting the terminating null character.
+ */
 #define     lwprintf_snprintf(s, n, format, ...)        lwprintf_snprintf_ex(NULL, (s), (n), (format), # __VA_ARGS__)
+
+/**
+ * \brief           Write formatted data from variable argument list to sized buffer at default LwPRINTF instance
+ * \param[in]       s: Pointer to a buffer where the resulting C-string is stored.
+ *                      The buffer should have a size of at least `n` characters
+ * \param[in]       format: C string that contains a format string that follows the same specifications as format in printf
+ * \param[in]       ...: Optional arguments for format string
+ * \return          The number of characters that would have been written,
+ *                      not counting the terminating null character.
+ */
 #define     lwprintf_sprintf(s, format, ...)            lwprintf_sprintf_ex(NULL, (s), (format), # __VA_ARGS__)
 
 /**

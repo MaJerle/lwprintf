@@ -824,6 +824,10 @@ lwprintf_vprintf_ex(lwprintf_t* const lw, const char* format, va_list arg) {
         .buff = NULL,
         .buff_size = 0
     };
+    /* For direct print, output function must be set by user */
+    if (f.lw->out_fn == NULL) {
+        return 0;
+    }
     prv_format(&f, arg);
     return f.n;
 }
