@@ -103,6 +103,22 @@ extern "C" {
 #endif
 
 /**
+ * \brief           Enables `1` or disables `0` support for `%K` for hex byte array output
+ *
+ */
+#ifndef LWPRINTF_CFG_SUPPORT_TYPE_BYTE_ARRAY
+#define LWPRINTF_CFG_SUPPORT_TYPE_BYTE_ARRAY        1
+#endif
+
+/**
+ * \brief           Enables `1` or disables `0` support for `%s` for string output
+ *
+ */
+#ifndef LWPRINTF_CFG_SUPPORT_TYPE_STRING
+#define LWPRINTF_CFG_SUPPORT_TYPE_STRING            1
+#endif
+
+/**
  * \}
  */
 

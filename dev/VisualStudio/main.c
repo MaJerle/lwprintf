@@ -25,11 +25,12 @@ size_t tests_passed, tests_failed;
  * \brief           Run printf with built-in and custom implementation.
  * Compare results on returned length and actual content
  *
+ * \param[in]       expected: Expected result
  * \param[in]       fmt: Format to use
  * \param[in]       ...: Optional parameters
  */
 static void
-printf_run(const char* fmt, ...) {
+printf_run(const char* expected, const char* fmt, ...) {
     HANDLE console;
     va_list va;
     char b1[255] = { 0 }, b2[255] = { 0 };
@@ -68,88 +69,96 @@ main(void) {
 
     additional_format_specifiers();
 
-    printf_run("% 3u", (unsigned)28);
-    printf_run("% 3u", (unsigned)123456);
-    printf_run("%03d", (unsigned)28);
-    printf_run("%+03d", (unsigned)28);
-    printf_run("%+3d", (unsigned)28);
-    printf_run("%03d", -28);
-    printf_run("%+03d", -28);
-    printf_run("%+3d", -28);
-    printf_run("%03u", (unsigned)123456);
-    printf_run("%-010uabc", (unsigned)123456);
-    printf_run("%010uabc", (unsigned)123456);
-    printf_run("%-10d", -123);
-    printf_run("%10d", -123);
-    printf_run("%-06d", -1234567);
-    printf_run("%06d", -1234567);
-    printf_run("%s", "This is my string");
-    printf_run("%10s", "This is my string");
-    printf_run("%0*d", 10, -123);
-    printf_run("%zu", (size_t)10);
-    printf_run("%ju", (uintmax_t)10);
+    printf_run(" 28",               "% 3u", (unsigned)28);
+    printf_run("123456",            "% 3u", (unsigned)123456);
+    printf_run("028",               "%03d", (unsigned)28);
+    printf_run("+28",               "%+03d", (unsigned)28);
+    printf_run("+28",               "%+3d", (unsigned)28);
+    printf_run("-28",               "%03d", -28);
+    printf_run(NULL, "%+03d", -28);
+    printf_run(NULL, "%+3d", -28);
+    printf_run(NULL, "%03u", (unsigned)123456);
+    printf_run(NULL, "%-010uabc", (unsigned)123456);
+    printf_run(NULL, "%010uabc", (unsigned)123456);
+    printf_run(NULL, "%-10d", -123);
+    printf_run(NULL, "%10d", -123);
+    printf_run(NULL, "%-06d", -1234567);
+    printf_run(NULL, "%06d", -1234567);
+    printf_run(NULL, "%s", "This is my string");
+    printf_run(NULL, "%10s", "This is my string");
+    printf_run(NULL, "%0*d", 10, -123);
+    printf_run(NULL, "%zu", (size_t)10);
+    printf_run(NULL, "%ju", (uintmax_t)10);
 
     /* string */
-    printf_run("%*.*s", 8, 12, "This is my string");
-    printf_run("%*.*s", 8, 12, "Stri");
-    printf_run("%-6.10s", "This is my string");
-    printf_run("%6.10s", "This is my string");
-    printf_run("%-6.10s", "This is my string");
-    printf_run("%6.10s", "Th");
-    printf_run("%-6.10s", "Th");
-    printf_run("%*.*s", -6, 10, "Th");
-    printf_run("%*.*s", 6, 10, "Th");
+    printf_run(NULL, "%*.*s", 8, 12, "This is my string");
+    printf_run(NULL, "%*.*s", 8, 12, "Stri");
+    printf_run(NULL, "%-6.10s", "This is my string");
+    printf_run(NULL, "%6.10s", "This is my string");
+    printf_run(NULL, "%-6.10s", "This is my string");
+    printf_run(NULL, "%6.10s", "Th");
+    printf_run(NULL, "%-6.10s", "Th");
+    printf_run(NULL, "%*.*s", -6, 10, "Th");
+    printf_run(NULL, "%*.*s", 6, 10, "Th");
 
-    printf_run("%.4s", "This is my string");
-    printf_run("%.6s", "1234");
-    printf_run("%.4s", "stri");
-    printf_run("%.4s%.2s", "123456", "abcdef");
-    printf_run("%.4.2s", "123456");
-    printf_run("%.*s", 3, "123456");
-    printf_run("%.3s", "");
-    printf_run("%yunknown");
+    printf_run(NULL, "%.4s", "This is my string");
+    printf_run(NULL, "%.6s", "1234");
+    printf_run(NULL, "%.4s", "stri");
+    printf_run(NULL, "%.4s%.2s", "123456", "abcdef");
+    printf_run(NULL, "%.4.2s", "123456");
+    printf_run(NULL, "%.*s", 3, "123456");
+    printf_run(NULL, "%.3s", "");
+    printf_run(NULL, "%yunknown");
 
     /* Alternate form */
-    printf_run("%#2X", 123);
-    printf_run("%#2x", 123);
-    printf_run("%#2o", 123);
-    printf_run("%#2X", 1);
-    printf_run("%#2x", 1);
-    printf_run("%#2o", 1);
-    printf_run("%#2X", 0);
-    printf_run("%#2x", 0);
-    printf_run("%#2o", 0);
+    printf_run(NULL, "%#2X", 123);
+    printf_run(NULL, "%#2x", 123);
+    printf_run(NULL, "%#2o", 123);
+    printf_run(NULL, "%#2X", 1);
+    printf_run(NULL, "%#2x", 1);
+    printf_run(NULL, "%#2o", 1);
+    printf_run(NULL, "%#2X", 0);
+    printf_run(NULL, "%#2x", 0);
+    printf_run(NULL, "%#2o", 0);
+    printf_run(NULL, "%#2B", 1);
+    printf_run(NULL, "%#2b", 1);
+    printf_run(NULL, "%#2B", 0);
+    printf_run(NULL, "%#2b", 0);
+    printf_run(NULL, "%#B", 0);
+    printf_run(NULL, "%#b", 0);
+    printf_run(NULL, "%#B", 6);
+    printf_run(NULL, "%#b", 6);
 
     /* Pointers */
-    printf_run("%p", &tests_passed);
-    printf_run("0X%p", &tests_passed);
-    printf_run("0x%p", &tests_passed);
+    printf_run(NULL, "%p", &tests_passed);
+    printf_run(NULL, "0X%p", &tests_passed);
+    printf_run(NULL, "0x%p", &tests_passed);
 
     /* Binary */
-    printf_run("%llb abc", 123);
-    printf_run("%llb abc", 123);
-    printf_run("%b", 4);
-    //printf_run("%10b", 8);
-    //printf_run("%010b", 8);
+    printf_run(NULL, "%llb abc", 123);
+    printf_run(NULL, "%llb abc", 123);
+    printf_run(NULL, "%b", 4);
+    //printf_run(NULL, "%10b", 8);
+    //printf_run(NULL, "%010b", 8);
 
     /* Floats */
-    printf_run("%f", 12.13);
-    printf_run("%.3f", 12.1337);
-    printf_run("%.25f", 12.1337);
+    printf_run(NULL, "%f", 12.13);
+    printf_run(NULL, "%.3f", 12.1337);
+    printf_run(NULL, "%.25f", 12.1337);
 
     /* Engineering */
-    printf_run("%e", 2.5f);
-    printf_run("%e", 43433.23f);
+    printf_run(NULL, "%e", 2.5f);
+    printf_run(NULL, "%e", 43433.23f);
 
     /* A */
-    printf_run("%a", 2.5f);
-    printf_run("%a", 43433.23f);
+    printf_run(NULL, "%a", 2.5f);
+    printf_run(NULL, "%a", 43433.23f);
 
     /* Array test */
     uint8_t my_arr[] = { 0x00, 0x01, 0x02, 0x03, 0x04 };
-    printf_run("%5K", my_arr);              /* Print fixed length */
-    printf_run("%*K", 3, my_arr);           /* Print only first 3 elements of array */
-    printf_run("% *K", 3, my_arr);          /* Print only first 3 elements of array with spaces between bytes */
+    printf_run(NULL, "%5K", my_arr);              /* Print fixed length */
+    printf_run(NULL, "%*K", 3, my_arr);           /* Print only first 3 elements of array */
+    printf_run(NULL, "% *K", 3, my_arr);          /* Print only first 3 elements of array with spaces between bytes */
 
     /* Print final output */
     printf("----\r\n\r\n");

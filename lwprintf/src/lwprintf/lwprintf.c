@@ -141,25 +141,10 @@ typedef struct lwprintf_int {
 #define LWPRINTF_GET_LW(p)              ((p) != NULL ? (p) : (&lwprintf_default))
 
 /**
- * \brief           Output function for lwprintf printf function
- * \param[in]       ch: Character to print
- * \param[in]       lw: LwPRINTF instance
- * \return          `ch` value on success, `0` otherwise
- */
-int
-prv_default_output_func(int ch, struct lwprintf* lw) {
-    LWPRINTF_UNUSED(ch);
-    LWPRINTF_UNUSED(lw);
-    return 0;
-}
-
-/**
  * \brief           LwPRINTF default structure used by application
  */
 static lwprintf_t
-lwprintf_default = {
-    .out_fn = prv_default_output_func
-};
+lwprintf_default;
 
 /**
  * \brief           Rotate string of the input buffer in place
@@ -245,7 +230,7 @@ static int
 prv_out_str_before(lwprintf_int_t* p, size_t buff_size) {
     /* Check for width */
     if (p->m.width > 0 
-        /* If number is negative, add negative sign or if positive and has plus sign forced*/
+        /* If number is negative, add negative sign or if positive and has plus sign forced */
         && (p->m.flags.is_negative || p->m.flags.plus)) {
         --p->m.width;
     }
@@ -256,7 +241,7 @@ prv_out_str_before(lwprintf_int_t* p, size_t buff_size) {
             if (p->m.width > 0) {
                 --p->m.width;
             }
-        } else if (p->m.base == 16) {
+        } else if (p->m.base == 16 || p->m.base == 2) {
             if (p->m.width > 2) {
                 p->m.width -= 2;
             } else {
@@ -281,6 +266,9 @@ prv_out_str_before(lwprintf_int_t* p, size_t buff_size) {
         } else if (p->m.base == 16) {
             p->out_fn(p, '0');
             p->out_fn(p, p->m.flags.uc ? 'X' : 'x');
+        } else if (p->m.base == 2) {
+            p->out_fn(p, '0');
+            p->out_fn(p, p->m.flags.uc ? 'B' : 'b');
         }
     }
 
@@ -662,8 +650,8 @@ prv_format(lwprintf_int_t* p, va_list arg) {
                     p->m.base = 10;
                 } else if (*fmt == 'x' || *fmt == 'X') {
                     p->m.base = 16;
-                    p->m.flags.uc = *fmt == 'X';/* Select if uppercase text shall be printed */
                 }
+                p->m.flags.uc = *fmt == 'X' || *fmt == 'B'; /* Select if uppercase text shall be printed */
 
                 /* Check for different length parameters */
                 if (0) {
@@ -694,6 +682,7 @@ prv_format(lwprintf_int_t* p, va_list arg) {
 #endif /* LWPRINTF_CFG_SUPPORT_LONG_LONG */
                 }
                 break;
+#if LWPRINTF_CFG_SUPPORT_TYPE_STRING
             case 's': {
                 const char* b = va_arg(arg, const char*);
                 size_t len = strlen(b);
@@ -707,6 +696,7 @@ prv_format(lwprintf_int_t* p, va_list arg) {
                 prv_out_str(p, b, len);
                 break;
             }
+#endif /* LWPRINTF_CFG_SUPPORT_TYPE_STRING */
 #if LWPRINTF_CFG_SUPPORT_TYPE_POINTER
             case 'p': {
                 p->m.base = 16;                 /* Go to hex format */
@@ -735,7 +725,6 @@ prv_format(lwprintf_int_t* p, va_list arg) {
                 prv_out_str_raw(p, "NaN", 3);   /* Print string */
                 //prv_double_to_str(p, (double)va_arg(arg, double));
                 break;
-#endif /* LWPRINTF_CFG_SUPPORT_TYPE_FLOAT */
             case 'e':
             case 'E':
             case 'g':
@@ -750,9 +739,11 @@ prv_format(lwprintf_int_t* p, va_list arg) {
 
                 break;
             }
+#endif /* LWPRINTF_CFG_SUPPORT_TYPE_FLOAT */
             case '%':
                 p->out_fn(p, '%');
                 break;
+#if LWPRINTF_CFG_SUPPORT_TYPE_BYTE_ARRAY
             /*
              * This is to print unsigned-char formatted pointer in hex string
              *
@@ -782,6 +773,7 @@ prv_format(lwprintf_int_t* p, va_list arg) {
                 }
                 break;   
             }
+#endif /* LWPRINTF_CFG_SUPPORT_TYPE_BYTE_ARRAY */
             default:
                 p->out_fn(p, *fmt);
         }
