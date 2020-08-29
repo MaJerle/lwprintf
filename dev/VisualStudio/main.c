@@ -89,6 +89,10 @@ main(void) {
     printf_run(NULL, "%0*d", 10, -123);
     printf_run(NULL, "%zu", (size_t)10);
     printf_run(NULL, "%ju", (uintmax_t)10);
+    printf_run(NULL, "% d", 1024);
+    printf_run(NULL, "% 4d", 1024);
+    printf_run(NULL, "% 3d", 1024);
+    printf_run(NULL, "% 3f", 32.324);
 
     /* string */
     printf_run(NULL, "%*.*s", 8, 12, "This is my string");
@@ -138,21 +142,6 @@ main(void) {
     printf_run(NULL, "%llb abc", 123);
     printf_run(NULL, "%llb abc", 123);
     printf_run(NULL, "%b", 4);
-    //printf_run(NULL, "%10b", 8);
-    //printf_run(NULL, "%010b", 8);
-
-    /* Floats */
-    printf_run(NULL, "%f", 12.13);
-    printf_run(NULL, "%.3f", 12.1337);
-    printf_run(NULL, "%.25f", 12.1337);
-
-    /* Engineering */
-    printf_run(NULL, "%e", 2.5f);
-    printf_run(NULL, "%e", 43433.23f);
-
-    /* A */
-    printf_run(NULL, "%a", 2.5f);
-    printf_run(NULL, "%a", 43433.23f);
 
     /* Array test */
     uint8_t my_arr[] = { 0x00, 0x01, 0x02, 0x03, 0x04 };

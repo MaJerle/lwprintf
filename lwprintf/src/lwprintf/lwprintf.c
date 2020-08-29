@@ -250,12 +250,14 @@ prv_out_str_before(lwprintf_int_t* p, size_t buff_size) {
         }
     }
 
-    /* Add negative sign (or positive in case of + flag) before when zeros are used to fill width */
+    /* Add negative sign (or positive in case of + flag or space in case of space flag) before when zeros are used to fill width */
     if (p->m.flags.zero) {
         if (p->m.flags.is_negative) {
             p->out_fn(p, '-');
         } else if (p->m.flags.plus) {
             p->out_fn(p, '+');
+        } else if (p->m.flags.space) {
+            p->out_fn(p, ' ');
         }
     }
 
@@ -285,6 +287,8 @@ prv_out_str_before(lwprintf_int_t* p, size_t buff_size) {
             p->out_fn(p, '-');
         } else if (p->m.flags.plus) {
             p->out_fn(p, '+');
+        } else if (p->m.flags.space) {
+            p->out_fn(p, ' ');
         }
     }
 
