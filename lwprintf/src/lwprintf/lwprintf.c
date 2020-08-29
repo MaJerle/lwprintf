@@ -764,10 +764,12 @@ prv_format(lwprintf_int_t* p, va_list arg) {
                 unsigned char* ptr = (void *)va_arg(arg, unsigned char *);  /* Get input parameter as unsigned char pointer */
                 int len = p->m.width;
 
+                if (ptr == NULL || len == 0) {
+                    break;
+                }
+
                 p->m.flags.uc = *fmt == 'K';    /* Set if uppercase */
-                p->m.flags.precision = 1;       /* We use precision flag */
-                p->m.precision = 2;             /* 2 bytes output, 0 prepend if necessary */
-                p->m.flags.zero = 1;            /* Prepend with zeros */
+                p->m.flags.zero = 1;            /* Prepend with zeros if necessary */
                 p->m.width = 2;                 /* Each number is 2 chars min/max */
                 p->m.base = 16;                 /* Hex format */
 

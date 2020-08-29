@@ -30,4 +30,6 @@ additional_format_specifiers(void) {
     lwprintf_printf("%*k\r\n", sizeof(my_array) / sizeof(my_array[0]), my_array);
     /* Variable length with uppercase letters and spaces, outputs "01 02 A4 B5 C6" */
     lwprintf_printf("% *K\r\n", sizeof(my_array) / sizeof(my_array[0]), my_array);
+    /* Variable length with uppercase letters and spaces, outputs "01 02 a4 b5 c6" */
+    lwprintf_printf("% *k\r\n", sizeof(my_array) / sizeof(my_array[0]), my_array);
 }
