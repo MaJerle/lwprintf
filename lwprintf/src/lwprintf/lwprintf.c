@@ -288,7 +288,7 @@ prv_out_str_before(lwprintf_int_t* p, size_t buff_size) {
             p->out_fn(p, '-');
         } else if (p->m.flags.plus) {
             p->out_fn(p, '+');
-        } else if (p->m.flags.space) {
+        } else if (p->m.flags.space && buff_size >= p->m.width) {
             p->out_fn(p, ' ');
         }
     }
@@ -470,8 +470,11 @@ prv_signed_longlong_int_to_str(lwprintf_int_t* p, signed long long int num) {
  */
 static int
 prv_double_to_str(lwprintf_int_t* p, double num) {
-    long integer_part, decimal_part;
+    long integer_part, decimal_part, tmp;
     double decimal_part_dbl, diff;
+    size_t i;
+    int digits_cnt;
+    char str[11];
 
     /* Powers of 10 from beginning up to precision level */
     static const powers_of_10[] = { 1E0, 1E1, 1E2, 1E3, 1E4, 1E5, 1E6, 1E7, 1E8, 1E9 };
@@ -479,8 +482,8 @@ prv_double_to_str(lwprintf_int_t* p, double num) {
     /* Check for corner cases */
     if (num != num) {
         return prv_out_str(p, p->m.flags.uc ? "NAN" : "nan", 3);
-    } else if (num < DBL_MIN || num < -1E9) {
-        return prv_out_str(p, p->m.flags.uc ? "-INF" : "-inf", 3);
+    } else if (num < -DBL_MAX || num < -1E9) {
+        return prv_out_str(p, p->m.flags.uc ? "-INF" : "-inf", 4);
     } else if (num > DBL_MAX || num > 1E9) {
         char str[5], *s_ptr = str;
         if (p->m.flags.plus) {
@@ -494,7 +497,10 @@ prv_double_to_str(lwprintf_int_t* p, double num) {
     if (0) {
         /* Go with format of xx.yyEzz instead*/
     }
-    p->m.flags.is_negative = num < 0;
+    if (num < 0) {
+        p->m.flags.is_negative = 1;
+        num = -num;
+    }
     if (p->m.precision > 9) {
         p->m.precision = 9;
     } else if (!p->m.flags.precision) {
@@ -523,11 +529,28 @@ prv_double_to_str(lwprintf_int_t* p, double num) {
     }
 
     /* Calculate number of digits for integer part */
-    
+    for (digits_cnt = 0, tmp = integer_part; tmp > 0; ++digits_cnt, tmp /= 10) {}
     if (p->m.precision > 0) {
-        /* Calculate number of digits for decimal part */
-        /* Add dot as delimiter */
+        /* Add precision digits + dot separator */
+        digits_cnt += p->m.precision + 1;
     }
+
+    /* Output strings */
+    prv_out_str_before(p, digits_cnt);
+    for (i = 0; integer_part > 0; integer_part /= 10, ++i) {
+        str[i] = (integer_part % 10) + '0';
+    }
+    for (; i > 0; --i) {
+        p->out_fn(p, str[i - 1]);
+    }
+    p->out_fn(p, '.');
+    for (i = 0; decimal_part > 0; decimal_part /= 10, ++i) {
+        str[i] = (decimal_part % 10) + '0';
+    }
+    for (; i > 0; --i) {
+        p->out_fn(p, str[i - 1]);
+    }
+    prv_out_str_after(p, digits_cnt);
 
     /* Output integer part */
     /* Output decimal part */
