@@ -32,6 +32,7 @@
  * Version:         $_version_$
  */
 #include <limits.h>
+#include <float.h>
 #include <stdint.h>
 #include "lwprintf/lwprintf.h"
 
@@ -462,17 +463,6 @@ prv_signed_longlong_int_to_str(lwprintf_int_t* p, signed long long int num) {
 #if LWPRINTF_CFG_SUPPORT_TYPE_FLOAT
 
 /**
- * \brief           Convert float number to string
- * \param[in,out]   p: LwPRINTF internal instance
- * \param[in]       num: Number to convert to string
- * \return          `1` on success, `0` otherwise
- */
-static int
-prv_float_to_str(lwprintf_int_t* p, float num) {
-    return 0;
-}
-
-/**
  * \brief           Convert double number to string
  * \param[in,out]   p: LwPRINTF internal instance
  * \param[in]       num: Number to convert to string
@@ -480,6 +470,69 @@ prv_float_to_str(lwprintf_int_t* p, float num) {
  */
 static int
 prv_double_to_str(lwprintf_int_t* p, double num) {
+    long integer_part, decimal_part;
+    double decimal_part_dbl, diff;
+
+    /* Powers of 10 from beginning up to precision level */
+    static const powers_of_10[] = { 1E0, 1E1, 1E2, 1E3, 1E4, 1E5, 1E6, 1E7, 1E8, 1E9 };
+
+    /* Check for corner cases */
+    if (num != num) {
+        return prv_out_str(p, p->m.flags.uc ? "NAN" : "nan", 3);
+    } else if (num < DBL_MIN || num < -1E9) {
+        return prv_out_str(p, p->m.flags.uc ? "-INF" : "-inf", 3);
+    } else if (num > DBL_MAX || num > 1E9) {
+        char str[5], *s_ptr = str;
+        if (p->m.flags.plus) {
+            *s_ptr++ = '+';
+        }
+        strcpy(s_ptr, p->m.flags.uc ? "INF" : "inf");
+        return prv_out_str(p, s_ptr, p->m.flags.plus ? 4 : 3);
+    }
+
+    /* Maximum number to be defined */
+    if (0) {
+        /* Go with format of xx.yyEzz instead*/
+    }
+    p->m.flags.is_negative = num < 0;
+    if (p->m.precision > 9) {
+        p->m.precision = 9;
+    } else if (!p->m.flags.precision) {
+        p->m.flags.precision = 1;
+        p->m.precision = 6;
+    }
+
+    /* Get integer and decimal parts, both in integer format */
+    integer_part = (long)num;
+    decimal_part_dbl = (num - integer_part) * powers_of_10[p->m.precision];
+    decimal_part = (long)decimal_part_dbl;
+    diff = decimal_part_dbl - (long)decimal_part;
+
+    /* Rounding check */
+    if (diff > 0.5f) {
+        ++decimal_part;
+        if (decimal_part > powers_of_10[p->m.precision]) {
+            decimal_part = 0;
+            ++integer_part;
+        }
+    }
+
+    /* @todo: When no precision is used, check if need to round up anything */
+    if (p->m.precision == 0) {
+
+    }
+
+    /* Calculate number of digits for integer part */
+    
+    if (p->m.precision > 0) {
+        /* Calculate number of digits for decimal part */
+        /* Add dot as delimiter */
+    }
+
+    /* Output integer part */
+    /* Output decimal part */
+
+    /* Process number itself */
     return 0;
 }
 
@@ -656,6 +709,7 @@ prv_format(lwprintf_int_t* p, va_list arg) {
                     p->m.base = 16;
                 }
                 p->m.flags.uc = *fmt == 'X' || *fmt == 'B'; /* Select if uppercase text shall be printed */
+                p->m.flags.space = 0;                   /* Space flag has no meaning here */
 
                 /* Check for different length parameters */
                 if (0) {
@@ -725,15 +779,15 @@ prv_format(lwprintf_int_t* p, va_list arg) {
             case 'f':
             case 'F':
                 /* Double number */
-                (void)va_arg(arg, double);      /* Read argument to ignore it and move to next one */
-                prv_out_str_raw(p, "NaN", 3);   /* Print string */
-                //prv_double_to_str(p, (double)va_arg(arg, double));
+                p->m.flags.uc = *fmt == 'F';
+                prv_double_to_str(p, (double)va_arg(arg, double));
                 break;
             case 'e':
             case 'E':
             case 'g':
             case 'G':
                 /* Double number */
+                p->m.flags.uc = *fmt == 'E' || *fmt == 'G';
                 (void)va_arg(arg, double);      /* Read argument to ignore it and move to next one */
                 prv_out_str_raw(p, "NaN", 3);   /* Print string */
                 break;

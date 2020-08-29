@@ -92,7 +92,7 @@ main(void) {
     printf_run(NULL, "% d", 1024);
     printf_run(NULL, "% 4d", 1024);
     printf_run(NULL, "% 3d", 1024);
-    printf_run(NULL, "% 3f", 32.324);
+    printf_run(NULL, "% 3f", 32.687);
 
     /* string */
     printf_run(NULL, "%*.*s", 8, 12, "This is my string");
