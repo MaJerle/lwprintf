@@ -501,11 +501,13 @@ prv_double_to_str(lwprintf_int_t* p, double num) {
         p->m.flags.is_negative = 1;
         num = -num;
     }
+
+    /* Check precision data */
     if (p->m.precision > 9) {
-        p->m.precision = 9;
+        p->m.precision = 9;                     /* Limit to maximum precision */
     } else if (!p->m.flags.precision) {
         p->m.flags.precision = 1;
-        p->m.precision = 6;
+        p->m.precision = LWPRINTF_CFG_FLOAT_PRECISION_DEFAULT;  /* Default prevision when not used */
     }
 
     /* Get integer and decimal parts, both in integer format */
@@ -835,6 +837,7 @@ prv_format(lwprintf_int_t* p, va_list arg) {
             case 'K': {
                 unsigned char* ptr = (void *)va_arg(arg, unsigned char *);  /* Get input parameter as unsigned char pointer */
                 int len = p->m.width;
+                uint8_t is_space = p->m.flags.space == 1;
 
                 if (ptr == NULL || len == 0) {
                     break;
@@ -844,11 +847,12 @@ prv_format(lwprintf_int_t* p, va_list arg) {
                 p->m.flags.zero = 1;            /* Prepend with zeros if necessary */
                 p->m.width = 2;                 /* Each number is 2 chars min/max */
                 p->m.base = 16;                 /* Hex format */
+                p->m.flags.space = 0;           /* Delete any flag for space */
 
                 /* Output byte by byte w/o hex prefix */
                 for (int i = 0; i < len; ++i) {
                     prv_unsigned_int_to_str(p, (unsigned int)*ptr++);
-                    if (p->m.flags.space && i < (len - 1)) {
+                    if (is_space && i < (len - 1)) {
                         p->out_fn(p, ' ');      /* Generate space between numbers */
                     }
                 }

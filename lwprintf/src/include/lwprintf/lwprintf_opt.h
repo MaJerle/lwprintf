@@ -119,6 +119,14 @@ extern "C" {
 #endif
 
 /**
+ * \brief           Default `float/double` precision.
+ * This is a number of digits displayed after decimal point.
+ */
+#ifndef LWPRINTF_CFG_FLOAT_PRECISION_DEFAULT
+#define LWPRINTF_CFG_FLOAT_PRECISION_DEFAULT        6
+#endif
+
+/**
  * \}
  */
 

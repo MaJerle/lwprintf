@@ -113,12 +113,11 @@ Column *Supported* gives an overview which specifiers are actually supported by 
 +-------------+-----------+--------------------------------------------------------------------------+
 | ``u``       | Yes       | Prints ``unsigned int``                                                  |
 +-------------+-----------+--------------------------------------------------------------------------+
-| ``f`` ``F`` | Not yet   | Prints ``double`` in normal fixed-point notation.                        |
+| ``f`` ``F`` | Yes       | Prints ``double`` in normal fixed-point notation.                        |
 |             |           | ``f`` and ``F`` only differs in how the strings for an infinite number   |
 |             |           | or NaN are printed                                                       |
 |             |           | (``inf``, ``infinity`` and ``nan`` for ``f``;                            |
 |             |           | ``INF``, ``INFINITY`` and ``NAN`` for ``F``).                            |
-|             |           | Currently it will print ``NaN`` when used                                |
 +-------------+-----------+--------------------------------------------------------------------------+
 | ``e`` ``E`` | Not yet   | Prints ``double`` in standard form ``[-]d.ddd e[+-]ddd``.                |
 |             |           | ``e`` uses lower-case and                                                |

@@ -124,6 +124,26 @@ main(void) {
     printf_run(NULL, "%#2X", 0);
     printf_run(NULL, "%#2x", 0);
     printf_run(NULL, "%#2o", 0);
+
+    /* Pointers */
+    printf_run(NULL, "%p", &tests_passed);
+    printf_run(NULL, "0X%p", &tests_passed);
+    printf_run(NULL, "0x%p", &tests_passed);
+
+
+    /* Print final output */
+    printf("\r\n\r\n------------------------\r\n\r\n");
+    printf("Number of tests passed: %d\r\n", (int)tests_passed);
+    printf("Number of tests failed: %d\r\n", (int)tests_failed);
+    printf("Coverage: %f %%\r\n", (float)((tests_passed * 100) / ((float)(tests_passed + tests_failed))));
+    printf("\r\n\r\n------------------------\r\n\r\n");
+
+    /* Those are additional, not supported in classic printf implementation */
+
+    /* Binary */
+    printf_run(NULL, "%llb abc", 123);
+    printf_run(NULL, "%llb abc", 123);
+    printf_run(NULL, "%b", 4);
     printf_run(NULL, "%#2B", 1);
     printf_run(NULL, "%#2b", 1);
     printf_run(NULL, "%#2B", 0);
@@ -133,28 +153,14 @@ main(void) {
     printf_run(NULL, "%#B", 6);
     printf_run(NULL, "%#b", 6);
 
-    /* Pointers */
-    printf_run(NULL, "%p", &tests_passed);
-    printf_run(NULL, "0X%p", &tests_passed);
-    printf_run(NULL, "0x%p", &tests_passed);
-
-    /* Binary */
-    printf_run(NULL, "%llb abc", 123);
-    printf_run(NULL, "%llb abc", 123);
-    printf_run(NULL, "%b", 4);
-
     /* Array test */
-    uint8_t my_arr[] = { 0x00, 0x01, 0x02, 0x03, 0x04 };
-    printf_run(NULL, "%5K", my_arr);              /* Print fixed length */
-    printf_run(NULL, "%*K", 3, my_arr);           /* Print only first 3 elements of array */
-    printf_run(NULL, "% *K", 3, my_arr);          /* Print only first 3 elements of array with spaces between bytes */
-
-    /* Print final output */
-    printf("----\r\n\r\n");
-    printf("Number of tests passed: %d\r\n", (int)tests_passed);
-    printf("Number of tests failed: %d\r\n", (int)tests_failed);
-    printf("Coverage: %f %%\r\n", (float)((tests_passed) / ((float)(tests_passed + tests_failed)) * 100));
-    printf("----\r\n\r\n");
+    uint8_t my_arr[] = { 0x00, 0x01, 0xB5, 0xC6, 0xD7 };
+    printf_run("0102B5C6D7", "%5K", my_arr);
+    printf_run("0102B5", "%*K", 3, my_arr);
+    printf_run("01 02 B5", "% *K", 3, my_arr);
+    printf_run("0102b5c6d7", "%5k", my_arr);
+    printf_run("0102b5", "%*k", 3, my_arr);
+    printf_run("01 02 b5", "% *k", 3, my_arr);
 
     return 0;
 }
