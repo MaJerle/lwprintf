@@ -66,8 +66,7 @@ main(void) {
 
     lwprintf_init(lwprintf_output);
 
-    printf("%lf\r\n", num);
-    printf("%lf\r\n", num - (double)((long)(num)));
+    additional_format_specifiers();
 
     printf_run("% 3u", (unsigned)28);
     printf_run("% 3u", (unsigned)123456);
@@ -130,6 +129,8 @@ main(void) {
     printf_run("%llb abc", 123);
     printf_run("%llb abc", 123);
     printf_run("%b", 4);
+    //printf_run("%10b", 8);
+    //printf_run("%010b", 8);
 
     /* Floats */
     printf_run("%f", 12.13);

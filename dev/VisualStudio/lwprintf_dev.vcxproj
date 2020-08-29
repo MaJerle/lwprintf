@@ -93,6 +93,7 @@
       <Optimization>Disabled</Optimization>
       <PreprocessorDefinitions>WIN32;_DEBUG;_CONSOLE;LWPRINTF_DEV;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <BasicRuntimeChecks>Default</BasicRuntimeChecks>
+      <PreprocessToFile>false</PreprocessToFile>
     </ClCompile>
     <Link>
       <SubSystem>Console</SubSystem>
@@ -143,6 +144,7 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
+    <ClCompile Include="..\..\examples\additional_format_specifiers.c" />
     <ClCompile Include="..\..\lwprintf\src\lwprintf\lwprintf.c" />
     <ClCompile Include="..\..\lwprintf\src\system\lwprintf_sys_win32.c" />
     <ClCompile Include="main.c" />
