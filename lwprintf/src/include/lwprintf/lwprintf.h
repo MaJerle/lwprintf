@@ -95,7 +95,7 @@ int         lwprintf_snprintf_ex(lwprintf_t* const lw, char* s, size_t n, const 
  * \return          The number of characters that would have been written,
  *                      not counting the terminating null character.
  */
-#define     lwprintf_sprintf_ex(lw, s, format, ...)     lwprintf_snprintf((lw), (s), SIZE_MAX, (format), # __VA_ARGS__)
+#define     lwprintf_sprintf_ex(lw, s, format, ...)     lwprintf_snprintf((lw), (s), SIZE_MAX, (format), ## __VA_ARGS__)
 
 /**
  * \brief           Initialize default LwPRINTF instance
@@ -122,7 +122,7 @@ int         lwprintf_snprintf_ex(lwprintf_t* const lw, char* s, size_t n, const 
  * \return          The number of characters that would have been written if `n` had been sufficiently large,
  *                      not counting the terminating null character.
  */
-#define     lwprintf_printf(format, ...)                lwprintf_printf_ex(NULL, (format), # __VA_ARGS__)
+#define     lwprintf_printf(format, ...)                lwprintf_printf_ex(NULL, (format), ## __VA_ARGS__)
 
 /**
  * \brief           Write formatted data from variable argument list to sized buffer at default LwPRINTF instance
@@ -151,7 +151,7 @@ int         lwprintf_snprintf_ex(lwprintf_t* const lw, char* s, size_t n, const 
  * \return          The number of characters that would have been written if `n` had been sufficiently large,
  *                      not counting the terminating null character.
  */
-#define     lwprintf_snprintf(s, n, format, ...)        lwprintf_snprintf_ex(NULL, (s), (n), (format), # __VA_ARGS__)
+#define     lwprintf_snprintf(s, n, format, ...)        lwprintf_snprintf_ex(NULL, (s), (n), (format), ## __VA_ARGS__)
 
 /**
  * \brief           Write formatted data from variable argument list to sized buffer at default LwPRINTF instance
@@ -162,7 +162,7 @@ int         lwprintf_snprintf_ex(lwprintf_t* const lw, char* s, size_t n, const 
  * \return          The number of characters that would have been written,
  *                      not counting the terminating null character.
  */
-#define     lwprintf_sprintf(s, format, ...)            lwprintf_sprintf_ex(NULL, (s), (format), # __VA_ARGS__)
+#define     lwprintf_sprintf(s, format, ...)            lwprintf_sprintf_ex(NULL, (s), (format), ## __VA_ARGS__)
 
 /**
  * \}
