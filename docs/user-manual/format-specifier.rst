@@ -117,11 +117,13 @@ Column *Supported* gives an overview which specifiers are actually supported by 
 |             |           | ``f`` and ``F`` only differs in how the strings for an infinite number   |
 |             |           | or NaN are printed                                                       |
 |             |           | (``inf``, ``infinity`` and ``nan`` for ``f``;                            |
-|             |           | ``INF``, ``INFINITY`` and ``NAN`` for ``F``)                             |
+|             |           | ``INF``, ``INFINITY`` and ``NAN`` for ``F``).                            |
+|             |           | Currently it will print ``NaN`` when used                                |
 +-------------+-----------+--------------------------------------------------------------------------+
 | ``e`` ``E`` | Not yet   | Prints ``double`` in standard form ``[-]d.ddd e[+-]ddd``.                |
 |             |           | ``e`` uses lower-case and                                                |
 |             |           | ``E`` uses upper-case letter for exponent annotation.                    |
+|             |           | Currently it will print ``NaN`` when used                                |
 +-------------+-----------+--------------------------------------------------------------------------+
 | ``g`` ``G`` | Not yet   | Prints ``double`` in either normal or exponential notation,              |
 |             |           | whichever is more appropriate for its magnitude.                         |
@@ -129,6 +131,7 @@ Column *Supported* gives an overview which specifiers are actually supported by 
 |             |           | This type differs slightly from fixed-point notation                     |
 |             |           | in that insignificant zeroes to the right of the decimal point are       |
 |             |           | not included. Also, the decimal point is not included on whole numbers.  |
+|             |           | Currently it will print ``NaN`` when used                                |
 +-------------+-----------+--------------------------------------------------------------------------+
 | ``x`` ``X`` | Yes       | Prints ``unsigned int`` as a hexadecimal number. ``x`` uses lower-case   |
 |             |           | and ``X`` uses upper-case letters                                        |
@@ -142,7 +145,8 @@ Column *Supported* gives an overview which specifiers are actually supported by 
 | ``p``       | Yes       | Prints ``void *`` in an hex-based format.                                |
 |             |           | Reads input as ``unsigned int`` by default.                              |
 +-------------+-----------+--------------------------------------------------------------------------+
-| ``a`` ``A`` | Not yet   | Prints ``double`` in hexadecimal notation                                |
+| ``a`` ``A`` | Not yet   | Prints ``double`` in hexadecimal notation.                               |
+|             |           | Currently it will print ``NaN`` when used                                |
 +-------------+-----------+--------------------------------------------------------------------------+
 | ``n``       | Yes       | Prints nothing but writes the number of characters successfully          |
 |             |           | written so far into an integer pointer parameter                         |
@@ -165,6 +169,11 @@ Those are more targeting embedded systems although they may be used in any gener
 |             | Use *width* field to specify length of input array.                      |
 |             | Use ``K`` for upper-case hex letters, ``k`` for small.                   |
 +-------------+--------------------------------------------------------------------------+
+
+.. literalinclude:: ../../examples/additional_format_specifiers.c
+    :language: c
+    :linenos:
+    :caption: Additional format specifiers
 
 .. toctree::
     :maxdepth: 2
