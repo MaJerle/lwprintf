@@ -210,7 +210,7 @@ prv_out_fn_print(lwprintf_int_t* p, const char c) {
  */
 static int
 prv_out_fn_write_buff(lwprintf_int_t* p, const char c) {
-    if (p->n < (p->buff_size - 1)) {
+    if (c != '\0' && p->n < (p->buff_size - 1)) {
         p->buff[p->n++] = c;
         p->buff[p->n] = '\0';
         return 1;
@@ -505,8 +505,8 @@ prv_format(lwprintf_int_t* p, va_list arg) {
     const char* fmt = p->fmt;
 
 #if LWPRINTF_CFG_OS
-    if (!lwprintf_sys_mutex_isvalid(&p->lw)     /* Invalid mutex handle */
-        || !lwprintf_sys_mutex_wait(&p->lw)) {  /* Cannot acquire mutex */
+    if (!lwprintf_sys_mutex_isvalid(&p->lw->mutex)  /* Invalid mutex handle */
+        || !lwprintf_sys_mutex_wait(&p->lw->mutex)) {   /* Cannot acquire mutex */
         return 0;
     }
 #endif /* LWPRINTF_CFG_OS */
@@ -730,13 +730,19 @@ prv_format(lwprintf_int_t* p, va_list arg) {
 #if LWPRINTF_CFG_SUPPORT_TYPE_FLOAT
             case 'f':
             case 'F':
-                prv_double_to_str(p, (double)va_arg(arg, double));
+                /* Double number */
+                (void)va_arg(arg, double);      /* Read argument to ignore it and move to next one */
+                prv_out_str_raw(p, "NaN", 3);   /* Print string */
+                //prv_double_to_str(p, (double)va_arg(arg, double));
                 break;
 #endif /* LWPRINTF_CFG_SUPPORT_TYPE_FLOAT */
             case 'e':
             case 'E':
             case 'g':
             case 'G':
+                /* Double number */
+                (void)va_arg(arg, double);      /* Read argument to ignore it and move to next one */
+                prv_out_str_raw(p, "NaN", 3);   /* Print string */
                 break;
             case 'n': {
                 int* ptr = (void*)va_arg(arg, int*);
@@ -781,7 +787,7 @@ prv_format(lwprintf_int_t* p, va_list arg) {
     }
     p->out_fn(p, '\0');                         /* Output last zero number */
 #if LWPRINTF_CFG_OS
-    lwprintf_sys_mutex_release(&p->lw);
+    lwprintf_sys_mutex_release(&p->lw->mutex);
 #endif /* LWPRINTF_CFG_OS */
     return 1;
 }

@@ -136,6 +136,14 @@ main(void) {
     printf_run("%.3f", 12.1337);
     printf_run("%.25f", 12.1337);
 
+    /* Engineering */
+    printf_run("%e", 2.5f);
+    printf_run("%e", 43433.23f);
+
+    /* A */
+    printf_run("%a", 2.5f);
+    printf_run("%a", 43433.23f);
+
     /* Array test */
     uint8_t my_arr[] = { 0x00, 0x01, 0x02, 0x03, 0x04 };
     printf_run("%5K", my_arr);              /* Print fixed length */
