@@ -13,10 +13,15 @@ This is due to the fact that direct printing functions use same output function
 to print single character. When called from multiple threads, one thread
 may preempt another, causing strange output string.
 
+.. literalinclude:: ../examples_src/example_multi_thread_corrupted_text.c
+    :language: c
+    :linenos:
+    :caption: Multiple threads printing at the same time without thread-safety enabled
+
 LwPRINTF therefore comes with a solution that introduces mutexes to lock print functions
 when in use from within single thread context.
 
-.. tip::
+.. note::
     If application does not have any issues concerning mixed output,
     it is safe to disable OS support in OS environment.
     This will not have any negative effect on performance or memory corruption.
