@@ -57,6 +57,13 @@ extern "C" {
 #define LWPRINTF_UNUSED(x)          ((void)(x))
 
 /**
+ * \brief           Calculate size of statically allocated array
+ * \param[in]       x: Input array
+ * \return          Number of array elements
+ */
+#define LWPRINTF_ARRAYSIZE(x)       (sizeof(x) / sizeof((x)[0]))
+
+/**
  * \brief           Forward declaration for LwPRINTF instance
  */
 struct lwprintf;

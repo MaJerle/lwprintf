@@ -470,14 +470,22 @@ prv_signed_longlong_int_to_str(lwprintf_int_t* p, signed long long int num) {
  */
 static int
 prv_double_to_str(lwprintf_int_t* p, double num) {
+#if LWPRINTF_CFG_SUPPORT_LONG_LONG
+    long long integer_part, decimal_part, tmp;
+    char str[22];
+#else 
     long integer_part, decimal_part, tmp;
+    char str[11];
+#endif
     double decimal_part_dbl, diff;
     size_t i;
     int digits_cnt;
-    char str[11];
 
+#if LWPRINTF_CFG_SUPPORT_LONG_LONG
     /* Powers of 10 from beginning up to precision level */
-    static const powers_of_10[] = { 1E0, 1E1, 1E2, 1E3, 1E4, 1E5, 1E6, 1E7, 1E8, 1E9 };
+    static const long long int powers_of_10[] = {   1E00, 1E01, 1E02, 1E03, 1E04, 1E05, 1E06, 1E07, 1E08, 1E09,
+                                                    1E10, 1E11, 1E12, 1E13, 1E14, 1E15, 1E16, 1E17, 1E18};
+#endif
 
     /* Check for corner cases */
     if (num != num) {
@@ -503,8 +511,8 @@ prv_double_to_str(lwprintf_int_t* p, double num) {
     }
 
     /* Check precision data */
-    if (p->m.precision > 9) {
-        p->m.precision = 9;                     /* Limit to maximum precision */
+    if (p->m.precision > LWPRINTF_ARRAYSIZE(powers_of_10)) {
+        p->m.precision = LWPRINTF_ARRAYSIZE(powers_of_10);      /* Limit to maximum precision */
     } else if (!p->m.flags.precision) {
         p->m.flags.precision = 1;
         p->m.precision = LWPRINTF_CFG_FLOAT_PRECISION_DEFAULT;  /* Default prevision when not used */
@@ -519,19 +527,27 @@ prv_double_to_str(lwprintf_int_t* p, double num) {
     /* Rounding check */
     if (diff > 0.5f) {
         ++decimal_part;
-        if (decimal_part > powers_of_10[p->m.precision]) {
+        if (decimal_part >= powers_of_10[p->m.precision]) {
             decimal_part = 0;
             ++integer_part;
         }
-    }
-
-    /* @todo: When no precision is used, check if need to round up anything */
-    if (p->m.precision == 0) {
-
+    } else if (diff < 0.5f) {
+        /* Used in separate if, since comparing float to == will certainly result to false */
+    } else {
+        /* Difference is exactly 0.5 */
+        if (decimal_part == 0) {
+            ++integer_part;
+        } else {
+            ++decimal_part;
+        }
     }
 
     /* Calculate number of digits for integer part */
-    for (digits_cnt = 0, tmp = integer_part; tmp > 0; ++digits_cnt, tmp /= 10) {}
+    if (integer_part == 0) {
+        digits_cnt = 1;
+    } else {
+        for (digits_cnt = 0, tmp = integer_part; tmp > 0; ++digits_cnt, tmp /= 10) {}
+    }
     if (p->m.precision > 0) {
         /* Add precision digits + dot separator */
         digits_cnt += p->m.precision + 1;
@@ -539,26 +555,34 @@ prv_double_to_str(lwprintf_int_t* p, double num) {
 
     /* Output strings */
     prv_out_str_before(p, digits_cnt);
-    for (i = 0; integer_part > 0; integer_part /= 10, ++i) {
-        str[i] = (integer_part % 10) + '0';
+    if (integer_part == 0) {
+        str[0] = '0';
+        i = 1;
+    } else {
+        for (i = 0; integer_part > 0; integer_part /= 10, ++i) {
+            str[i] = (integer_part % 10) + '0';
+        }
     }
+    /* Output integer part */
     for (; i > 0; --i) {
         p->out_fn(p, str[i - 1]);
     }
-    p->out_fn(p, '.');
-    for (i = 0; decimal_part > 0; decimal_part /= 10, ++i) {
-        str[i] = (decimal_part % 10) + '0';
-    }
-    for (; i > 0; --i) {
-        p->out_fn(p, str[i - 1]);
+    /* Output decimal part */
+    if (p->m.precision > 0) {
+        p->out_fn(p, '.');
+        for (i = 0; decimal_part > 0; decimal_part /= 10, ++i) {
+            str[i] = (decimal_part % 10) + '0';
+        }
+        for (size_t x = i; x < p->m.precision; ++x) {
+            p->out_fn(p, '0');
+        }
+        for (; i > 0; --i) {
+            p->out_fn(p, str[i - 1]);
+        }
     }
     prv_out_str_after(p, digits_cnt);
 
-    /* Output integer part */
-    /* Output decimal part */
-
-    /* Process number itself */
-    return 0;
+    return 1;
 }
 
 #endif /* LWPRINTF_CFG_SUPPORT_TYPE_FLOAT */

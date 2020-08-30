@@ -67,6 +67,12 @@ main(void) {
 
     lwprintf_init(lwprintf_output);
 
+    /* Float tests */
+    for (float a = 0.0f; a < 1.0f; a += 0.01f) {
+        printf_run(NULL, "%10f; %10.1f; %10.0f", 1.99f + a, 1.99f + a, 1.99f + a);
+    }
+    return 0;
+
     additional_format_specifiers();
 
     printf_run(" 28",               "% 3u", (unsigned)28);
@@ -129,7 +135,6 @@ main(void) {
     printf_run(NULL, "%p", &tests_passed);
     printf_run(NULL, "0X%p", &tests_passed);
     printf_run(NULL, "0x%p", &tests_passed);
-
 
     /* Print final output */
     printf("\r\n\r\n------------------------\r\n\r\n");

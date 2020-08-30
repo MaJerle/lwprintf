@@ -3,10 +3,23 @@
 Thread safety
 =============
 
-With default configuration, LwPRINTF library is *not* thread safe.
-This means whenever it is used with operating system, user must resolve it with care.
+LwPRINTF uses re-entrant functions, especially the one that format string to user application buffer.
+It is fully allowed to access to the same LwPRINTF instance from multiple operating-system threads.
 
-Library has locking mechanism support for thread safety, which needs to be enabled manually.
+However, when it comes to direct print functions, such as :cpp:func:`lwprintf_printf_ex` (or any other similar),
+calling those functions from multiple threads may introduce mixed output stream of data.
+
+This is due to the fact that direct printing functions use same output function
+to print single character. When called from multiple threads, one thread
+may preempt another, causing strange output string.
+
+LwPRINTF therefore comes with a solution that introduces mutexes to lock print functions
+when in use from within single thread context.
+
+.. tip::
+    If application does not have any issues concerning mixed output,
+    it is safe to disable OS support in OS environment.
+    This will not have any negative effect on performance or memory corruption.
 
 .. tip::
     To enable thread-safety support, parameter ``LWPRINTF_CFG_OS`` must be set to ``1``.
