@@ -12,7 +12,9 @@
  */
 int
 lwprintf_output(int ch, lwprintf_t* lw) {
-    printf("%c", (char)ch);
+    if (ch != '\0') {
+        printf("%c", (char)ch);
+    }
     return ch;
 }
 
@@ -68,8 +70,9 @@ main(void) {
     lwprintf_init(lwprintf_output);
 
     /* Float tests */
-    for (float a = 0.0f; a < 1.0f; a += 0.01f) {
-        printf_run(NULL, "%10f; %10.1f; %10.0f", 1.99f + a, 1.99f + a, 1.99f + a);
+    for (float a = 0.0f; a < 2.0f; a += 0.01f) {
+        printf_run(NULL, "%10f; %10.1f; %10.0f; %+10f", 1.99f + a, 1.99f + a, 1.99f + a, 1.99 + a);
+        printf_run(NULL, "%10f; %10.1f; %10.0f; %+10f", -1.99f + a, -1.99f + a, -1.99f + a, -1.99 + a);
     }
     return 0;
 
