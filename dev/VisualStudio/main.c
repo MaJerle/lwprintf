@@ -70,10 +70,37 @@ main(void) {
     lwprintf_init(lwprintf_output);
 
     /* Float tests */
+    printf_run(NULL, "%e", 123.456);
+    printf_run(NULL, "%e", -123.456);
+    printf_run(NULL, "%e", 0.123456);
+    printf_run(NULL, "%e", -0.123456);
+    printf_run(NULL, "%.4e", 123.456);
+    printf_run(NULL, "%.4e", -123.456);
+    printf_run(NULL, "%.4e", 0.123456);
+    printf_run(NULL, "%.4e", -0.123456);
+    printf_run(NULL, "%.0e", 123.456);
+    printf_run(NULL, "%.0e", -123.456);
+    printf_run(NULL, "%.0e", 0.123456);
+    printf_run(NULL, "%.0e", -0.123456);
+    printf_run(NULL, "%22.4e", 123.456);
+    printf_run(NULL, "%22.4e", -123.456);
+    printf_run(NULL, "%22.4e", 0.123456);
+    printf_run(NULL, "%22.4e", -0.123456);
+    printf_run(NULL, "%022.4e", 123.456);
+    printf_run(NULL, "%022.4e", -123.456);
+    printf_run(NULL, "%022.4e", 0.123456);
+    printf_run(NULL, "%022.4e", -0.123456);
+
+    /* Add zeros if unused... tbd */
+    printf_run(NULL, "%22.33e", 123.456);
+    printf_run(NULL, "%22.33e", -123.456);
+    printf_run(NULL, "%22.33e", 0.123456);
+    printf_run(NULL, "%22.33e", -0.123456);
+    /*
     for (float a = 0.0f; a < 2.0f; a += 0.01f) {
         printf_run(NULL, "%10f; %10.1f; %10.0f; %+10f", 1.99f + a, 1.99f + a, 1.99f + a, 1.99 + a);
         printf_run(NULL, "%10f; %10.1f; %10.0f; %+10f", -1.99f + a, -1.99f + a, -1.99f + a, -1.99 + a);
-    }
+    }*/
     return 0;
 
     additional_format_specifiers();

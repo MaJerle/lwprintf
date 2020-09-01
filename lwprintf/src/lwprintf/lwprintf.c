@@ -131,6 +131,7 @@ typedef struct lwprintf_int {
         int precision;                          /*!< Selected precision */
         int width;                              /*!< Text width indicator */
         uint8_t base;                           /*!< Base for number format output */
+        char type;                              /*!< Format type */
     } m;                                        /*!< Block that is reset on every start of format */
 } lwprintf_int_t;
 
@@ -479,13 +480,29 @@ prv_double_to_str(lwprintf_int_t* p, double num) {
 #endif
     double decimal_part_dbl, diff;
     size_t i;
-    int digits_cnt;
+    int digits_cnt, exp_cnt;
 
 #if LWPRINTF_CFG_SUPPORT_LONG_LONG
     /* Powers of 10 from beginning up to precision level */
     static const long long int powers_of_10[] = {   1E00, 1E01, 1E02, 1E03, 1E04, 1E05, 1E06, 1E07, 1E08, 1E09,
                                                     1E10, 1E11, 1E12, 1E13, 1E14, 1E15, 1E16, 1E17, 1E18};
 #endif
+
+    /* Engineering mode */
+    if (p->m.type == 'e') {
+        /* Check negative status */
+        if (num < 0) {
+            p->m.flags.is_negative = 1;
+            num = -num;
+        }
+
+        /* Normalize number to be between 0 and 1 and count decimals for exponent */
+        if (num < 1) {
+            for (exp_cnt = 0; num < 1; num *= 10, --exp_cnt) {}
+        } else {
+            for (exp_cnt = 0; num >= 10; num /= 10, ++exp_cnt) {}
+        }
+    }
 
     /* Check for corner cases */
     if (num != num) {
@@ -505,7 +522,8 @@ prv_double_to_str(lwprintf_int_t* p, double num) {
     if (0) {
         /* Go with format of xx.yyEzz instead*/
     }
-    if (num < 0) {
+    /* For engineering mode, this check has been done already */
+    if (p->m.type != 'e' && num < 0) {
         p->m.flags.is_negative = 1;
         num = -num;
     }
@@ -553,6 +571,12 @@ prv_double_to_str(lwprintf_int_t* p, double num) {
         digits_cnt += p->m.precision + 1;
     }
 
+    /* Engineering mode */
+    if (p->m.type == 'e') {
+        /* Format is +Exxx, so add 4 or 5 characters (max is 307, min is 00 for exponent) */
+        digits_cnt += 4 + (exp_cnt >= 100 || exp_cnt <= -100);
+    }
+
     /* Output strings */
     prv_out_str_before(p, digits_cnt);
     if (integer_part == 0) {
@@ -560,7 +584,7 @@ prv_double_to_str(lwprintf_int_t* p, double num) {
         i = 1;
     } else {
         for (i = 0; integer_part > 0; integer_part /= 10, ++i) {
-            str[i] = (integer_part % 10) + '0';
+            str[i] = '0' + (char)(integer_part % 10);
         }
     }
     /* Output integer part */
@@ -571,7 +595,7 @@ prv_double_to_str(lwprintf_int_t* p, double num) {
     if (p->m.precision > 0) {
         p->out_fn(p, '.');
         for (i = 0; decimal_part > 0; decimal_part /= 10, ++i) {
-            str[i] = (decimal_part % 10) + '0';
+            str[i] = '0' + (decimal_part % 10);
         }
         for (size_t x = i; x < p->m.precision; ++x) {
             p->out_fn(p, '0');
@@ -579,6 +603,21 @@ prv_double_to_str(lwprintf_int_t* p, double num) {
         for (; i > 0; --i) {
             p->out_fn(p, str[i - 1]);
         }
+    }
+
+    /* Engineering mode */
+    if (p->m.type == 'e') {
+        p->out_fn(p, p->m.flags.uc ? 'E' : 'e');
+        p->out_fn(p, exp_cnt >= 0 ? '+' : '-');
+        if (exp_cnt < 0) {
+            exp_cnt = -exp_cnt;
+        }
+        if (exp_cnt >= 100) {
+            p->out_fn(p, '0' + (char)(exp_cnt / 100));
+            exp_cnt /= 100;
+        }
+        p->out_fn(p, '0' + (char)(exp_cnt / 10));
+        p->out_fn(p, '0' + (char)(exp_cnt % 10));
     }
     prv_out_str_after(p, digits_cnt);
 
@@ -717,9 +756,12 @@ prv_format(lwprintf_int_t* p, va_list arg) {
         }
 
         /* Check type */
-        switch (*fmt) {
+        p->m.type = *fmt;
+        if (*fmt >= 'A' && *fmt <= 'Z') {
+            p->m.flags.uc = 1;
+        }
+        switch (*fmt + ((*fmt >= 'A' && *fmt <= 'Z') ? 0x20 : 0)) {
             case 'a':
-            case 'A':
                 /* Double in hexadecimal notation */
                 (void)va_arg(arg, double);      /* Read argument to ignore it and move to next one */
                 prv_out_str_raw(p, "NaN", 3);   /* Print string */
@@ -743,11 +785,9 @@ prv_format(lwprintf_int_t* p, va_list arg) {
                 break;
             }
             case 'b':
-            case 'B':
             case 'o':
             case 'u':
             case 'x':
-            case 'X':
                 if (*fmt == 'b' || *fmt == 'B') {
                     p->m.base = 2;
                 } else if (*fmt == 'o') {
@@ -757,7 +797,6 @@ prv_format(lwprintf_int_t* p, va_list arg) {
                 } else if (*fmt == 'x' || *fmt == 'X') {
                     p->m.base = 16;
                 }
-                p->m.flags.uc = *fmt == 'X' || *fmt == 'B'; /* Select if uppercase text shall be printed */
                 p->m.flags.space = 0;                   /* Space flag has no meaning here */
 
                 /* Check for different length parameters */
@@ -826,19 +865,13 @@ prv_format(lwprintf_int_t* p, va_list arg) {
 #endif /* LWPRINTF_CFG_SUPPORT_TYPE_POINTER */
 #if LWPRINTF_CFG_SUPPORT_TYPE_FLOAT
             case 'f':
-            case 'F':
                 /* Double number */
-                p->m.flags.uc = *fmt == 'F';
                 prv_double_to_str(p, (double)va_arg(arg, double));
                 break;
             case 'e':
-            case 'E':
-            case 'g':
-            case 'G':
-                /* Double number */
-                p->m.flags.uc = *fmt == 'E' || *fmt == 'G';
-                (void)va_arg(arg, double);      /* Read argument to ignore it and move to next one */
-                prv_out_str_raw(p, "NaN", 3);   /* Print string */
+            case 'g': /* Not yet supported properly */
+                /* Double number in engineering format */
+                prv_double_to_str(p, (double)va_arg(arg, double));
                 break;
             case 'n': {
                 int* ptr = (void*)va_arg(arg, int*);
@@ -857,8 +890,7 @@ prv_format(lwprintf_int_t* p, va_list arg) {
              * char arr[] = {0, 1, 2, 3, 255};
              * "%5K" would produce 00010203FF
              */
-            case 'k':
-            case 'K': {
+            case 'k': {
                 unsigned char* ptr = (void *)va_arg(arg, unsigned char *);  /* Get input parameter as unsigned char pointer */
                 int len = p->m.width;
                 uint8_t is_space = p->m.flags.space == 1;
@@ -867,7 +899,6 @@ prv_format(lwprintf_int_t* p, va_list arg) {
                     break;
                 }
 
-                p->m.flags.uc = *fmt == 'K';    /* Set if uppercase */
                 p->m.flags.zero = 1;            /* Prepend with zeros if necessary */
                 p->m.width = 2;                 /* Each number is 2 chars min/max */
                 p->m.base = 16;                 /* Hex format */
