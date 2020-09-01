@@ -119,18 +119,16 @@ Column *Supported* gives an overview which specifiers are actually supported by 
 |             |           | (``inf``, ``infinity`` and ``nan`` for ``f``;                            |
 |             |           | ``INF``, ``INFINITY`` and ``NAN`` for ``F``).                            |
 +-------------+-----------+--------------------------------------------------------------------------+
-| ``e`` ``E`` | Not yet   | Prints ``double`` in standard form ``[-]d.ddd e[+-]ddd``.                |
+| ``e`` ``E`` | Yes       | Prints ``double`` in standard form ``[-]d.ddd e[+-]ddd``.                |
 |             |           | ``e`` uses lower-case and                                                |
 |             |           | ``E`` uses upper-case letter for exponent annotation.                    |
-|             |           | Currently it will print ``NaN`` when used                                |
 +-------------+-----------+--------------------------------------------------------------------------+
-| ``g`` ``G`` | Not yet   | Prints ``double`` in either normal or exponential notation,              |
+| ``g`` ``G`` | Yes       | Prints ``double`` in either normal or exponential notation,              |
 |             |           | whichever is more appropriate for its magnitude.                         |
 |             |           | ``g`` uses lower-case letters, ``G`` uses upper-case letters.            |
 |             |           | This type differs slightly from fixed-point notation                     |
 |             |           | in that insignificant zeroes to the right of the decimal point are       |
 |             |           | not included. Also, the decimal point is not included on whole numbers.  |
-|             |           | Currently it will print ``NaN`` when used                                |
 +-------------+-----------+--------------------------------------------------------------------------+
 | ``x`` ``X`` | Yes       | Prints ``unsigned int`` as a hexadecimal number. ``x`` uses lower-case   |
 |             |           | and ``X`` uses upper-case letters                                        |
@@ -150,6 +148,22 @@ Column *Supported* gives an overview which specifiers are actually supported by 
 | ``n``       | Yes       | Prints nothing but writes the number of characters successfully          |
 |             |           | written so far into an integer pointer parameter                         |
 +-------------+-----------+--------------------------------------------------------------------------+
+
+Notes about float types
+^^^^^^^^^^^^^^^^^^^^^^^
+
+It is important to understand how library works under the hood to understand limitations on floating-point numbers.
+When it comes to level of precision, maximum number of digits is linked to support ``long`` or ``long long`` integer types.
+
+.. note::
+    When ``long long`` type is supported by the compiler (usually part of C99 or later),
+    maximum number of valid digits is ``18``, or ``9`` digits if system supports only ``long`` data types.
+
+If application tries to use more precision digits than maximum, remaining digits are automatically printed as all ``0``.
+As a consequence, output using LwPRINTF library may be different in comparison to other ``printf`` implementations.
+
+.. tip::
+    This level of precision is normally not used and also not useful for ``float`` data types.
 
 Additional specifier types
 **************************

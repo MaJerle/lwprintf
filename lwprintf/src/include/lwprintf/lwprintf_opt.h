@@ -100,8 +100,8 @@ extern "C" {
  * \note            \ref LWPRINTF_CFG_SUPPORT_TYPE_FLOAT has to be enabled to use this feature
  *
  */
-#ifndef LWPRINTF_CFG_SUPPORT_TYPE_ENGINNERING
-#define LWPRINTF_CFG_SUPPORT_TYPE_ENGINNERING       1
+#ifndef LWPRINTF_CFG_SUPPORT_TYPE_ENGINEERING
+#define LWPRINTF_CFG_SUPPORT_TYPE_ENGINEERING       1
 #endif
 
 /**

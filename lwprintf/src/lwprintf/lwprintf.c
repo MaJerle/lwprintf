@@ -41,12 +41,19 @@
 #endif /* LWPRINTF_CFG_OS */
 
 /* Static checks */
-#if LWPRINTF_CFG_SUPPORT_TYPE_ENGINNERING && !LWPRINTF_CFG_SUPPORT_TYPE_FLOAT
+#if LWPRINTF_CFG_SUPPORT_TYPE_ENGINEERING && !LWPRINTF_CFG_SUPPORT_TYPE_FLOAT
 #error "Cannot use engineering type without float!"
-#endif /*  */
+#endif /* LWPRINTF_CFG_SUPPORT_TYPE_ENGINEERING && !LWPRINTF_CFG_SUPPORT_TYPE_FLOAT */
 
 #define CHARISNUM(x)                    ((x) >= '0' && (x) <= '9')
 #define CHARTONUM(x)                    ((x) - '0')
+
+/* Define custom types */
+#if LWPRINTF_CFG_SUPPORT_LONG_LONG
+typedef long long int float_long_t;
+#else
+typedef long int float_long_t;
+#endif /* LWPRINTF_CFG_SUPPORT_LONG_LONG */
 
 /**
  * \brief           Outputs any integer type to stream
@@ -82,10 +89,10 @@
 /**
  * \brief           Check for negative input number before outputting signed integers
  */
-#define SIGNED_INT_CHECK_NEGATIVE {         \
-    if (num < 0) {                          \
-        p->m.flags.is_negative = 1;         \
-        num = -num;                         \
+#define SIGNED_CHECK_NEGATIVE(pp, nnum) {   \
+    if ((nnum) < 0) {                       \
+        (pp)->m.flags.is_negative = 1;      \
+        nnum = -(nnum);                     \
     }                                       \
 }
 
@@ -236,7 +243,7 @@ prv_parse_num(const char** format) {
 static int
 prv_out_str_before(lwprintf_int_t* p, size_t buff_size) {
     /* Check for width */
-    if (p->m.width > 0 
+    if (p->m.width > 0
         /* If number is negative, add negative sign or if positive and has plus sign forced */
         && (p->m.flags.is_negative || p->m.flags.plus)) {
         --p->m.width;
@@ -434,7 +441,7 @@ prv_umaxt_to_str(lwprintf_int_t* p, uintmax_t num) {
  */
 static int
 prv_signed_int_to_str(lwprintf_int_t* p, signed int num) {
-    SIGNED_INT_CHECK_NEGATIVE;
+    SIGNED_CHECK_NEGATIVE(p, num);
     return prv_unsigned_int_to_str(p, num);
 }
 
@@ -446,7 +453,7 @@ prv_signed_int_to_str(lwprintf_int_t* p, signed int num) {
  */
 static int
 prv_signed_long_int_to_str(lwprintf_int_t* p, signed long int num) {
-    SIGNED_INT_CHECK_NEGATIVE;
+    SIGNED_CHECK_NEGATIVE(p, num);
     return prv_unsigned_long_int_to_str(p, num);
 }
 
@@ -460,7 +467,7 @@ prv_signed_long_int_to_str(lwprintf_int_t* p, signed long int num) {
  */
 static int
 prv_signed_longlong_int_to_str(lwprintf_int_t* p, signed long long int num) {
-    SIGNED_INT_CHECK_NEGATIVE;
+    SIGNED_CHECK_NEGATIVE(p, num);
     return prv_unsigned_longlong_int_to_str(p, num);
 }
 
@@ -476,43 +483,25 @@ prv_signed_longlong_int_to_str(lwprintf_int_t* p, signed long long int num) {
  */
 static int
 prv_double_to_str(lwprintf_int_t* p, double num) {
+    float_long_t integer_part, decimal_part, tmp;
 #if LWPRINTF_CFG_SUPPORT_LONG_LONG
-    long long integer_part, decimal_part, tmp;
     char str[22];
-#else 
-    long integer_part, decimal_part, tmp;
+#else
     char str[11];
 #endif /* LWPRINTF_CFG_SUPPORT_LONG_LONG */
-    double decimal_part_dbl, diff;
+    double decimal_part_dbl, diff, orig_num = num;
     size_t i;
-    int digits_cnt;
-#if LWPRINTF_CFG_SUPPORT_TYPE_ENGINNERING 
+    int digits_cnt, chosen_precision;
+#if LWPRINTF_CFG_SUPPORT_TYPE_ENGINEERING
     int exp_cnt;
-#endif /* LWPRINTF_CFG_SUPPORT_TYPE_ENGINNERING */
+#endif /* LWPRINTF_CFG_SUPPORT_TYPE_ENGINEERING */
 
-#if LWPRINTF_CFG_SUPPORT_LONG_LONG
     /* Powers of 10 from beginning up to precision level */
-    static const long long int powers_of_10[] = {   1E00, 1E01, 1E02, 1E03, 1E04, 1E05, 1E06, 1E07, 1E08, 1E09,
-                                                    1E10, 1E11, 1E12, 1E13, 1E14, 1E15, 1E16, 1E17, 1E18};
-#endif
-
-#if LWPRINTF_CFG_SUPPORT_TYPE_ENGINNERING
-    /* Engineering mode */
-    if (p->m.type == 'e') {
-        /* Check negative status */
-        if (num < 0) {
-            p->m.flags.is_negative = 1;
-            num = -num;
-        }
-
-        /* Normalize number to be between 0 and 1 and count decimals for exponent */
-        if (num < 1) {
-            for (exp_cnt = 0; num < 1; num *= 10, --exp_cnt) {}
-        } else {
-            for (exp_cnt = 0; num >= 10; num /= 10, ++exp_cnt) {}
-        }
-    }
-#endif /* LWPRINTF_CFG_SUPPORT_TYPE_ENGINNERING */
+    static const float_long_t powers_of_10[] = {   1E00, 1E01, 1E02, 1E03, 1E04, 1E05, 1E06, 1E07, 1E08, 1E09,
+#if LWPRINTF_CFG_SUPPORT_LONG_LONG
+                                                    1E10, 1E11, 1E12, 1E13, 1E14, 1E15, 1E16, 1E17, 1E18,
+#endif /* LWPRINTF_CFG_SUPPORT_LONG_LONG */
+    };
 
     /* Check for corner cases */
     if (num != num) {
@@ -528,29 +517,60 @@ prv_double_to_str(lwprintf_int_t* p, double num) {
         return prv_out_str(p, s_ptr, p->m.flags.plus ? 4 : 3);
     }
 
-    /* Maximum number to be defined */
-    if (0) {
-        /* Go with format of xx.yyEzz instead*/
+    /* Check sign of the number */
+    SIGNED_CHECK_NEGATIVE(p, num);
+    orig_num = num;
+
+#if LWPRINTF_CFG_SUPPORT_TYPE_ENGINEERING
+    /* Engineering mode */
+    if (p->m.type == 'e' || p->m.type == 'g'
+        || num > (powers_of_10[LWPRINTF_ARRAYSIZE(powers_of_10) - 1])) {/* More vs what float can hold */
+        if (p->m.type != 'g') {
+            p->m.type = 'e';
+        }
+
+        /* Normalize number to be between 0 and 1 and count decimals for exponent */
+        if (num < 1) {
+            for (exp_cnt = 0; num < 1; num *= 10, --exp_cnt) {}
+        } else {
+            for (exp_cnt = 0; num >= 10; num /= 10, ++exp_cnt) {}
+        }
     }
-    /* For engineering mode, this check has been done already */
-    if (p->m.type != 'e' && num < 0) {
-        p->m.flags.is_negative = 1;
-        num = -num;
-    }
+#endif /* LWPRINTF_CFG_SUPPORT_TYPE_ENGINEERING */
 
     /* Check precision data */
-    if (p->m.precision > LWPRINTF_ARRAYSIZE(powers_of_10)) {
-        p->m.precision = LWPRINTF_ARRAYSIZE(powers_of_10);      /* Limit to maximum precision */
+    chosen_precision = p->m.precision;
+    if (p->m.precision >= LWPRINTF_ARRAYSIZE(powers_of_10) - 1) {
+        p->m.precision = LWPRINTF_ARRAYSIZE(powers_of_10) - 1;  /* Limit to maximum precision */
     } else if (!p->m.flags.precision) {
         p->m.flags.precision = 1;
         p->m.precision = LWPRINTF_CFG_FLOAT_PRECISION_DEFAULT;  /* Default prevision when not used */
+        chosen_precision = p->m.precision;
+    }
+
+    /* Check if type is g and decide if final output should be 'f' or 'e' */
+    if (p->m.type == 'g') {
+        /* As per standard to decide level of precision */
+        if (orig_num >= 1E-4 && orig_num <= 1E6) {
+            if (p->m.precision > exp_cnt) {
+                p->m.precision = p->m.precision - exp_cnt - 1;
+            } else {
+                p->m.precision = 0;
+            }
+            p->m.type = 'f';
+            num = orig_num;
+        } else if (p->m.precision > 0) {
+            p->m.type = 'e';
+            --p->m.precision;
+        }
+        chosen_precision = p->m.precision;
     }
 
     /* Get integer and decimal parts, both in integer format */
-    integer_part = (long)num;
+    integer_part = (float_long_t)num;
     decimal_part_dbl = (num - integer_part) * powers_of_10[p->m.precision];
-    decimal_part = (long)decimal_part_dbl;
-    diff = decimal_part_dbl - (long)decimal_part;
+    decimal_part = (float_long_t)decimal_part_dbl;
+    diff = decimal_part_dbl - (float_long_t)decimal_part;
 
     /* Rounding check */
     if (diff > 0.5f) {
@@ -576,18 +596,18 @@ prv_double_to_str(lwprintf_int_t* p, double num) {
     } else {
         for (digits_cnt = 0, tmp = integer_part; tmp > 0; ++digits_cnt, tmp /= 10) {}
     }
-    if (p->m.precision > 0) {
+    if (chosen_precision > 0) {
         /* Add precision digits + dot separator */
-        digits_cnt += p->m.precision + 1;
+        digits_cnt += chosen_precision + 1;
     }
 
-#if LWPRINTF_CFG_SUPPORT_TYPE_ENGINNERING
+#if LWPRINTF_CFG_SUPPORT_TYPE_ENGINEERING
     /* Increase number of digits to display */
     if (p->m.type == 'e') {
         /* Format is +Exxx, so add 4 or 5 characters (max is 307, min is 00 for exponent) */
         digits_cnt += 4 + (exp_cnt >= 100 || exp_cnt <= -100);
     }
-#endif /* LWPRINTF_CFG_SUPPORT_TYPE_ENGINNERING */
+#endif /* LWPRINTF_CFG_SUPPORT_TYPE_ENGINEERING */
 
     /* Output strings */
     prv_out_str_before(p, digits_cnt);
@@ -603,21 +623,29 @@ prv_double_to_str(lwprintf_int_t* p, double num) {
     for (; i > 0; --i) {
         p->out_fn(p, str[i - 1]);
     }
+
     /* Output decimal part */
     if (p->m.precision > 0) {
+        int x;
         p->out_fn(p, '.');
         for (i = 0; decimal_part > 0; decimal_part /= 10, ++i) {
             str[i] = '0' + (decimal_part % 10);
         }
-        for (size_t x = i; x < p->m.precision; ++x) {
+        /* Output relevant zeros first, string to print is opposite way */
+        for (x = i; x < p->m.precision; ++x) {
             p->out_fn(p, '0');
         }
+        /* Now print string itself */
         for (; i > 0; --i) {
             p->out_fn(p, str[i - 1]);
         }
+        /* Print ending zeros if selected precision is bigger than maximum supported */
+        for (;  x < chosen_precision; ++x) {
+            p->out_fn(p, '0');
+        }
     }
 
-#if LWPRINTF_CFG_SUPPORT_TYPE_ENGINNERING
+#if LWPRINTF_CFG_SUPPORT_TYPE_ENGINEERING
     /* Engineering mode */
     if (p->m.type == 'e') {
         p->out_fn(p, p->m.flags.uc ? 'E' : 'e');
@@ -632,7 +660,7 @@ prv_double_to_str(lwprintf_int_t* p, double num) {
         p->out_fn(p, '0' + (char)(exp_cnt / 10));
         p->out_fn(p, '0' + (char)(exp_cnt % 10));
     }
-#endif /* LWPRINTF_CFG_SUPPORT_TYPE_ENGINNERING */
+#endif /* LWPRINTF_CFG_SUPPORT_TYPE_ENGINEERING */
     prv_out_str_after(p, digits_cnt);
 
     return 1;
@@ -882,13 +910,13 @@ prv_format(lwprintf_int_t* p, va_list arg) {
                 /* Double number */
                 prv_double_to_str(p, (double)va_arg(arg, double));
                 break;
-#if LWPRINTF_CFG_SUPPORT_TYPE_ENGINNERING
+#if LWPRINTF_CFG_SUPPORT_TYPE_ENGINEERING
             case 'e':
             case 'g': /* Not yet supported properly */
                 /* Double number in engineering format */
                 prv_double_to_str(p, (double)va_arg(arg, double));
                 break;
-#endif /* LWPRINTF_CFG_SUPPORT_TYPE_ENGINNERING */
+#endif /* LWPRINTF_CFG_SUPPORT_TYPE_ENGINEERING */
 #endif /* LWPRINTF_CFG_SUPPORT_TYPE_FLOAT */
             case 'n': {
                 int* ptr = (void*)va_arg(arg, int*);
@@ -927,7 +955,7 @@ prv_format(lwprintf_int_t* p, va_list arg) {
                         p->out_fn(p, ' ');      /* Generate space between numbers */
                     }
                 }
-                break;   
+                break;
             }
 #endif /* LWPRINTF_CFG_SUPPORT_TYPE_BYTE_ARRAY */
             default:

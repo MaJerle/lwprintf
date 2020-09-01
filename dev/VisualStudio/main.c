@@ -69,8 +69,14 @@ main(void) {
 
     lwprintf_init(lwprintf_output);
 
+    printf_run(NULL, "%.4f", 3.23321321);
+    printf_run(NULL, "%.45f", 3.23321321);
+
+    printf_run(NULL, "%g", 1.23342);
+    printf_run(NULL, "%g", 12334.2);
+    printf_run(NULL, "%.8g", 0.000000123342);
+
     /* Float tests */
-    printf_run(NULL, "%e", 123.456);
     printf_run(NULL, "%e", -123.456);
     printf_run(NULL, "%e", 0.123456);
     printf_run(NULL, "%e", -0.123456);
@@ -102,7 +108,6 @@ main(void) {
         printf_run(NULL, "%10f; %10.1f; %10.0f; %+10f", 1.99f + a, 1.99f + a, 1.99f + a, 1.99 + a);
         printf_run(NULL, "%10f; %10.1f; %10.0f; %+10f", -1.99f + a, -1.99f + a, -1.99f + a, -1.99 + a);
     }*/
-    return 0;
 
     additional_format_specifiers();
 
