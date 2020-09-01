@@ -40,6 +40,11 @@
 #include "system/lwprintf_sys.h"
 #endif /* LWPRINTF_CFG_OS */
 
+/* Static checks */
+#if LWPRINTF_CFG_SUPPORT_TYPE_ENGINNERING && !LWPRINTF_CFG_SUPPORT_TYPE_FLOAT
+#error "Cannot use engineering type without float!"
+#endif /*  */
+
 #define CHARISNUM(x)                    ((x) >= '0' && (x) <= '9')
 #define CHARTONUM(x)                    ((x) - '0')
 
@@ -477,10 +482,13 @@ prv_double_to_str(lwprintf_int_t* p, double num) {
 #else 
     long integer_part, decimal_part, tmp;
     char str[11];
-#endif
+#endif /* LWPRINTF_CFG_SUPPORT_LONG_LONG */
     double decimal_part_dbl, diff;
     size_t i;
-    int digits_cnt, exp_cnt;
+    int digits_cnt;
+#if LWPRINTF_CFG_SUPPORT_TYPE_ENGINNERING 
+    int exp_cnt;
+#endif /* LWPRINTF_CFG_SUPPORT_TYPE_ENGINNERING */
 
 #if LWPRINTF_CFG_SUPPORT_LONG_LONG
     /* Powers of 10 from beginning up to precision level */
@@ -488,6 +496,7 @@ prv_double_to_str(lwprintf_int_t* p, double num) {
                                                     1E10, 1E11, 1E12, 1E13, 1E14, 1E15, 1E16, 1E17, 1E18};
 #endif
 
+#if LWPRINTF_CFG_SUPPORT_TYPE_ENGINNERING
     /* Engineering mode */
     if (p->m.type == 'e') {
         /* Check negative status */
@@ -503,6 +512,7 @@ prv_double_to_str(lwprintf_int_t* p, double num) {
             for (exp_cnt = 0; num >= 10; num /= 10, ++exp_cnt) {}
         }
     }
+#endif /* LWPRINTF_CFG_SUPPORT_TYPE_ENGINNERING */
 
     /* Check for corner cases */
     if (num != num) {
@@ -571,11 +581,13 @@ prv_double_to_str(lwprintf_int_t* p, double num) {
         digits_cnt += p->m.precision + 1;
     }
 
-    /* Engineering mode */
+#if LWPRINTF_CFG_SUPPORT_TYPE_ENGINNERING
+    /* Increase number of digits to display */
     if (p->m.type == 'e') {
         /* Format is +Exxx, so add 4 or 5 characters (max is 307, min is 00 for exponent) */
         digits_cnt += 4 + (exp_cnt >= 100 || exp_cnt <= -100);
     }
+#endif /* LWPRINTF_CFG_SUPPORT_TYPE_ENGINNERING */
 
     /* Output strings */
     prv_out_str_before(p, digits_cnt);
@@ -605,6 +617,7 @@ prv_double_to_str(lwprintf_int_t* p, double num) {
         }
     }
 
+#if LWPRINTF_CFG_SUPPORT_TYPE_ENGINNERING
     /* Engineering mode */
     if (p->m.type == 'e') {
         p->out_fn(p, p->m.flags.uc ? 'E' : 'e');
@@ -619,6 +632,7 @@ prv_double_to_str(lwprintf_int_t* p, double num) {
         p->out_fn(p, '0' + (char)(exp_cnt / 10));
         p->out_fn(p, '0' + (char)(exp_cnt % 10));
     }
+#endif /* LWPRINTF_CFG_SUPPORT_TYPE_ENGINNERING */
     prv_out_str_after(p, digits_cnt);
 
     return 1;
@@ -868,18 +882,20 @@ prv_format(lwprintf_int_t* p, va_list arg) {
                 /* Double number */
                 prv_double_to_str(p, (double)va_arg(arg, double));
                 break;
+#if LWPRINTF_CFG_SUPPORT_TYPE_ENGINNERING
             case 'e':
             case 'g': /* Not yet supported properly */
                 /* Double number in engineering format */
                 prv_double_to_str(p, (double)va_arg(arg, double));
                 break;
+#endif /* LWPRINTF_CFG_SUPPORT_TYPE_ENGINNERING */
+#endif /* LWPRINTF_CFG_SUPPORT_TYPE_FLOAT */
             case 'n': {
                 int* ptr = (void*)va_arg(arg, int*);
                 *ptr = p->n;                    /* Write current length */
 
                 break;
             }
-#endif /* LWPRINTF_CFG_SUPPORT_TYPE_FLOAT */
             case '%':
                 p->out_fn(p, '%');
                 break;

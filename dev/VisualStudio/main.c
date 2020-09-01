@@ -89,6 +89,7 @@ main(void) {
     printf_run(NULL, "%022.4e", 123.456);
     printf_run(NULL, "%022.4e", -123.456);
     printf_run(NULL, "%022.4e", 0.123456);
+    printf_run(NULL, "%e", 0.00000000123456);
     printf_run(NULL, "%022.4e", -0.123456);
 
     /* Add zeros if unused... tbd */

@@ -95,6 +95,16 @@ extern "C" {
 #endif
 
 /**
+ * \brief           Enables `1` or disables `0` support `%%e` engineering output type for float numbers
+ *
+ * \note            \ref LWPRINTF_CFG_SUPPORT_TYPE_FLOAT has to be enabled to use this feature
+ *
+ */
+#ifndef LWPRINTF_CFG_SUPPORT_TYPE_ENGINNERING
+#define LWPRINTF_CFG_SUPPORT_TYPE_ENGINNERING       1
+#endif
+
+/**
  * \brief           Specifies default number of precision for float number
  *
  */
