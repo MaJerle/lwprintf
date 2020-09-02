@@ -66,13 +66,14 @@ typedef struct {
 
     short digits_cnt_integer_part;              /*!< Number of digits for integer part */
     short digits_cnt_decimal_part;              /*!< Number of digits for decimal part */
+    short digits_cnt_decimal_part_useful;       /*!< Number of useful digits to print */
 } float_num_t;
 
 /* Powers of 10 from beginning up to precision level */
 static const float_long_t
 powers_of_10[] = { 1E00, 1E01, 1E02, 1E03, 1E04, 1E05, 1E06, 1E07, 1E08, 1E09,
 #if LWPRINTF_CFG_SUPPORT_LONG_LONG
-                                                    1E10, 1E11, 1E12, 1E13, 1E14, 1E15
+                    1E10, 1E11, 1E12, 1E13, 1E14, 1E15, 1E16, 1E17, 1E18
 #endif /* LWPRINTF_CFG_SUPPORT_LONG_LONG */
 };
 
@@ -500,7 +501,13 @@ prv_signed_longlong_int_to_str(lwprintf_int_t* p, signed long long int num) {
  * \brief           Calculate necessary parameters for input number
  */
 static void
-prv_calculate_dbl_num_data(lwprintf_int_t* p, float_num_t* n, double num) {
+prv_calculate_dbl_num_data(lwprintf_int_t* p, float_num_t* n, double num, const char type) {
+    memset(n, 0x00, sizeof(*n));
+
+    if (p->m.precision >= LWPRINTF_ARRAYSIZE(powers_of_10)) {
+        p->m.precision = LWPRINTF_ARRAYSIZE(powers_of_10) - 1;
+    }
+
     /*
      * Get integer and decimal parts, both in integer formats
      *
@@ -513,7 +520,7 @@ prv_calculate_dbl_num_data(lwprintf_int_t* p, float_num_t* n, double num) {
      *                                  This is used for rounding of last digit (if necessary)
      */
     n->integer_part = (float_long_t)num;
-    n->decimal_part_dbl = (num - n->integer_part) * powers_of_10[p->m.precision];
+    n->decimal_part_dbl = (num - n->integer_part) * (double)powers_of_10[p->m.precision];
     n->decimal_part = (float_long_t)n->decimal_part_dbl;
     n->diff = n->decimal_part_dbl - (float_long_t)n->decimal_part;
 
@@ -542,11 +549,17 @@ prv_calculate_dbl_num_data(lwprintf_int_t* p, float_num_t* n, double num) {
         float_long_t tmp;
         for (n->digits_cnt_integer_part = 0, tmp = n->integer_part; tmp > 0; ++n->digits_cnt_integer_part, tmp /= 10) {}
     }
-    if (n->decimal_part == 0) {
-        n->digits_cnt_decimal_part = 1;
-    } else {
-        float_long_t tmp;
-        for (n->digits_cnt_decimal_part = 0, tmp = n->decimal_part; tmp > 0; ++n->digits_cnt_decimal_part, tmp /= 10) {}
+    n->digits_cnt_decimal_part = p->m.precision;
+
+    /* Calculate minimum useful digits for decimal (excl last useless zeros) */
+    if (type == 'g') {
+        float_long_t tmp = n->decimal_part;
+        int adder, i;
+        for (adder = 0, i = 0; tmp > 0 || i < p->m.precision; tmp /= 10, n->digits_cnt_decimal_part_useful += adder, ++i) {
+            if (adder == 0 && (tmp % 10) > 0) {
+                adder = 1;
+            }
+        }
     }
 }
 
@@ -596,7 +609,9 @@ prv_double_to_str(lwprintf_int_t* p, double in_num) {
     /* Engineering mode check for number of exponents */
     if (def_type == 'e' || def_type == 'g'
         || in_num > (powers_of_10[LWPRINTF_ARRAYSIZE(powers_of_10) - 1])) {/* More vs what float can hold */
-        p->m.type = 'e';
+        if (p->m.type != 'g') {
+            p->m.type = 'e';
+        }
 
         /* Normalize number to be between 0 and 1 and count decimals for exponent */
         if (in_num < 1) {
@@ -609,7 +624,7 @@ prv_double_to_str(lwprintf_int_t* p, double in_num) {
 
     /* Check precision data */
     chosen_precision = p->m.precision;          /* This is default value coming from app */
-    if (p->m.precision >= LWPRINTF_ARRAYSIZE(powers_of_10) - 1) {
+    if (p->m.precision >= LWPRINTF_ARRAYSIZE(powers_of_10)) {
         p->m.precision = LWPRINTF_ARRAYSIZE(powers_of_10) - 1;  /* Limit to maximum precision */
         /*
          * Precision is lower than the one selected by app (or user).
@@ -647,7 +662,30 @@ prv_double_to_str(lwprintf_int_t* p, double in_num) {
      */
 
     /* Calculate data for number */
-    prv_calculate_dbl_num_data(p, &dblnum, in_num);
+    prv_calculate_dbl_num_data(p, &dblnum, def_type == 'e' ? in_num : orig_num, def_type);
+
+    /* Set type G */
+    if (def_type == 'g') {
+        /* As per standard to decide level of precision */
+        if (exp_cnt >= -4 && exp_cnt < p->m.precision) {
+            if (p->m.precision > exp_cnt) {
+                p->m.precision -= exp_cnt + 1;
+                chosen_precision -= exp_cnt + 1;
+            } else {
+                p->m.precision = 0;
+                chosen_precision = 0;
+            }
+            p->m.type = 'f';
+            in_num = orig_num;
+        } else {
+            p->m.type = 'e';
+            if (p->m.precision > 0) {
+                --p->m.precision;
+                --chosen_precision;
+            }
+        }
+        prv_calculate_dbl_num_data(p, &dblnum, in_num, def_type);
+    }
 
     /* Set number of digits to display */
     digits_cnt = dblnum.digits_cnt_integer_part;
@@ -686,20 +724,32 @@ prv_double_to_str(lwprintf_int_t* p, double in_num) {
         for (i = 0; dblnum.decimal_part > 0; dblnum.decimal_part /= 10, ++i) {
             str[i] = '0' + (dblnum.decimal_part % 10);
         }
-        
+
         /* Output relevant zeros first, string to print is opposite way */
-        for (x = i; x < p->m.precision; ++x) {
-            p->out_fn(p, '0');
+        if (def_type == 'g') {
+            /* TODO: This is to be checked */
+            for (x = 0; x < p->m.precision - i; ++x, --dblnum.digits_cnt_decimal_part_useful) {
+                p->out_fn(p, '0');
+            }
+        } else {
+            for (x = i; x < p->m.precision; ++x) {
+                p->out_fn(p, '0');
+            }
         }
 
         /* Now print string itself */
         for (; i > 0; --i) {
             p->out_fn(p, str[i - 1]);
+            if (def_type == 'g' && --dblnum.digits_cnt_decimal_part_useful == 0) {
+                break;
+            }
         }
 
         /* Print ending zeros if selected precision is bigger than maximum supported */
-        for (; x < chosen_precision; ++x) {
-            p->out_fn(p, '0');
+        if (def_type != 'g') {
+            for (; x < chosen_precision; ++x) {
+                p->out_fn(p, '0');
+            }
         }
     }
 
