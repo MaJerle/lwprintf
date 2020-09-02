@@ -484,14 +484,15 @@ prv_signed_longlong_int_to_str(lwprintf_int_t* p, signed long long int num) {
 static int
 prv_double_to_str(lwprintf_int_t* p, double num) {
     float_long_t integer_part, decimal_part, tmp;
+    double decimal_part_dbl, diff, orig_num = num;
+    size_t i;
+    int digits_cnt, chosen_precision;
+	
 #if LWPRINTF_CFG_SUPPORT_LONG_LONG
     char str[22];
 #else
     char str[11];
 #endif /* LWPRINTF_CFG_SUPPORT_LONG_LONG */
-    double decimal_part_dbl, diff, orig_num = num;
-    size_t i;
-    int digits_cnt, chosen_precision;
 #if LWPRINTF_CFG_SUPPORT_TYPE_ENGINEERING
     int exp_cnt;
 #endif /* LWPRINTF_CFG_SUPPORT_TYPE_ENGINEERING */
@@ -522,7 +523,7 @@ prv_double_to_str(lwprintf_int_t* p, double num) {
     orig_num = num;
 
 #if LWPRINTF_CFG_SUPPORT_TYPE_ENGINEERING
-    /* Engineering mode */
+    /* Engineering mode check for number of exponents */
     if (p->m.type == 'e' || p->m.type == 'g'
         || num > (powers_of_10[LWPRINTF_ARRAYSIZE(powers_of_10) - 1])) {/* More vs what float can hold */
         if (p->m.type != 'g') {
@@ -539,16 +540,38 @@ prv_double_to_str(lwprintf_int_t* p, double num) {
 #endif /* LWPRINTF_CFG_SUPPORT_TYPE_ENGINEERING */
 
     /* Check precision data */
-    chosen_precision = p->m.precision;
+    chosen_precision = p->m.precision;          /* This is default value coming from app */
     if (p->m.precision >= LWPRINTF_ARRAYSIZE(powers_of_10) - 1) {
         p->m.precision = LWPRINTF_ARRAYSIZE(powers_of_10) - 1;  /* Limit to maximum precision */
+        /*
+         * Precision is lower than the one selected by app (or user).
+         * It means that we have to append ending zeros for precision when printing data
+         */
     } else if (!p->m.flags.precision) {
         p->m.flags.precision = 1;
         p->m.precision = LWPRINTF_CFG_FLOAT_PRECISION_DEFAULT;  /* Default prevision when not used */
-        chosen_precision = p->m.precision;
+        chosen_precision = p->m.precision;      /* There was no precision, update chosen precision */
     }
 
     /* Check if type is g and decide if final output should be 'f' or 'e' */
+    /*
+     * For 'g/G' specifier
+     *
+     * A double argument representing a floating-point number is converted
+     * in style 'f' or 'e' (or in style 'F' or 'E' in the case of a 'G' conversion specifier),
+     * depending on the value converted and  the precision.
+     * Let 'P' equal the precision if nonzero, '6' if the precision is omitted, or '1' if the precision is zero.
+     * Then, if a conversion with style 'E' would have an exponent of 'X':
+     * 
+     * if 'P > X ≥ −4', the conversion is with style 'f' (or 'F') and precision 'P − (X + 1)'.
+     * otherwise, the conversion is with style 'e' (or 'E') and precision 'P − 1'.
+     *
+     * Finally, unless the '#' flag is used,
+     * any trailing zeros are removed from the fractional portion of the result
+     * and the decimal-point character is removed if there is no fractional portion remaining.
+     * 
+     * A double argument representing an infinity or 'NaN' is converted in the style of an 'f' or 'F' conversion specifier.
+     */
     if (p->m.type == 'g') {
         /* As per standard to decide level of precision */
         if (orig_num >= 1E-4 && orig_num <= 1E6) {
@@ -563,16 +586,30 @@ prv_double_to_str(lwprintf_int_t* p, double num) {
             p->m.type = 'e';
             --p->m.precision;
         }
+        /*
+         * If we are in g mode, limit the precision since
+         * now application decides the level of precision to optimize output
+         */
         chosen_precision = p->m.precision;
     }
 
-    /* Get integer and decimal parts, both in integer format */
+    /*
+     * Get integer and decimal parts, both in integer formats
+     *
+     * As an example, with input number of 13.324343 and precision digits set as 4, then result is the following:
+     *
+     * integer_part = 13            -> Actual integer part of the double number
+     * decimal_part_dbl = 3243.43   -> Decimal part multiplied by 10^precision, keeping it in double format
+     * decimal_part = 3243          -> Integer part of decimal number
+     * diff = 0.43                  -> Difference between actual decimal and integer part of decimal
+     *                                  This is used for rounding of last digit (if necessary)
+     */
     integer_part = (float_long_t)num;
     decimal_part_dbl = (num - integer_part) * powers_of_10[p->m.precision];
     decimal_part = (float_long_t)decimal_part_dbl;
     diff = decimal_part_dbl - (float_long_t)decimal_part;
 
-    /* Rounding check */
+    /* Rounding check of last digit */
     if (diff > 0.5f) {
         ++decimal_part;
         if (decimal_part >= powers_of_10[p->m.precision]) {
@@ -646,7 +683,7 @@ prv_double_to_str(lwprintf_int_t* p, double num) {
     }
 
 #if LWPRINTF_CFG_SUPPORT_TYPE_ENGINEERING
-    /* Engineering mode */
+    /* Engineering mode output, add exponent part */
     if (p->m.type == 'e') {
         p->out_fn(p, p->m.flags.uc ? 'E' : 'e');
         p->out_fn(p, exp_cnt >= 0 ? '+' : '-');
@@ -809,7 +846,7 @@ prv_format(lwprintf_int_t* p, va_list arg) {
                 prv_out_str_raw(p, "NaN", 3);   /* Print string */
                 break;
             case 'c':
-                p->out_fn(p, (char)va_arg(arg, char));
+                p->out_fn(p, (char)va_arg(arg, int));
                 break;
             case 'd':
             case 'i': {
@@ -907,16 +944,13 @@ prv_format(lwprintf_int_t* p, va_list arg) {
 #endif /* LWPRINTF_CFG_SUPPORT_TYPE_POINTER */
 #if LWPRINTF_CFG_SUPPORT_TYPE_FLOAT
             case 'f':
-                /* Double number */
-                prv_double_to_str(p, (double)va_arg(arg, double));
-                break;
 #if LWPRINTF_CFG_SUPPORT_TYPE_ENGINEERING
             case 'e':
-            case 'g': /* Not yet supported properly */
-                /* Double number in engineering format */
+            case 'g':
+#endif /* LWPRINTF_CFG_SUPPORT_TYPE_ENGINEERING */
+                /* Double number in different format. Final format depends on type of format */
                 prv_double_to_str(p, (double)va_arg(arg, double));
                 break;
-#endif /* LWPRINTF_CFG_SUPPORT_TYPE_ENGINEERING */
 #endif /* LWPRINTF_CFG_SUPPORT_TYPE_FLOAT */
             case 'n': {
                 int* ptr = (void*)va_arg(arg, int*);
