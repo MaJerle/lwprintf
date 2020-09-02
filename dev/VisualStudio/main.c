@@ -78,6 +78,7 @@ main(void) {
 
     /* Float tests */
     printf_run(NULL, "%e", -123.456);
+    printf_run(NULL, "%e", 0.000001);
     printf_run(NULL, "%e", 0.123456);
     printf_run(NULL, "%e", -0.123456);
     printf_run(NULL, "%.4e", 123.456);

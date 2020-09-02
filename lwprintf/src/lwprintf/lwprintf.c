@@ -56,6 +56,27 @@ typedef long int float_long_t;
 #endif /* LWPRINTF_CFG_SUPPORT_LONG_LONG */
 
 /**
+ * \brief           Float number splitted by parts
+ */
+typedef struct {
+    float_long_t integer_part;                  /*!< Integer type of double number */
+    double decimal_part_dbl;                    /*!< Decimal part of double number multiplied by 10^precision */
+    float_long_t decimal_part;                  /*!< Decimal part of double number in integer format */
+    double diff;                                /*!< Difference between decimal parts (double - int) */
+
+    short digits_cnt_integer_part;              /*!< Number of digits for integer part */
+    short digits_cnt_decimal_part;              /*!< Number of digits for decimal part */
+} float_num_t;
+
+/* Powers of 10 from beginning up to precision level */
+static const float_long_t
+powers_of_10[] = { 1E00, 1E01, 1E02, 1E03, 1E04, 1E05, 1E06, 1E07, 1E08, 1E09,
+#if LWPRINTF_CFG_SUPPORT_LONG_LONG
+                                                    1E10, 1E11, 1E12, 1E13, 1E14, 1E15
+#endif /* LWPRINTF_CFG_SUPPORT_LONG_LONG */
+};
+
+/**
  * \brief           Outputs any integer type to stream
  * Implemented as big macro since `d`, `digit` and `num` are of different types vs int size
  */
@@ -476,17 +497,73 @@ prv_signed_longlong_int_to_str(lwprintf_int_t* p, signed long long int num) {
 #if LWPRINTF_CFG_SUPPORT_TYPE_FLOAT
 
 /**
+ * \brief           Calculate necessary parameters for input number
+ */
+static void
+prv_calculate_dbl_num_data(lwprintf_int_t* p, float_num_t* n, double num) {
+    /*
+     * Get integer and decimal parts, both in integer formats
+     *
+     * As an example, with input number of 12.345678 and precision digits set as 4, then result is the following:
+     *
+     * integer_part = 11            -> Actual integer part of the double number
+     * decimal_part_dbl = 3456.78   -> Decimal part multiplied by 10^precision, keeping it in double format
+     * decimal_part = 3456          -> Integer part of decimal number
+     * diff = 0.78                  -> Difference between actual decimal and integer part of decimal
+     *                                  This is used for rounding of last digit (if necessary)
+     */
+    n->integer_part = (float_long_t)num;
+    n->decimal_part_dbl = (num - n->integer_part) * powers_of_10[p->m.precision];
+    n->decimal_part = (float_long_t)n->decimal_part_dbl;
+    n->diff = n->decimal_part_dbl - (float_long_t)n->decimal_part;
+
+    /* Rounding check of last digit */
+    if (n->diff > 0.5f) {
+        ++n->decimal_part;
+        if (n->decimal_part >= powers_of_10[p->m.precision]) {
+            n->decimal_part = 0;
+            ++n->integer_part;
+        }
+    } else if (n->diff < 0.5f) {
+        /* Used in separate if, since comparing float to == will certainly result to false */
+    } else {
+        /* Difference is exactly 0.5 */
+        if (n->decimal_part == 0) {
+            ++n->integer_part;
+        } else {
+            ++n->decimal_part;
+        }
+    }
+
+    /* Calculate number of digits for integer and decimal parts */
+    if (n->integer_part == 0) {
+        n->digits_cnt_integer_part = 1;
+    } else {
+        float_long_t tmp;
+        for (n->digits_cnt_integer_part = 0, tmp = n->integer_part; tmp > 0; ++n->digits_cnt_integer_part, tmp /= 10) {}
+    }
+    if (n->decimal_part == 0) {
+        n->digits_cnt_decimal_part = 1;
+    } else {
+        float_long_t tmp;
+        for (n->digits_cnt_decimal_part = 0, tmp = n->decimal_part; tmp > 0; ++n->digits_cnt_decimal_part, tmp /= 10) {}
+    }
+}
+
+/**
  * \brief           Convert double number to string
  * \param[in,out]   p: LwPRINTF internal instance
  * \param[in]       num: Number to convert to string
  * \return          `1` on success, `0` otherwise
  */
 static int
-prv_double_to_str(lwprintf_int_t* p, double num) {
-    float_long_t integer_part, decimal_part, tmp;
-    double decimal_part_dbl, diff, orig_num = num;
+prv_double_to_str(lwprintf_int_t* p, double in_num) {
+    float_num_t dblnum;
+    float_long_t tmp;
+    double orig_num = in_num;
     size_t i;
     int digits_cnt, chosen_precision;
+    char def_type = p->m.type;
 	
 #if LWPRINTF_CFG_SUPPORT_LONG_LONG
     char str[22];
@@ -494,22 +571,15 @@ prv_double_to_str(lwprintf_int_t* p, double num) {
     char str[11];
 #endif /* LWPRINTF_CFG_SUPPORT_LONG_LONG */
 #if LWPRINTF_CFG_SUPPORT_TYPE_ENGINEERING
-    int exp_cnt;
+    int exp_cnt, decimal_min_useful_digits;
 #endif /* LWPRINTF_CFG_SUPPORT_TYPE_ENGINEERING */
 
-    /* Powers of 10 from beginning up to precision level */
-    static const float_long_t powers_of_10[] = {   1E00, 1E01, 1E02, 1E03, 1E04, 1E05, 1E06, 1E07, 1E08, 1E09,
-#if LWPRINTF_CFG_SUPPORT_LONG_LONG
-                                                    1E10, 1E11, 1E12, 1E13, 1E14, 1E15, 1E16, 1E17, 1E18,
-#endif /* LWPRINTF_CFG_SUPPORT_LONG_LONG */
-    };
-
     /* Check for corner cases */
-    if (num != num) {
+    if (in_num != in_num) {
         return prv_out_str(p, p->m.flags.uc ? "NAN" : "nan", 3);
-    } else if (num < -DBL_MAX || num < -1E9) {
+    } else if (in_num < -DBL_MAX || in_num < -1E9) {
         return prv_out_str(p, p->m.flags.uc ? "-INF" : "-inf", 4);
-    } else if (num > DBL_MAX || num > 1E9) {
+    } else if (in_num > DBL_MAX || in_num > 1E9) {
         char str[5], *s_ptr = str;
         if (p->m.flags.plus) {
             *s_ptr++ = '+';
@@ -519,22 +589,20 @@ prv_double_to_str(lwprintf_int_t* p, double num) {
     }
 
     /* Check sign of the number */
-    SIGNED_CHECK_NEGATIVE(p, num);
-    orig_num = num;
+    SIGNED_CHECK_NEGATIVE(p, in_num);
+    orig_num = in_num;
 
 #if LWPRINTF_CFG_SUPPORT_TYPE_ENGINEERING
     /* Engineering mode check for number of exponents */
-    if (p->m.type == 'e' || p->m.type == 'g'
-        || num > (powers_of_10[LWPRINTF_ARRAYSIZE(powers_of_10) - 1])) {/* More vs what float can hold */
-        if (p->m.type != 'g') {
-            p->m.type = 'e';
-        }
+    if (def_type == 'e' || def_type == 'g'
+        || in_num > (powers_of_10[LWPRINTF_ARRAYSIZE(powers_of_10) - 1])) {/* More vs what float can hold */
+        p->m.type = 'e';
 
         /* Normalize number to be between 0 and 1 and count decimals for exponent */
-        if (num < 1) {
-            for (exp_cnt = 0; num < 1; num *= 10, --exp_cnt) {}
+        if (in_num < 1) {
+            for (exp_cnt = 0; in_num < 1; in_num *= 10, --exp_cnt) {}
         } else {
-            for (exp_cnt = 0; num >= 10; num /= 10, ++exp_cnt) {}
+            for (exp_cnt = 0; in_num >= 10; in_num /= 10, ++exp_cnt) {}
         }
     }
 #endif /* LWPRINTF_CFG_SUPPORT_TYPE_ENGINEERING */
@@ -551,6 +619,11 @@ prv_double_to_str(lwprintf_int_t* p, double num) {
         p->m.flags.precision = 1;
         p->m.precision = LWPRINTF_CFG_FLOAT_PRECISION_DEFAULT;  /* Default prevision when not used */
         chosen_precision = p->m.precision;      /* There was no precision, update chosen precision */
+    } else if (p->m.flags.precision && p->m.precision == 0) {
+        /* Precision must be set to 1 if set to 0 by default */
+        if (def_type == 'g') {
+            p->m.precision = 1;
+        }
     }
 
     /* Check if type is g and decide if final output should be 'f' or 'e' */
@@ -559,7 +632,7 @@ prv_double_to_str(lwprintf_int_t* p, double num) {
      *
      * A double argument representing a floating-point number is converted
      * in style 'f' or 'e' (or in style 'F' or 'E' in the case of a 'G' conversion specifier),
-     * depending on the value converted and  the precision.
+     * depending on the value converted and the precision.
      * Let 'P' equal the precision if nonzero, '6' if the precision is omitted, or '1' if the precision is zero.
      * Then, if a conversion with style 'E' would have an exponent of 'X':
      * 
@@ -572,67 +645,12 @@ prv_double_to_str(lwprintf_int_t* p, double num) {
      * 
      * A double argument representing an infinity or 'NaN' is converted in the style of an 'f' or 'F' conversion specifier.
      */
-    if (p->m.type == 'g') {
-        /* As per standard to decide level of precision */
-        if (orig_num >= 1E-4 && orig_num <= 1E6) {
-            if (p->m.precision > exp_cnt) {
-                p->m.precision = p->m.precision - exp_cnt - 1;
-            } else {
-                p->m.precision = 0;
-            }
-            p->m.type = 'f';
-            num = orig_num;
-        } else if (p->m.precision > 0) {
-            p->m.type = 'e';
-            --p->m.precision;
-        }
-        /*
-         * If we are in g mode, limit the precision since
-         * now application decides the level of precision to optimize output
-         */
-        chosen_precision = p->m.precision;
-    }
 
-    /*
-     * Get integer and decimal parts, both in integer formats
-     *
-     * As an example, with input number of 13.324343 and precision digits set as 4, then result is the following:
-     *
-     * integer_part = 13            -> Actual integer part of the double number
-     * decimal_part_dbl = 3243.43   -> Decimal part multiplied by 10^precision, keeping it in double format
-     * decimal_part = 3243          -> Integer part of decimal number
-     * diff = 0.43                  -> Difference between actual decimal and integer part of decimal
-     *                                  This is used for rounding of last digit (if necessary)
-     */
-    integer_part = (float_long_t)num;
-    decimal_part_dbl = (num - integer_part) * powers_of_10[p->m.precision];
-    decimal_part = (float_long_t)decimal_part_dbl;
-    diff = decimal_part_dbl - (float_long_t)decimal_part;
+    /* Calculate data for number */
+    prv_calculate_dbl_num_data(p, &dblnum, in_num);
 
-    /* Rounding check of last digit */
-    if (diff > 0.5f) {
-        ++decimal_part;
-        if (decimal_part >= powers_of_10[p->m.precision]) {
-            decimal_part = 0;
-            ++integer_part;
-        }
-    } else if (diff < 0.5f) {
-        /* Used in separate if, since comparing float to == will certainly result to false */
-    } else {
-        /* Difference is exactly 0.5 */
-        if (decimal_part == 0) {
-            ++integer_part;
-        } else {
-            ++decimal_part;
-        }
-    }
-
-    /* Calculate number of digits for integer part */
-    if (integer_part == 0) {
-        digits_cnt = 1;
-    } else {
-        for (digits_cnt = 0, tmp = integer_part; tmp > 0; ++digits_cnt, tmp /= 10) {}
-    }
+    /* Set number of digits to display */
+    digits_cnt = dblnum.digits_cnt_integer_part;
     if (chosen_precision > 0) {
         /* Add precision digits + dot separator */
         digits_cnt += chosen_precision + 1;
@@ -648,36 +666,39 @@ prv_double_to_str(lwprintf_int_t* p, double num) {
 
     /* Output strings */
     prv_out_str_before(p, digits_cnt);
-    if (integer_part == 0) {
-        str[0] = '0';
-        i = 1;
+
+    /* Output integer part of number */
+    if (dblnum.integer_part == 0) {
+        p->out_fn(p, '0');
     } else {
-        for (i = 0; integer_part > 0; integer_part /= 10, ++i) {
-            str[i] = '0' + (char)(integer_part % 10);
+        for (i = 0; dblnum.integer_part > 0; dblnum.integer_part /= 10, ++i) {
+            str[i] = '0' + (char)(dblnum.integer_part % 10);
         }
-    }
-    /* Output integer part */
-    for (; i > 0; --i) {
-        p->out_fn(p, str[i - 1]);
+        for (; i > 0; --i) {
+            p->out_fn(p, str[i - 1]);
+        }
     }
 
     /* Output decimal part */
     if (p->m.precision > 0) {
         int x;
         p->out_fn(p, '.');
-        for (i = 0; decimal_part > 0; decimal_part /= 10, ++i) {
-            str[i] = '0' + (decimal_part % 10);
+        for (i = 0; dblnum.decimal_part > 0; dblnum.decimal_part /= 10, ++i) {
+            str[i] = '0' + (dblnum.decimal_part % 10);
         }
+        
         /* Output relevant zeros first, string to print is opposite way */
         for (x = i; x < p->m.precision; ++x) {
             p->out_fn(p, '0');
         }
+
         /* Now print string itself */
         for (; i > 0; --i) {
             p->out_fn(p, str[i - 1]);
         }
+
         /* Print ending zeros if selected precision is bigger than maximum supported */
-        for (;  x < chosen_precision; ++x) {
+        for (; x < chosen_precision; ++x) {
             p->out_fn(p, '0');
         }
     }

@@ -123,12 +123,13 @@ Column *Supported* gives an overview which specifiers are actually supported by 
 |             |           | ``e`` uses lower-case and                                                |
 |             |           | ``E`` uses upper-case letter for exponent annotation.                    |
 +-------------+-----------+--------------------------------------------------------------------------+
-| ``g`` ``G`` | Yes       | Prints ``double`` in either normal or exponential notation,              |
+| ``g`` ``G`` | No        | Prints ``double`` in either normal or exponential notation,              |
 |             |           | whichever is more appropriate for its magnitude.                         |
 |             |           | ``g`` uses lower-case letters, ``G`` uses upper-case letters.            |
 |             |           | This type differs slightly from fixed-point notation                     |
 |             |           | in that insignificant zeroes to the right of the decimal point are       |
 |             |           | not included. Also, the decimal point is not included on whole numbers.  |
+|             |           | *Specifier ``e`` is used in the final formatting when this type is used* |
 +-------------+-----------+--------------------------------------------------------------------------+
 | ``x`` ``X`` | Yes       | Prints ``unsigned int`` as a hexadecimal number. ``x`` uses lower-case   |
 |             |           | and ``X`` uses upper-case letters                                        |
