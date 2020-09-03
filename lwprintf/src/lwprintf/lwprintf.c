@@ -66,7 +66,9 @@ typedef struct {
 
     short digits_cnt_integer_part;              /*!< Number of digits for integer part */
     short digits_cnt_decimal_part;              /*!< Number of digits for decimal part */
+#if LWPRINTF_CFG_SUPPORT_TYPE_ENGINEERING
     short digits_cnt_decimal_part_useful;       /*!< Number of useful digits to print */
+#endif /* LWPRINTF_CFG_SUPPORT_TYPE_ENGINEERING */
 } float_num_t;
 
 /* Powers of 10 from beginning up to precision level */
@@ -551,6 +553,7 @@ prv_calculate_dbl_num_data(lwprintf_int_t* p, float_num_t* n, double num, const 
     }
     n->digits_cnt_decimal_part = p->m.precision;
 
+#if LWPRINTF_CFG_SUPPORT_TYPE_ENGINEERING
     /* Calculate minimum useful digits for decimal (excl last useless zeros) */
     if (type == 'g') {
         float_long_t tmp = n->decimal_part;
@@ -561,6 +564,7 @@ prv_calculate_dbl_num_data(lwprintf_int_t* p, float_num_t* n, double num, const 
             }
         }
     }
+#endif /* LWPRINTF_CFG_SUPPORT_TYPE_ENGINEERING */
 }
 
 /**
@@ -635,10 +639,12 @@ prv_double_to_str(lwprintf_int_t* p, double in_num) {
         p->m.precision = LWPRINTF_CFG_FLOAT_PRECISION_DEFAULT;  /* Default prevision when not used */
         chosen_precision = p->m.precision;      /* There was no precision, update chosen precision */
     } else if (p->m.flags.precision && p->m.precision == 0) {
+#if LWPRINTF_CFG_SUPPORT_TYPE_ENGINEERING
         /* Precision must be set to 1 if set to 0 by default */
         if (def_type == 'g') {
             p->m.precision = 1;
         }
+#endif /* LWPRINTF_CFG_SUPPORT_TYPE_ENGINEERING */
     }
 
     /* Check if type is g and decide if final output should be 'f' or 'e' */
@@ -664,6 +670,7 @@ prv_double_to_str(lwprintf_int_t* p, double in_num) {
     /* Calculate data for number */
     prv_calculate_dbl_num_data(p, &dblnum, def_type == 'e' ? in_num : orig_num, def_type);
 
+#if LWPRINTF_CFG_SUPPORT_TYPE_ENGINEERING
     /* Set type G */
     if (def_type == 'g') {
         /* As per standard to decide level of precision */
@@ -686,12 +693,16 @@ prv_double_to_str(lwprintf_int_t* p, double in_num) {
         }
         prv_calculate_dbl_num_data(p, &dblnum, in_num, def_type);
     }
+#endif /* LWPRINTF_CFG_SUPPORT_TYPE_ENGINEERING */
 
     /* Set number of digits to display */
     digits_cnt = dblnum.digits_cnt_integer_part;
+#if LWPRINTF_CFG_SUPPORT_TYPE_ENGINEERING
     if (def_type == 'g' && p->m.precision > 0) {
         digits_cnt += dblnum.digits_cnt_decimal_part_useful + 1;
-    } else if (chosen_precision > 0) {
+    } else
+#endif /* LWPRINTF_CFG_SUPPORT_TYPE_ENGINEERING */
+    if (chosen_precision > 0) {
         /* Add precision digits + dot separator */
         digits_cnt += chosen_precision + 1;
     }
@@ -728,12 +739,15 @@ prv_double_to_str(lwprintf_int_t* p, double in_num) {
         }
 
         /* Output relevant zeros first, string to print is opposite way */
+#if LWPRINTF_CFG_SUPPORT_TYPE_ENGINEERING
         if (def_type == 'g') {
             /* TODO: This is to be checked */
             for (x = 0; x < p->m.precision - i; ++x, --dblnum.digits_cnt_decimal_part_useful) {
                 p->out_fn(p, '0');
             }
-        } else {
+        } else
+#endif /* LWPRINTF_CFG_SUPPORT_TYPE_ENGINEERING */
+        {
             for (x = i; x < p->m.precision; ++x) {
                 p->out_fn(p, '0');
             }
@@ -742,9 +756,11 @@ prv_double_to_str(lwprintf_int_t* p, double in_num) {
         /* Now print string itself */
         for (; i > 0; --i) {
             p->out_fn(p, str[i - 1]);
+#if LWPRINTF_CFG_SUPPORT_TYPE_ENGINEERING
             if (def_type == 'g' && --dblnum.digits_cnt_decimal_part_useful == 0) {
                 break;
             }
+#endif /* LWPRINTF_CFG_SUPPORT_TYPE_ENGINEERING */
         }
 
         /* Print ending zeros if selected precision is bigger than maximum supported */
