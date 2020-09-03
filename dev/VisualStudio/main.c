@@ -73,10 +73,10 @@ main(void) {
     printf_run(NULL, "Precision: %3d, %.*g", 17, 17, 0.0001234567);
 
     for (int i = 0; i < 20; ++i) {
-        printf_run(NULL, "Precision: %3d, %.*g", i, i, 432432423.342321321);
+        printf_run(NULL, "Precision: %3d, %20.*g", i, i, 432432423.342321321);
     }
     for (int i = 0; i < 20; ++i) {
-        printf_run(NULL, "Precision: %3d, %.*g", i, i, 0.0001234567);
+        printf_run(NULL, "Precision: %3d, %20.*g", i, i, 0.0001234567);
     }
 
 

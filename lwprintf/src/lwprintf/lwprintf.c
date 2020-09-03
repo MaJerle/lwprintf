@@ -689,7 +689,9 @@ prv_double_to_str(lwprintf_int_t* p, double in_num) {
 
     /* Set number of digits to display */
     digits_cnt = dblnum.digits_cnt_integer_part;
-    if (chosen_precision > 0) {
+    if (def_type == 'g' && p->m.precision > 0) {
+        digits_cnt += dblnum.digits_cnt_decimal_part_useful + 1;
+    } else if (chosen_precision > 0) {
         /* Add precision digits + dot separator */
         digits_cnt += chosen_precision + 1;
     }
