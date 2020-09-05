@@ -4,6 +4,23 @@
 #include <stdint.h>
 #include "windows.h"
 
+typedef struct {
+    char* format;                   /*!< Input format */
+    char* p_orig;                   /*!< Result with built-in library */
+    size_t c_orig;                  /*!< Count returned by original lib */
+    char* p_lwpr;                   /*!< Result with lwprintf library */
+    size_t c_lwpr;                  /*!< Count returned by lwprintf lib */
+    char* e_resu;                   /*!< Expected result (if used) */
+    uint8_t pass;                   /*!< Status if test is pass or fail */
+} test_data_t;
+
+/* Array of tests */
+static test_data_t
+tests[500];
+
+/* Number of tests done so far */
+static size_t tests_cnt;
+
 /**
  * \brief           Output function for lwprintf printf function
  * \param[in]       ch: Character to print
@@ -35,17 +52,55 @@ static void
 printf_run(const char* expected, const char* fmt, ...) {
     HANDLE console;
     va_list va;
+    test_data_t* test;
+    
+    /* Temporary strings array */
     char b1[255] = { 0 }, b2[255] = { 0 };
     int l1, l2;
 
     console = GetStdHandle(STD_OUTPUT_HANDLE);  /* Get console */
 
-    /* Generate both strings with original and custom printf */
+    /* Generate strings with original and custom printf */
     va_start(va, fmt);
     l1 = vsnprintf(b1, sizeof(b1), fmt, va);
     l2 = lwprintf_vsnprintf(b2, sizeof(b2), fmt, va);
     va_end(va);
 
+    /* Get test handle */
+    test = &tests[tests_cnt++];
+
+    /* Dynamic allocation, we assume if didn't fail anywhere for the sake of example... */
+    test->p_orig = malloc(sizeof(char) * (strlen(b1) + 1));
+    test->p_lwpr = malloc(sizeof(char) * (strlen(b2) + 1));
+    test->format = malloc(sizeof(char) * (strlen(fmt) + 1));
+    
+    /* Copy data */
+    strcpy(test->p_orig, b1);
+    strcpy(test->p_lwpr, b2);
+    strcpy(test->format, fmt);
+    test->c_orig = l1;
+    test->c_lwpr = l2;
+
+    /* Expected result is optional */
+    if (expected != NULL && strlen(expected) > 0) {
+        test->e_resu = malloc(sizeof(char) * (strlen(expected) + 1));
+        strcpy(test->e_resu, expected);
+    }
+
+    /* Check for pass */
+    /* When expected parameter is used, then compare expected data vs generated data only */
+    if (expected != NULL) {
+        test->pass = !strcmp(expected, b2);
+    } else {
+        test->pass = !(strcmp(b1, b2) || l1 != l2);
+    }
+    if (test->pass) {
+        ++tests_passed;
+    } else {
+        ++tests_failed;
+    }
+
+/*
     printf("Format: \"%s\"\r\n", fmt);
     printf("R: Len: %3d, result: \"%s\"\r\n", l1, b1);
     printf("L: Len: %3d, result: \"%s\"\r\n", l2, b2);
@@ -60,6 +115,23 @@ printf_run(const char* expected, const char* fmt, ...) {
     }
     SetConsoleTextAttribute(console, FOREGROUND_RED | FOREGROUND_GREEN | FOREGROUND_BLUE);
     printf("----\r\n");
+*/
+}
+
+void
+output_test_result(test_data_t* t) {
+    printf("----\n");
+    printf("Format: \"%s\"\n", t->format);
+    if (t->e_resu != NULL) {
+        printf("Result expected: \"%s\"\nLength expected: %d\n", t->e_resu, (int)strlen(t->e_resu));
+    } else {
+        printf("Result VSprintf: \"%s\"\nLength VSprintf: %d\n", t->p_orig, (int)t->c_orig);
+    }
+    printf("Result LwPRINTF: \"%s\"\nLength LwPRINTF: %d\n", t->p_lwpr, (int)t->c_lwpr);
+
+    SetConsoleTextAttribute(GetStdHandle(STD_OUTPUT_HANDLE), t->pass ? FOREGROUND_GREEN : FOREGROUND_RED);
+    printf("Test result: %s\n", t->pass ? "Pass" : "Fail");
+    SetConsoleTextAttribute(GetStdHandle(STD_OUTPUT_HANDLE), FOREGROUND_RED | FOREGROUND_GREEN | FOREGROUND_BLUE);
 }
 
 int n;
@@ -69,25 +141,23 @@ main(void) {
 
     lwprintf_init(lwprintf_output);
 
-
     printf_run(NULL, "Precision: %3d, %.*g", 17, 17, 0.0001234567);
-
     for (int i = 0; i < 20; ++i) {
         printf_run(NULL, "Precision: %3d, %20.*g", i, i, 432432423.342321321);
     }
     for (int i = 0; i < 20; ++i) {
         printf_run(NULL, "Precision: %3d, %20.*g", i, i, 0.0001234567);
     }
-
-
     printf_run(NULL, "%.4f", 3.23321321);
     printf_run(NULL, "%.45f", 3.23321321);
+    printf_run(NULL, "%.4F", 3.23321321);
+    printf_run(NULL, "%.45F", 3.23321321);
 
     printf_run(NULL, "%g", 1.23342);
     printf_run(NULL, "%g", 12334.2);
     printf_run(NULL, "%.8g", 0.000000123342);
 
-    /* Float tests */
+    /* Engineering tests */
     printf_run(NULL, "%e", -123.456);
     printf_run(NULL, "%e", 0.000001);
     printf_run(NULL, "%e", 0.123456);
@@ -115,13 +185,6 @@ main(void) {
     printf_run(NULL, "%22.33e", -123.456);
     printf_run(NULL, "%22.33e", 0.123456);
     printf_run(NULL, "%22.33e", -0.123456);
-    /*
-    for (float a = 0.0f; a < 2.0f; a += 0.01f) {
-        printf_run(NULL, "%10f; %10.1f; %10.0f; %+10f", 1.99f + a, 1.99f + a, 1.99f + a, 1.99 + a);
-        printf_run(NULL, "%10f; %10.1f; %10.0f; %+10f", -1.99f + a, -1.99f + a, -1.99f + a, -1.99 + a);
-    }*/
-
-    additional_format_specifiers();
 
     printf_run(" 28",               "% 3u", (unsigned)28);
     printf_run("123456",            "% 3u", (unsigned)123456);
@@ -184,30 +247,22 @@ main(void) {
     printf_run(NULL, "0X%p", &tests_passed);
     printf_run(NULL, "0x%p", &tests_passed);
 
-    /* Print final output */
-    printf("\r\n\r\n------------------------\r\n\r\n");
-    printf("Number of tests passed: %d\r\n", (int)tests_passed);
-    printf("Number of tests failed: %d\r\n", (int)tests_failed);
-    printf("Coverage: %f %%\r\n", (float)((tests_passed * 100) / ((float)(tests_passed + tests_failed))));
-    printf("\r\n\r\n------------------------\r\n\r\n");
-
     /* Those are additional, not supported in classic printf implementation */
 
     /* Binary */
-    printf_run(NULL, "%llb abc", 123);
-    printf_run(NULL, "%llb abc", 123);
-    printf_run(NULL, "%b", 4);
-    printf_run(NULL, "%#2B", 1);
-    printf_run(NULL, "%#2b", 1);
-    printf_run(NULL, "%#2B", 0);
-    printf_run(NULL, "%#2b", 0);
-    printf_run(NULL, "%#B", 0);
-    printf_run(NULL, "%#b", 0);
-    printf_run(NULL, "%#B", 6);
-    printf_run(NULL, "%#b", 6);
+    printf_run("1111011 abc", "%llb abc", 123);
+    printf_run("100", "%b", 4);
+    printf_run("0B1", "%#2B", 1);
+    printf_run("0b1", "%#2b", 1);
+    printf_run(" 0", "%#2B", 0);
+    printf_run(" 0", "%#2b", 0);
+    printf_run("0", "%#B", 0);
+    printf_run("0", "%#b", 0);
+    printf_run("0B110", "%#B", 6);
+    printf_run("0b110", "%#b", 6);
 
     /* Array test */
-    uint8_t my_arr[] = { 0x00, 0x01, 0xB5, 0xC6, 0xD7 };
+    uint8_t my_arr[] = { 0x01, 0x02, 0xB5, 0xC6, 0xD7 };
     printf_run("0102B5C6D7", "%5K", my_arr);
     printf_run("0102B5", "%*K", 3, my_arr);
     printf_run("01 02 B5", "% *K", 3, my_arr);
@@ -215,5 +270,33 @@ main(void) {
     printf_run("0102b5", "%*k", 3, my_arr);
     printf_run("01 02 b5", "% *k", 3, my_arr);
 
+    /* Print final output */
+    printf("------------------------\n");
+    printf("Number of tests run: %d\n", (int)(tests_passed + tests_failed));
+    printf("Number of tests passed: %d\n", (int)tests_passed);
+    printf("Number of tests failed: %d\n", (int)tests_failed);
+    printf("Coverage: %f %%\n", (float)((tests_passed * 100) / ((float)(tests_passed + tests_failed))));
+
+    /* Tests that failed */
+    printf("------------------------\n\n");
+    printf("Negative tests\n\n");
+    for (size_t i = 0; i < tests_cnt; ++i) {
+        test_data_t* t = &tests[i];
+
+        if (!t->pass) {
+            output_test_result(t);
+        }
+    }
+
+    /* Tests that went through */
+    printf("------------------------\n\n");
+    printf("Positive tests\n\n");
+    for (size_t i = 0; i < tests_cnt; ++i) {
+        test_data_t* t = &tests[i];
+
+        if (t->pass) {
+            output_test_result(t);
+        }
+    }
     return 0;
 }

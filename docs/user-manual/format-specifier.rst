@@ -163,7 +163,7 @@ If application tries to use more precision digits than maximum, remaining digits
 As a consequence, output using LwPRINTF library may be different in comparison to other ``printf`` implementations.
 
 .. tip::
-    This level of precision is normally not used and also not useful for ``float`` data types.
+    Float data type supports up to ``7`` and double up to ``15``.
 
 Additional specifier types
 **************************
