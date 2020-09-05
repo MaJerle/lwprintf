@@ -12,7 +12,7 @@ Results are underneath with information about number of passed and failed tests.
     not affecting final results. Keep in mind that effective number of precision digits
     with ``float`` type is ``7`` and for ``double`` is ``15``.
 
-.. literalinclude:: ../../tests/test_results.txt
+.. literalinclude:: ../../tests/test_results.test
     :encoding: utf-16
     :linenos:
     :caption: Test results of the library
