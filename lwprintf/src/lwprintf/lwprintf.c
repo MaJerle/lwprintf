@@ -924,12 +924,13 @@ prv_format(lwprintf_int_t* p, va_list arg) {
         }
 
         /* Check type */
-        p->m.type = *fmt;
+        p->m.type = *fmt + ((*fmt >= 'A' && *fmt <= 'Z') ? 0x20 : 0x00);
         if (*fmt >= 'A' && *fmt <= 'Z') {
             p->m.flags.uc = 1;
         }
-        switch (*fmt + ((*fmt >= 'A' && *fmt <= 'Z') ? 0x20 : 0)) {
+        switch (*fmt) {
             case 'a':
+            case 'A':
                 /* Double in hexadecimal notation */
                 (void)va_arg(arg, double);      /* Read argument to ignore it and move to next one */
                 prv_out_str_raw(p, "NaN", 3);   /* Print string */
@@ -953,9 +954,11 @@ prv_format(lwprintf_int_t* p, va_list arg) {
                 break;
             }
             case 'b':
+            case 'B':
             case 'o':
             case 'u':
             case 'x':
+            case 'X':
                 if (*fmt == 'b' || *fmt == 'B') {
                     p->m.base = 2;
                 } else if (*fmt == 'o') {
@@ -1033,9 +1036,12 @@ prv_format(lwprintf_int_t* p, va_list arg) {
 #endif /* LWPRINTF_CFG_SUPPORT_TYPE_POINTER */
 #if LWPRINTF_CFG_SUPPORT_TYPE_FLOAT
             case 'f':
+            case 'F':
 #if LWPRINTF_CFG_SUPPORT_TYPE_ENGINEERING
             case 'e':
+            case 'E':
             case 'g':
+            case 'G':
 #endif /* LWPRINTF_CFG_SUPPORT_TYPE_ENGINEERING */
                 /* Double number in different format. Final format depends on type of format */
                 prv_double_to_str(p, (double)va_arg(arg, double));
@@ -1057,9 +1063,10 @@ prv_format(lwprintf_int_t* p, va_list arg) {
              * char arr[] = {0, 1, 2, 3, 255};
              * "%5K" would produce 00010203FF
              */
-            case 'k': {
+            case 'k':
+            case 'K': {
                 unsigned char* ptr = (void *)va_arg(arg, unsigned char *);  /* Get input parameter as unsigned char pointer */
-                int len = p->m.width;
+                int len = p->m.width, full_width;
                 uint8_t is_space = p->m.flags.space == 1;
 
                 if (ptr == NULL || len == 0) {
@@ -1067,17 +1074,31 @@ prv_format(lwprintf_int_t* p, va_list arg) {
                 }
 
                 p->m.flags.zero = 1;            /* Prepend with zeros if necessary */
-                p->m.width = 2;                 /* Each number is 2 chars min/max */
+                p->m.width = 0;                 /* No width parameter */
                 p->m.base = 16;                 /* Hex format */
                 p->m.flags.space = 0;           /* Delete any flag for space */
 
+                /* Full width of digits to print */
+                full_width = len * (2 + (int)is_space);
+                if (is_space && full_width > 0) {
+                    --full_width;               /* Remove space after last number s*/
+                }
+
                 /* Output byte by byte w/o hex prefix */
-                for (int i = 0; i < len; ++i) {
-                    prv_unsigned_int_to_str(p, (unsigned int)*ptr++);
+                prv_out_str_before(p, full_width);
+                for (int i = 0; i < len; ++i, ++ptr) {
+                    uint8_t d;
+
+                    d = (*ptr >> 0x04) & 0x0F;  /* Print MSB */
+                    p->out_fn(p, (char)(d) + (d >= 10 ? ((p->m.flags.uc ? 'A' : 'a') - 10) : '0'));
+                    d = *ptr & 0x0F;            /* Print LSB */
+                    p->out_fn(p, (char)(d) + (d >= 10 ? ((p->m.flags.uc ? 'A' : 'a') - 10) : '0'));
+
                     if (is_space && i < (len - 1)) {
                         p->out_fn(p, ' ');      /* Generate space between numbers */
                     }
                 }
+                prv_out_str_after(p, full_width);
                 break;
             }
 #endif /* LWPRINTF_CFG_SUPPORT_TYPE_BYTE_ARRAY */
