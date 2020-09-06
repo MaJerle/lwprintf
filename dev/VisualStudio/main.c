@@ -168,6 +168,7 @@ main(void) {
     printf_run(NULL, "%g", 1.23342);
     printf_run(NULL, "%g", 12334.2);
     printf_run(NULL, "%.8g", 0.000000123342);
+    printf_run(NULL, "%.8G", 0.000000123342);
 
     /* Engineering tests */
     printf_run(NULL, "%e", -123.456);
@@ -197,13 +198,14 @@ main(void) {
     printf_run(NULL, "%22.33e", -123.456);
     printf_run(NULL, "%22.33e", 0.123456);
     printf_run(NULL, "%22.33e", -0.123456);
+    printf_run(NULL, "%.4E", -123.456);
 
-    printf_run(" 28",               "% 3u", (unsigned)28);
-    printf_run("123456",            "% 3u", (unsigned)123456);
-    printf_run("028",               "%03d", (unsigned)28);
-    printf_run("+28",               "%+03d", (unsigned)28);
-    printf_run("+28",               "%+3d", (unsigned)28);
-    printf_run("-28",               "%03d", -28);
+    printf_run(NULL, "% 3u", (unsigned)28);
+    printf_run(NULL, "% 3u", (unsigned)123456);
+    printf_run(NULL, "%03d", 28);
+    printf_run(NULL, "%+03d", 28);
+    printf_run(NULL, "%+3d", 28);
+    printf_run(NULL, "%03d", -28);
     printf_run(NULL, "%+03d", -28);
     printf_run(NULL, "%+3d", -28);
     printf_run(NULL, "%03u", (unsigned)123456);
@@ -213,6 +215,10 @@ main(void) {
     printf_run(NULL, "%10d", -123);
     printf_run(NULL, "%-06d", -1234567);
     printf_run(NULL, "%06d", -1234567);
+    printf_run(NULL, "%-10d", -1234567);
+    printf_run(NULL, "%10d", -1234567);
+    printf_run(NULL, "%-010d", -1234567);
+    printf_run(NULL, "%010d", -1234567);
     printf_run(NULL, "%s", "This is my string");
     printf_run(NULL, "%10s", "This is my string");
     printf_run(NULL, "%0*d", 10, -123);

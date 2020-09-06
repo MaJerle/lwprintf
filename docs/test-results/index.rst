@@ -12,6 +12,9 @@ Results are underneath with information about number of passed and failed tests.
     not affecting final results. Keep in mind that effective number of precision digits
     with ``float`` type is ``7`` and for ``double`` is ``15``.
 
+With the exception to additional specifiers, supported only by *LwPRINTF* library,
+all tests are compared against ``stdio printf`` library included in *Microsoft Visual Studio C/C++ compiler*.
+
 .. literalinclude:: ../../tests/test_results.test
     :encoding: utf-16
     :linenos:
