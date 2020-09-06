@@ -6,6 +6,7 @@
 
 typedef struct {
     char* format;                   /*!< Input format */
+    char* input_data;               /*!< Input parameters */
     char* p_orig;                   /*!< Result with built-in library */
     size_t c_orig;                  /*!< Count returned by original lib */
     char* p_lwpr;                   /*!< Result with lwprintf library */
@@ -40,6 +41,14 @@ lwprintf_output(int ch, lwprintf_t* lw) {
  */
 size_t tests_passed, tests_failed;
 
+#define MY_MACRO " "
+const char* text_fmt, *text_params;
+#define printf_run(exp, fmt, ...) do {          \
+text_fmt = fmt;                               \
+text_params = # __VA_ARGS__;                    \
+printf_run_fn(exp, fmt, ## __VA_ARGS__);        \
+} while (0);
+
 /**
  * \brief           Run printf with built-in and custom implementation.
  * Compare results on returned length and actual content
@@ -49,7 +58,7 @@ size_t tests_passed, tests_failed;
  * \param[in]       ...: Optional parameters
  */
 static void
-printf_run(const char* expected, const char* fmt, ...) {
+printf_run_fn(const char* expected, const char* fmt, ...) {
     HANDLE console;
     va_list va;
     test_data_t* test;
@@ -73,11 +82,13 @@ printf_run(const char* expected, const char* fmt, ...) {
     test->p_orig = malloc(sizeof(char) * (strlen(b1) + 1));
     test->p_lwpr = malloc(sizeof(char) * (strlen(b2) + 1));
     test->format = malloc(sizeof(char) * (strlen(fmt) + 1));
+    test->input_data = malloc(sizeof(char) * (strlen(text_params) + 1));
     
     /* Copy data */
     strcpy(test->p_orig, b1);
     strcpy(test->p_lwpr, b2);
     strcpy(test->format, fmt);
+    strcpy(test->input_data, text_params);
     test->c_orig = l1;
     test->c_lwpr = l2;
 
@@ -122,6 +133,7 @@ void
 output_test_result(test_data_t* t) {
     printf("----\n");
     printf("Format: \"%s\"\n", t->format);
+    printf("Params: \"%s\"\n", t->input_data);
     if (t->e_resu != NULL) {
         printf("Result expected: \"%s\"\nLength expected: %d\n", t->e_resu, (int)strlen(t->e_resu));
     } else {
@@ -229,7 +241,7 @@ main(void) {
     printf_run(NULL, "%.4.2s", "123456");
     printf_run(NULL, "%.*s", 3, "123456");
     printf_run(NULL, "%.3s", "");
-    printf_run(NULL, "%yunknown");
+    printf_run(NULL, "%yunknown", "");
 
     /* Alternate form */
     printf_run(NULL, "%#2X", 123);
