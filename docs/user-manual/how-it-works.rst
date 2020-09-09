@@ -27,5 +27,30 @@ Last part of every specifier is its type, that being type of format and data to 
 
 Check section :ref:`um_format_specifier` for list of all formats and data types
 
+Character output function
+*************************
+
+API functions printing characters directly to the output stream (ex. :c:macro:`lwprintf_printf`),
+require output function to be set during initialization procedure.
+
+Output function is called by the API for every character to be printed/transmitted by the application.
+
+.. note::
+    Output function is set during initialization procedure. 
+	If not set (set as ``NULL``), it is not possible to use API function which directly print
+	characters to output stream. Application is then limited only to API functions
+	that write formatted data to input buffer.
+
+Notes to consider:
+
+* Output function must return same character as it was used as an input parameter to consider successful print
+* Output function will receive ``(int)'\0'`` character to indicate no more characters will follow in this API call
+* Single output function may be used for different LwPRINTF instances
+
+.. literalinclude:: ../examples_src/example_minimal.c
+    :language: c
+    :linenos:
+    :caption: Absolute minimum example to support direct output
+
 .. toctree::
     :maxdepth: 2
