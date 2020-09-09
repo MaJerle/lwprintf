@@ -142,6 +142,7 @@ typedef struct lwprintf_int {
     const size_t buff_size;                     /*!< Buffer size of input buffer (when used) */
     int n;                                      /*!< Full length of formatted text */
     prv_output_fn out_fn;                       /*!< Output internal function */
+    uint8_t is_print_cancelled;                 /*!< Status if print should be cancelled */
 
     /* This must all be reset every time new % is detected */
     struct {
@@ -218,8 +219,13 @@ prv_rotate_string(char* str, size_t len) {
  */
 static int
 prv_out_fn_print(lwprintf_int_t* p, const char c) {
-    p->lw->out_fn(c, p->lw);                    /*!< Send character to output */
-    if (c != '\0') {
+    if (p->is_print_cancelled) {
+        return 0;
+    }
+    if (!p->lw->out_fn(c, p->lw)) {             /*!< Send character to output */
+        p->is_print_cancelled = 1;
+    }
+    if (c != '\0' && !p->is_print_cancelled) {
         ++p->n;
     }
     return 1;
@@ -581,7 +587,7 @@ prv_double_to_str(lwprintf_int_t* p, double in_num) {
     size_t i;
     int digits_cnt, chosen_precision;
     char def_type = p->m.type;
-	
+    
 #if LWPRINTF_CFG_SUPPORT_LONG_LONG
     char str[22];
 #else
@@ -602,7 +608,7 @@ prv_double_to_str(lwprintf_int_t* p, double in_num) {
             *s_ptr++ = '+';
         }
         strcpy(s_ptr, p->m.flags.uc ? "INF" : "inf");
-        return prv_out_str(p, s_ptr, p->m.flags.plus ? 4 : 3);
+        return prv_out_str(p, str, p->m.flags.plus ? 4 : 3);
     }
 
     /* Check sign of the number */
@@ -813,6 +819,11 @@ prv_format(lwprintf_int_t* p, va_list arg) {
 #endif /* LWPRINTF_CFG_OS */
 
     while (fmt != NULL && *fmt != '\0') {
+        /* Check if we should stop processing */
+        if (p->is_print_cancelled) {
+            break;
+        }
+        
         /* Parse format */
         /* %[flags][width][.precision][length]type */
         /* Go to https://docs.majerle.eu for more info about supported features */
