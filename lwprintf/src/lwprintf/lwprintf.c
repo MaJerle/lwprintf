@@ -185,6 +185,7 @@ typedef struct lwprintf_int {
 static lwprintf_t
 lwprintf_default;
 
+#if 0
 /**
  * \brief           Rotate string of the input buffer in place
  * It rotates string from "abcdef" to "fedcba".
@@ -210,6 +211,7 @@ prv_rotate_string(char* str, size_t len) {
 
     return 1;
 }
+#endif /* 0 */
 
 /**
  * \brief           Output function to print data
@@ -582,7 +584,6 @@ prv_calculate_dbl_num_data(lwprintf_int_t* p, float_num_t* n, double num, const 
 static int
 prv_double_to_str(lwprintf_int_t* p, double in_num) {
     float_num_t dblnum;
-    float_long_t tmp;
     double orig_num = in_num;
     size_t i;
     int digits_cnt, chosen_precision;
@@ -594,7 +595,7 @@ prv_double_to_str(lwprintf_int_t* p, double in_num) {
     char str[11];
 #endif /* LWPRINTF_CFG_SUPPORT_LONG_LONG */
 #if LWPRINTF_CFG_SUPPORT_TYPE_ENGINEERING
-    int exp_cnt, decimal_min_useful_digits;
+    int exp_cnt;
 #endif /* LWPRINTF_CFG_SUPPORT_TYPE_ENGINEERING */
 
     /* Check for corner cases */
