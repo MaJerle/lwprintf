@@ -61,3 +61,4 @@ Table of contents
     user-manual/index
     api-reference/index
     test-results/index
+    examples/index
