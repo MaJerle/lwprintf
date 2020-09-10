@@ -51,8 +51,10 @@
 /* Define custom types */
 #if LWPRINTF_CFG_SUPPORT_LONG_LONG
 typedef long long int float_long_t;
+#define FLOAT_MAX_B_ENG                 (1E18)
 #else
 typedef long int float_long_t;
+#define FLOAT_MAX_B_ENG                 (1E09)
 #endif /* LWPRINTF_CFG_SUPPORT_LONG_LONG */
 
 /**
@@ -71,6 +73,7 @@ typedef struct {
 #endif /* LWPRINTF_CFG_SUPPORT_TYPE_ENGINEERING */
 } float_num_t;
 
+#if LWPRINTF_CFG_SUPPORT_TYPE_FLOAT
 /* Powers of 10 from beginning up to precision level */
 static const float_long_t
 powers_of_10[] = { 1E00, 1E01, 1E02, 1E03, 1E04, 1E05, 1E06, 1E07, 1E08, 1E09,
@@ -78,6 +81,7 @@ powers_of_10[] = { 1E00, 1E01, 1E02, 1E03, 1E04, 1E05, 1E06, 1E07, 1E08, 1E09,
                     1E10, 1E11, 1E12, 1E13, 1E14, 1E15, 1E16, 1E17, 1E18
 #endif /* LWPRINTF_CFG_SUPPORT_LONG_LONG */
 };
+#endif /* LWPRINTF_CFG_SUPPORT_TYPE_FLOAT */
 
 /**
  * \brief           Outputs any integer type to stream
@@ -439,6 +443,23 @@ prv_unsigned_longlong_int_to_str(lwprintf_int_t* p, unsigned long long int num) 
 
 #endif /* LWPRINTF_CFG_SUPPORT_LONG_LONG */
 
+#if LWPRINTF_CFG_SUPPORT_TYPE_POINTER
+
+/**
+ * \brief           Convert `uintptr_t` to string
+ * \param[in,out]   p: LwPRINTF internal instance
+ * \param[in]       num: Number to convert to string
+ * \return          `1` on success, `0` otherwise
+ */
+static int
+prv_uintptr_to_str(lwprintf_int_t* p, uintptr_t num) {
+    uintptr_t d, digit;
+    OUTPUT_ANY_INT_TYPE;
+    return 1;
+}
+
+#endif /* LWPRINTF_CFG_SUPPORT_TYPE_POINTER */
+
 /**
  * \brief           Convert `size_t` number to string
  * \param[in,out]   p: LwPRINTF internal instance
@@ -598,18 +619,39 @@ prv_double_to_str(lwprintf_int_t* p, double in_num) {
     int exp_cnt;
 #endif /* LWPRINTF_CFG_SUPPORT_TYPE_ENGINEERING */
 
-    /* Check for corner cases */
+    /*
+     * Check for corner cases
+     *
+     * - Print "nan" if number is not valid
+     * - Print negative infinity if number is less than absolute minimum
+     * - Print negative infinity if number is less than -FLOAT_MAX_B_ENG and engineering mode is disabled
+     * - Print positive infinity if number is greater than absolute minimum
+     * - Print positive infinity if number is greater than FLOAT_MAX_B_ENG and engineering mode is disabled
+     * - Go to engineering mode if it is enabled and `in_num < -FLOAT_MAX_B_ENG` or `in_num > FLOAT_MAX_B_ENG`
+     */
     if (in_num != in_num) {
         return prv_out_str(p, p->m.flags.uc ? "NAN" : "nan", 3);
-    } else if (in_num < -DBL_MAX || in_num < -1E9) {
+    } else if (in_num < -DBL_MAX
+#if !LWPRINTF_CFG_SUPPORT_TYPE_ENGINEERING
+            || in_num < -FLOAT_MAX_B_ENG
+#endif /* !LWPRINTF_CFG_SUPPORT_TYPE_ENGINEERING */
+    ) {
         return prv_out_str(p, p->m.flags.uc ? "-INF" : "-inf", 4);
-    } else if (in_num > DBL_MAX || in_num > 1E9) {
+    } else if (in_num > DBL_MAX
+#if !LWPRINTF_CFG_SUPPORT_TYPE_ENGINEERING
+            || in_num > FLOAT_MAX_B_ENG
+#endif /* !LWPRINTF_CFG_SUPPORT_TYPE_ENGINEERING */
+    ) {
         char str[5], *s_ptr = str;
         if (p->m.flags.plus) {
             *s_ptr++ = '+';
         }
         strcpy(s_ptr, p->m.flags.uc ? "INF" : "inf");
         return prv_out_str(p, str, p->m.flags.plus ? 4 : 3);
+#if LWPRINTF_CFG_SUPPORT_TYPE_ENGINEERING
+    } else if (in_num < -FLOAT_MAX_B_ENG || in_num > FLOAT_MAX_B_ENG) {
+        p->m.type = def_type = 'e';                 /* Go to engineering mode */
+#endif /* LWPRINTF_CFG_SUPPORT_TYPE_ENGINEERING */
     }
 
     /* Check sign of the number */
@@ -643,7 +685,7 @@ prv_double_to_str(lwprintf_int_t* p, double in_num) {
          */
     } else if (!p->m.flags.precision) {
         p->m.flags.precision = 1;
-        p->m.precision = LWPRINTF_CFG_FLOAT_PRECISION_DEFAULT;  /* Default prevision when not used */
+        p->m.precision = LWPRINTF_CFG_FLOAT_DEFAULT_PRECISION;  /* Default precision when not used */
         chosen_precision = p->m.precision;      /* There was no precision, update chosen precision */
     } else if (p->m.flags.precision && p->m.precision == 0) {
 #if LWPRINTF_CFG_SUPPORT_TYPE_ENGINEERING
@@ -1031,18 +1073,9 @@ prv_format(lwprintf_int_t* p, va_list arg) {
                 p->m.base = 16;                 /* Go to hex format */
                 p->m.flags.uc = 1;              /* Uppercase numbers */
                 p->m.flags.zero = 1;            /* Zero padding */
-                p->m.width = sizeof(void*) * 2; /* Number is in hex format and byte is represented with 2 letters */
+                p->m.width = sizeof(uintptr_t) * 2; /* Number is in hex format and byte is represented with 2 letters */
 
-                if (0) {
-#if LWPRINTF_CFG_SUPPORT_LONG_LONG
-                } else if (sizeof(void*) == sizeof(unsigned long long int)) {
-                    prv_unsigned_longlong_int_to_str(p, (unsigned long long int)va_arg(arg, void*));
-#endif /* LWPRINTF_CFG_SUPPORT_LONG_LONG */
-                } else if (sizeof(void*) == sizeof(unsigned long int)) {
-                    prv_unsigned_long_int_to_str(p, (unsigned long int)va_arg(arg, void*));
-                } else {
-                    prv_unsigned_int_to_str(p, (unsigned int)va_arg(arg, void*));
-                }
+                prv_uintptr_to_str(p, (uintptr_t)va_arg(arg, uintptr_t));
                 break;
             }
 #endif /* LWPRINTF_CFG_SUPPORT_TYPE_POINTER */

@@ -95,7 +95,7 @@ extern "C" {
 #endif
 
 /**
- * \brief           Enables `1` or disables `0` support `%%e` engineering output type for float numbers
+ * \brief           Enables `1` or disables `0` support for `%e` engineering output type for float numbers
  *
  * \note            \ref LWPRINTF_CFG_SUPPORT_TYPE_FLOAT has to be enabled to use this feature
  *
@@ -105,7 +105,9 @@ extern "C" {
 #endif
 
 /**
- * \brief           Specifies default number of precision for float number
+ * \brief           Specifies default number of precision for floating number
+ * Represents number of digits to be used after comma if no precision
+ * is used with specifier
  *
  */
 #ifndef LWPRINTF_CFG_FLOAT_DEFAULT_PRECISION
@@ -126,14 +128,6 @@ extern "C" {
  */
 #ifndef LWPRINTF_CFG_SUPPORT_TYPE_STRING
 #define LWPRINTF_CFG_SUPPORT_TYPE_STRING            1
-#endif
-
-/**
- * \brief           Default `float/double` precision.
- * This is a number of digits displayed after decimal point.
- */
-#ifndef LWPRINTF_CFG_FLOAT_PRECISION_DEFAULT
-#define LWPRINTF_CFG_FLOAT_PRECISION_DEFAULT        6
 #endif
 
 /**
