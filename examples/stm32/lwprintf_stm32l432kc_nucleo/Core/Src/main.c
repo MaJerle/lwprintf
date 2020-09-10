@@ -51,9 +51,19 @@ void SystemClock_Config(void);
 static void MX_GPIO_Init(void);
 static void MX_USART2_UART_Init(void);
 /* USER CODE BEGIN PFP */
+
+
+/**
+ * \brief           Output function to handle all characters for print operation
+ * \param[in]       ch: Character to output
+ * \param[in]       p: \ref lwprintf_t handle
+ * \return          ch on success, 0 on failure
+ */
 static int
 lwprintf_my_out_func(int ch, lwprintf_t* p) {
     uint8_t c = (uint8_t)ch;
+
+    /* Don't print zero */
     if (c == '\0') {
         return ch;
     }
@@ -104,7 +114,6 @@ int main(void)
   /* Print formatted data */
   lwprintf_printf("My first string: %s\r\n", "Hello world");
   lwprintf_printf("My first digits: %d\r\n", 10);
-
   /* USER CODE END 2 */
 
   /* Infinite loop */

@@ -170,6 +170,8 @@ main(void) {
     printf_run(NULL, "%.8g", 0.000000123342);
     printf_run(NULL, "%.8G", 0.000000123342);
 
+    printf_run(NULL, "%.4f", 323243432432432.432);
+
     /* Engineering tests */
     printf_run(NULL, "%e", -123.456);
     printf_run(NULL, "%e", 0.000001);
