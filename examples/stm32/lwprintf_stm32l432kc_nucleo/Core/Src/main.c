@@ -84,7 +84,7 @@ lwprintf_my_out_func(int ch, lwprintf_t* p) {
 int main(void)
 {
   /* USER CODE BEGIN 1 */
-
+    uint32_t my_int;
   /* USER CODE END 1 */
 
   /* MCU Configuration--------------------------------------------------------*/
@@ -114,6 +114,7 @@ int main(void)
   /* Print formatted data */
   lwprintf_printf("My first string: %s\r\n", "Hello world");
   lwprintf_printf("My first digits: %d\r\n", 10);
+  lwprintf_printf("My first pointer: %p\r\n", &my_int);
   /* USER CODE END 2 */
 
   /* Infinite loop */
