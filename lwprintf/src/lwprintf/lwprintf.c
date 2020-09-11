@@ -87,25 +87,26 @@ powers_of_10[] = { 1E00, 1E01, 1E02, 1E03, 1E04, 1E05, 1E06, 1E07, 1E08, 1E09,
  * \brief           Outputs any integer type to stream
  * Implemented as big macro since `d`, `digit` and `num` are of different types vs int size
  */
-#define OUTPUT_ANY_INT_TYPE             {                               \
+#define OUTPUT_ANY_INT_TYPE(ttype, num) {                               \
+    ttype d, digit;                                                     \
     uint8_t digits_cnt;                                                 \
     char c;                                                             \
                                                                         \
     /* Check if number is zero */                                       \
-    p->m.flags.is_num_zero = num == 0;                                  \
-    if (num == 0) {                                                     \
+    p->m.flags.is_num_zero = (num) == 0;                                \
+    if ((num) == 0) {                                                   \
         prv_out_str_before(p, 1);                                       \
         p->out_fn(p, '0');                                              \
         prv_out_str_after(p, 1);                                        \
     } else {                                                            \
         /* Start with digits length */                                  \
-        for (digits_cnt = 0, d = num; d > 0; ++digits_cnt, d /= p->m.base) {}   \
-        for (d = 1; (num / d) >= p->m.base; d *= p->m.base) {}          \
+        for (digits_cnt = 0, d = (num); d > 0; ++digits_cnt, d /= p->m.base) {} \
+        for (d = 1; ((num) / d) >= p->m.base; d *= p->m.base) {}        \
                                                                         \
         prv_out_str_before(p, digits_cnt);                              \
         for (; d > 0; ) {                                               \
-            digit = num / d;                                            \
-            num = num % d;                                              \
+            digit = (num) / d;                                          \
+            num = (num) % d;                                            \
             d = d / p->m.base;                                          \
             c = (char)digit + (char)(digit >= 10 ? ((p->m.flags.uc ? 'A' : 'a') - 10) : '0');   \
             p->out_fn(p, c);                                            \
@@ -408,8 +409,7 @@ prv_out_str(lwprintf_int_t* p, const char* buff, size_t buff_size) {
  */
 static int
 prv_unsigned_int_to_str(lwprintf_int_t* p, unsigned int num) {
-    unsigned int d, digit;
-    OUTPUT_ANY_INT_TYPE;
+    OUTPUT_ANY_INT_TYPE(unsigned int, num);
     return 1;
 }
 
@@ -421,8 +421,7 @@ prv_unsigned_int_to_str(lwprintf_int_t* p, unsigned int num) {
  */
 static int
 prv_unsigned_long_int_to_str(lwprintf_int_t* p, unsigned long int num) {
-    unsigned long int d, digit;
-    OUTPUT_ANY_INT_TYPE;
+    OUTPUT_ANY_INT_TYPE(unsigned long int, num);
     return 1;
 }
 
@@ -436,8 +435,7 @@ prv_unsigned_long_int_to_str(lwprintf_int_t* p, unsigned long int num) {
  */
 static int
 prv_unsigned_longlong_int_to_str(lwprintf_int_t* p, unsigned long long int num) {
-    unsigned long long int d, digit;
-    OUTPUT_ANY_INT_TYPE;
+    OUTPUT_ANY_INT_TYPE(unsigned long long int, num);
     return 1;
 }
 
@@ -453,8 +451,7 @@ prv_unsigned_longlong_int_to_str(lwprintf_int_t* p, unsigned long long int num) 
  */
 static int
 prv_uintptr_to_str(lwprintf_int_t* p, uintptr_t num) {
-    uintptr_t d, digit;
-    OUTPUT_ANY_INT_TYPE;
+    OUTPUT_ANY_INT_TYPE(uintptr_t, num);
     return 1;
 }
 
@@ -468,8 +465,7 @@ prv_uintptr_to_str(lwprintf_int_t* p, uintptr_t num) {
  */
 static int
 prv_sizet_to_str(lwprintf_int_t* p, size_t num) {
-    size_t d, digit;
-    OUTPUT_ANY_INT_TYPE;
+    OUTPUT_ANY_INT_TYPE(size_t, num);
     return 1;
 }
 
@@ -481,8 +477,7 @@ prv_sizet_to_str(lwprintf_int_t* p, size_t num) {
  */
 static int
 prv_umaxt_to_str(lwprintf_int_t* p, uintmax_t num) {
-    uintmax_t d, digit;
-    OUTPUT_ANY_INT_TYPE;
+    OUTPUT_ANY_INT_TYPE(uintmax_t, num);
     return 1;
 }
 
@@ -992,6 +987,7 @@ prv_format(lwprintf_int_t* p, va_list arg) {
             case 'c':
                 p->out_fn(p, (char)va_arg(arg, int));
                 break;
+#if LWPRINTF_CFG_SUPPORT_TYPE_INT
             case 'd':
             case 'i': {
                 /* Check for different length parameters */
@@ -1053,6 +1049,7 @@ prv_format(lwprintf_int_t* p, va_list arg) {
 #endif /* LWPRINTF_CFG_SUPPORT_LONG_LONG */
                 }
                 break;
+#endif /* LWPRINTF_CFG_SUPPORT_TYPE_INT */
 #if LWPRINTF_CFG_SUPPORT_TYPE_STRING
             case 's': {
                 const char* b = va_arg(arg, const char*);

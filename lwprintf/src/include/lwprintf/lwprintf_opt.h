@@ -78,6 +78,15 @@ extern "C" {
 #endif
 
 /**
+ * \brief           Enables `1` or disables `0` support for any specifier accepting any kind of integer types.
+ *                  This is enabling `%d, %b, %u, %o, %i, %x` specifiers
+ *
+ */
+#ifndef LWPRINTF_CFG_SUPPORT_TYPE_INT
+#define LWPRINTF_CFG_SUPPORT_TYPE_INT               1
+#endif
+
+/**
  * \brief           Enables `1` or disables `0` support `%%p` pointer print type
  *
  * When enabled, architecture must support `uintptr_t` type, normally available with C11 standard
@@ -105,13 +114,11 @@ extern "C" {
 #endif
 
 /**
- * \brief           Specifies default number of precision for floating number
- * Represents number of digits to be used after comma if no precision
- * is used with specifier
+ * \brief           Enables `1` or disables `0` support for `%s` for string output
  *
  */
-#ifndef LWPRINTF_CFG_FLOAT_DEFAULT_PRECISION
-#define LWPRINTF_CFG_FLOAT_DEFAULT_PRECISION        6
+#ifndef LWPRINTF_CFG_SUPPORT_TYPE_STRING
+#define LWPRINTF_CFG_SUPPORT_TYPE_STRING            1
 #endif
 
 /**
@@ -123,11 +130,13 @@ extern "C" {
 #endif
 
 /**
- * \brief           Enables `1` or disables `0` support for `%s` for string output
+ * \brief           Specifies default number of precision for floating number
+ * Represents number of digits to be used after comma if no precision
+ * is used with specifier
  *
  */
-#ifndef LWPRINTF_CFG_SUPPORT_TYPE_STRING
-#define LWPRINTF_CFG_SUPPORT_TYPE_STRING            1
+#ifndef LWPRINTF_CFG_FLOAT_DEFAULT_PRECISION
+#define LWPRINTF_CFG_FLOAT_DEFAULT_PRECISION        6
 #endif
 
 /**
