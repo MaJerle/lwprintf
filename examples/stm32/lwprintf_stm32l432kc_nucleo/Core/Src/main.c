@@ -52,6 +52,10 @@ static void MX_GPIO_Init(void);
 static void MX_USART2_UART_Init(void);
 /* USER CODE BEGIN PFP */
 
+/* USER CODE END PFP */
+
+/* Private user code ---------------------------------------------------------*/
+/* USER CODE BEGIN 0 */
 
 /**
  * \brief           Output function to handle all characters for print operation
@@ -70,10 +74,6 @@ lwprintf_my_out_func(int ch, lwprintf_t* p) {
     HAL_UART_Transmit(&huart2, &c, 1, 100);
     return ch;
 }
-/* USER CODE END PFP */
-
-/* Private user code ---------------------------------------------------------*/
-/* USER CODE BEGIN 0 */
 
 /* USER CODE END 0 */
 
