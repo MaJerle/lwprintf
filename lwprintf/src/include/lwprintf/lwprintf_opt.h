@@ -87,7 +87,7 @@ extern "C" {
 #endif
 
 /**
- * \brief           Enables `1` or disables `0` support `%%p` pointer print type
+ * \brief           Enables `1` or disables `0` support `%p` pointer print type
  *
  * When enabled, architecture must support `uintptr_t` type, normally available with C11 standard
  */
@@ -96,7 +96,7 @@ extern "C" {
 #endif
 
 /**
- * \brief           Enables `1` or disables `0` support `%%f` float type
+ * \brief           Enables `1` or disables `0` support `%f` float type
  *
  */
 #ifndef LWPRINTF_CFG_SUPPORT_TYPE_FLOAT
@@ -122,7 +122,7 @@ extern "C" {
 #endif
 
 /**
- * \brief           Enables `1` or disables `0` support for `%K` for hex byte array output
+ * \brief           Enables `1` or disables `0` support for `%k` for hex byte array output
  *
  */
 #ifndef LWPRINTF_CFG_SUPPORT_TYPE_BYTE_ARRAY
@@ -131,8 +131,9 @@ extern "C" {
 
 /**
  * \brief           Specifies default number of precision for floating number
+ *
  * Represents number of digits to be used after comma if no precision
- * is used with specifier
+ * is set with specifier itself
  *
  */
 #ifndef LWPRINTF_CFG_FLOAT_DEFAULT_PRECISION
