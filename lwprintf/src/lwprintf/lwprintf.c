@@ -47,6 +47,7 @@
 
 #define CHARISNUM(x)                    ((x) >= '0' && (x) <= '9')
 #define CHARTONUM(x)                    ((x) - '0')
+#define IS_PRINT_MODE(p)                ((p)->out_fn == prv_out_fn_print)
 
 /* Define custom types */
 #if LWPRINTF_CFG_SUPPORT_LONG_LONG
@@ -850,8 +851,9 @@ prv_format(lwprintf_int_t* p, va_list arg) {
     const char* fmt = p->fmt;
 
 #if LWPRINTF_CFG_OS
-    if (!lwprintf_sys_mutex_isvalid(&p->lw->mutex)  /* Invalid mutex handle */
-        || !lwprintf_sys_mutex_wait(&p->lw->mutex)) {   /* Cannot acquire mutex */
+    if (IS_PRINT_MODE(p) &&                     /* OS protection only for print */
+        (!lwprintf_sys_mutex_isvalid(&p->lw->mutex) /* Invalid mutex handle */
+            || !lwprintf_sys_mutex_wait(&p->lw->mutex))) {  /* Cannot acquire mutex */
         return 0;
     }
 #endif /* LWPRINTF_CFG_OS */
@@ -1123,7 +1125,7 @@ prv_format(lwprintf_int_t* p, va_list arg) {
                 /* Full width of digits to print */
                 full_width = len * (2 + (int)is_space);
                 if (is_space && full_width > 0) {
-                    --full_width;               /* Remove space after last number s*/
+                    --full_width;               /* Remove space after last number */
                 }
 
                 /* Output byte by byte w/o hex prefix */
@@ -1151,7 +1153,9 @@ prv_format(lwprintf_int_t* p, va_list arg) {
     }
     p->out_fn(p, '\0');                         /* Output last zero number */
 #if LWPRINTF_CFG_OS
-    lwprintf_sys_mutex_release(&p->lw->mutex);
+    if (IS_PRINT_MODE(p)) {                     /* Mutex only for print operation */
+        lwprintf_sys_mutex_release(&p->lw->mutex);
+    }
 #endif /* LWPRINTF_CFG_OS */
     return 1;
 }
