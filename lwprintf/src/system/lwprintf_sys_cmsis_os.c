@@ -40,7 +40,7 @@
 uint8_t
 lwprintf_sys_mutex_create(LWPRINTF_CFG_OS_MUTEX_HANDLE* m) {
     *m = osMutexNew(NULL);
-    return 1;
+    return lwprintf_sys_mutex_isvalid(m);
 }
 
 uint8_t
@@ -50,18 +50,12 @@ lwprintf_sys_mutex_isvalid(LWPRINTF_CFG_OS_MUTEX_HANDLE* m) {
 
 uint8_t
 lwprintf_sys_mutex_wait(LWPRINTF_CFG_OS_MUTEX_HANDLE* m) {
-    if (osMutexAcquire(*m, osWaitForever) != osOK) {
-        return 0;
-    }
-    return 1;
+    return osMutexAcquire(*m, osWaitForever) == osOK;
 }
 
 uint8_t
 lwprintf_sys_mutex_release(LWPRINTF_CFG_OS_MUTEX_HANDLE* m) {
-    if (osMutexRelease(*m) != osOK) {
-        return 0;
-    }
-    return 1;
+    return osMutexRelease(*m, osWaitForever) == osOK;
 }
 
 #endif /* LWPRINTF_CFG_OS && !__DOXYGEN__ */

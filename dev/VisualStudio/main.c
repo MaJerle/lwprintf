@@ -150,7 +150,7 @@ int n;
 int
 main(void) {
     double num = 2123213213142.032;
-
+    
     lwprintf_init(lwprintf_output);
 
     printf_run(NULL, "Precision: %3d, %.*g", 17, 17, 0.0001234567);
