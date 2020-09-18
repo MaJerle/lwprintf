@@ -55,7 +55,7 @@ lwprintf_sys_mutex_wait(LWPRINTF_CFG_OS_MUTEX_HANDLE* m) {
 
 uint8_t
 lwprintf_sys_mutex_release(LWPRINTF_CFG_OS_MUTEX_HANDLE* m) {
-    return osMutexRelease(*m, osWaitForever) == osOK;
+    return osMutexRelease(*m) == osOK;
 }
 
 #endif /* LWPRINTF_CFG_OS && !__DOXYGEN__ */
