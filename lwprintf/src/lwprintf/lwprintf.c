@@ -646,7 +646,7 @@ prv_double_to_str(lwprintf_int_t* p, double in_num) {
         return prv_out_str(p, str, p->m.flags.plus ? 4 : 3);
 #if LWPRINTF_CFG_SUPPORT_TYPE_ENGINEERING
     } else if (in_num < -FLOAT_MAX_B_ENG || in_num > FLOAT_MAX_B_ENG) {
-        p->m.type = def_type = 'e';                 /* Go to engineering mode */
+        p->m.type = def_type = 'e';             /* Go to engineering mode */
 #endif /* LWPRINTF_CFG_SUPPORT_TYPE_ENGINEERING */
     }
 
@@ -657,7 +657,7 @@ prv_double_to_str(lwprintf_int_t* p, double in_num) {
 #if LWPRINTF_CFG_SUPPORT_TYPE_ENGINEERING
     /* Engineering mode check for number of exponents */
     if (def_type == 'e' || def_type == 'g'
-        || in_num > (powers_of_10[LWPRINTF_ARRAYSIZE(powers_of_10) - 1])) {/* More vs what float can hold */
+        || in_num > (powers_of_10[LWPRINTF_ARRAYSIZE(powers_of_10) - 1])) { /* More vs what float can hold */
         if (p->m.type != 'g') {
             p->m.type = 'e';
         }
@@ -702,8 +702,8 @@ prv_double_to_str(lwprintf_int_t* p, double in_num) {
      * Let 'P' equal the precision if nonzero, '6' if the precision is omitted, or '1' if the precision is zero.
      * Then, if a conversion with style 'E' would have an exponent of 'X':
      * 
-     * if 'P > X ≥ −4', the conversion is with style 'f' (or 'F') and precision 'P − (X + 1)'.
-     * otherwise, the conversion is with style 'e' (or 'E') and precision 'P − 1'.
+     * if 'P > X >= -4', the conversion is with style 'f' (or 'F') and precision 'P - (X + 1)'.
+     * otherwise, the conversion is with style 'e' (or 'E') and precision 'P - 1'.
      *
      * Finally, unless the '#' flag is used,
      * any trailing zeros are removed from the fractional portion of the result
@@ -1020,7 +1020,7 @@ prv_format(lwprintf_int_t* p, va_list arg) {
                 } else if (*fmt == 'x' || *fmt == 'X') {
                     p->m.base = 16;
                 }
-                p->m.flags.space = 0;                   /* Space flag has no meaning here */
+                p->m.flags.space = 0;           /* Space flag has no meaning here */
 
                 /* Check for different length parameters */
                 if (0) {
