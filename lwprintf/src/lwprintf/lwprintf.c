@@ -1087,7 +1087,7 @@ prv_format(lwprintf_int_t* p, va_list arg) {
             case 'g':
             case 'G':
 #endif /* LWPRINTF_CFG_SUPPORT_TYPE_ENGINEERING */
-                /* Double number in different format. Final format depends on type of format */
+                /* Double number in different format. Final output depends on type of format */
                 prv_double_to_str(p, (double)va_arg(arg, double));
                 break;
 #endif /* LWPRINTF_CFG_SUPPORT_TYPE_FLOAT */
