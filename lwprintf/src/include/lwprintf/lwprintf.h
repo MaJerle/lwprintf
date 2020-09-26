@@ -182,25 +182,25 @@ int         lwprintf_snprintf_ex(lwprintf_t* const lw, char* s, size_t n, const 
  * \copydoc         lwprintf_vprintf
  * \note            This function is equivalent to \ref lwprintf_vprintf
  */
-#define     lwvprintf(format, arg)                      lwprintf_vprintf
+#define     lwvprintf                                   lwprintf_vprintf
 
 /**
  * \copydoc         lwprintf_vsnprintf
  * \note            This function is equivalent to \ref lwprintf_vsnprintf
  */
-#define     lwvsnprintf(s, n, format, arg)              lwprintf_vsnprintf
+#define     lwvsnprintf                                 lwprintf_vsnprintf
 
 /**
  * \copydoc         lwprintf_snprintf
  * \note            This function is equivalent to \ref lwprintf_snprintf
  */
-#define     lwsnprintf(s, n, format, ...)               lwprintf_snprintf
+#define     lwsnprintf                                  lwprintf_snprintf
 
 /**
  * \copydoc         lwprintf_sprintf
  * \note            This function is equivalent to \ref lwprintf_sprintf
  */
-#define     lwsprintf(s, format, ...)                   lwprintf_sprintf
+#define     lwsprintf                                   lwprintf_sprintf
 
 /**
  * \}
