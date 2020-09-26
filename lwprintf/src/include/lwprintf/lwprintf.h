@@ -132,12 +132,6 @@ int         lwprintf_snprintf_ex(lwprintf_t* const lw, char* s, size_t n, const 
 #define     lwprintf_printf(format, ...)                lwprintf_printf_ex(NULL, (format), ## __VA_ARGS__)
 
 /**
- * \copydoc         lwprintf_printf
- * \note            This function is equivalent to \ref lwprintf_printf
- */
-#define     lwprintf                                    lwprintf_printf
-
-/**
  * \brief           Write formatted data from variable argument list to sized buffer at default LwPRINTF instance
  * \param[in]       s: Pointer to a buffer where the resulting C-string is stored.
  *                      The buffer should have a size of at least `n` characters
@@ -176,6 +170,37 @@ int         lwprintf_snprintf_ex(lwprintf_t* const lw, char* s, size_t n, const 
  *                      not counting the terminating null character.
  */
 #define     lwprintf_sprintf(s, format, ...)            lwprintf_sprintf_ex(NULL, (s), (format), ## __VA_ARGS__)
+
+/* Shortcut versions */
+/**
+ * \copydoc         lwprintf_printf
+ * \note            This function is equivalent to \ref lwprintf_printf
+ */
+#define     lwprintf                                    lwprintf_printf
+
+/**
+ * \copydoc         lwprintf_vprintf
+ * \note            This function is equivalent to \ref lwprintf_vprintf
+ */
+#define     lwvprintf(format, arg)                      lwprintf_vprintf
+
+/**
+ * \copydoc         lwprintf_vsnprintf
+ * \note            This function is equivalent to \ref lwprintf_vsnprintf
+ */
+#define     lwvsnprintf(s, n, format, arg)              lwprintf_vsnprintf
+
+/**
+ * \copydoc         lwprintf_snprintf
+ * \note            This function is equivalent to \ref lwprintf_snprintf
+ */
+#define     lwsnprintf(s, n, format, ...)               lwprintf_snprintf
+
+/**
+ * \copydoc         lwprintf_sprintf
+ * \note            This function is equivalent to \ref lwprintf_sprintf
+ */
+#define     lwsprintf(s, format, ...)                   lwprintf_sprintf
 
 /**
  * \}
