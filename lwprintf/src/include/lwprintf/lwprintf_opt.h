@@ -141,6 +141,26 @@ extern "C" {
 #endif
 
 /**
+ * \brief           Enables `1` or disables `0` optional short names for LwPRINTF API functions.
+ *
+ * It adds functions for default instance: `lwprintf`, `lwsnprintf` and others
+ */
+#ifndef LWPRINTF_CFG_ENABLE_SHORTNAMES
+#define LWPRINTF_CFG_ENABLE_SHORTNAMES              1
+#endif /* LWPRINTF_CFG_ENABLE_SHORTNAMES */
+
+/**
+ * \brief           Enables `1` or disables `0` C standard API names
+ *
+ * Disabled by default not to interfere with compiler implementation.
+ * Application may need to remove standard C STDIO library from linkage
+ * to be able to properly compile LwPRINTF with this option enabled
+ */
+#ifndef LWPRINTF_CFG_ENABLE_STD_NAMES
+#define LWPRINTF_CFG_ENABLE_STD_NAMES               0
+#endif /* LWPRINTF_CFG_ENABLE_SHORTNAMES */
+
+/**
  * \}
  */
 

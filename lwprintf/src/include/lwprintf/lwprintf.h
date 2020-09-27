@@ -171,36 +171,83 @@ int         lwprintf_snprintf_ex(lwprintf_t* const lw, char* s, size_t n, const 
  */
 #define     lwprintf_sprintf(s, format, ...)            lwprintf_sprintf_ex(NULL, (s), (format), ## __VA_ARGS__)
 
-/* Shortcut versions */
+#if LWPRINTF_CFG_ENABLE_SHORTNAMES || __DOXYGEN__
+
 /**
  * \copydoc         lwprintf_printf
  * \note            This function is equivalent to \ref lwprintf_printf
+ *                      and available only if \ref LWPRINTF_CFG_ENABLE_SHORTNAMES is enabled
  */
 #define     lwprintf                                    lwprintf_printf
 
 /**
  * \copydoc         lwprintf_vprintf
  * \note            This function is equivalent to \ref lwprintf_vprintf
+ *                      and available only if \ref LWPRINTF_CFG_ENABLE_SHORTNAMES is enabled
  */
 #define     lwvprintf                                   lwprintf_vprintf
 
 /**
  * \copydoc         lwprintf_vsnprintf
  * \note            This function is equivalent to \ref lwprintf_vsnprintf
+ *                      and available only if \ref LWPRINTF_CFG_ENABLE_SHORTNAMES is enabled
  */
 #define     lwvsnprintf                                 lwprintf_vsnprintf
 
 /**
  * \copydoc         lwprintf_snprintf
  * \note            This function is equivalent to \ref lwprintf_snprintf
+ *                      and available only if \ref LWPRINTF_CFG_ENABLE_SHORTNAMES is enabled
  */
 #define     lwsnprintf                                  lwprintf_snprintf
 
 /**
  * \copydoc         lwprintf_sprintf
  * \note            This function is equivalent to \ref lwprintf_sprintf
+ *                      and available only if \ref LWPRINTF_CFG_ENABLE_SHORTNAMES is enabled
  */
 #define     lwsprintf                                   lwprintf_sprintf
+
+#endif /* LWPRINTF_CFG_ENABLE_SHORTNAMES || __DOXYGEN__ */
+
+#if LWPRINTF_CFG_ENABLE_STD_NAMES || __DOXYGEN__
+
+/**
+ * \copydoc         lwprintf_printf
+ * \note            This function is equivalent to \ref lwprintf_printf
+ *                      and available only if \ref LWPRINTF_CFG_ENABLE_STD_NAMES is enabled
+ */
+#define     printf                                      lwprintf_printf
+
+/**
+ * \copydoc         lwprintf_vprintf
+ * \note            This function is equivalent to \ref lwprintf_vprintf
+ *                      and available only if \ref LWPRINTF_CFG_ENABLE_STD_NAMES is enabled
+ */
+#define     vprintf                                     lwprintf_vprintf
+
+/**
+ * \copydoc         lwprintf_vsnprintf
+ * \note            This function is equivalent to \ref lwprintf_vsnprintf
+ *                      and available only if \ref LWPRINTF_CFG_ENABLE_STD_NAMES is enabled
+ */
+#define     vsnprintf                                   lwprintf_vsnprintf
+
+/**
+ * \copydoc         lwprintf_snprintf
+ * \note            This function is equivalent to \ref lwprintf_snprintf
+ *                      and available only if \ref LWPRINTF_CFG_ENABLE_STD_NAMES is enabled
+ */
+#define     snprintf                                    lwprintf_snprintf
+
+/**
+ * \copydoc         lwprintf_sprintf
+ * \note            This function is equivalent to \ref lwprintf_sprintf
+ *                      and available only if \ref LWPRINTF_CFG_ENABLE_STD_NAMES is enabled
+ */
+#define     sprintf                                     lwprintf_sprintf
+
+#endif /* LWPRINTF_CFG_ENABLE_STD_NAMES || __DOXYGEN__ */
 
 /**
  * \}
