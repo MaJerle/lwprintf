@@ -113,7 +113,7 @@ int         lwprintf_snprintf_ex(lwprintf_t* const lw, char* s, size_t n, const 
 #define     lwprintf_init(out_fn)                       lwprintf_init_ex(NULL, (out_fn))
 
 /**
- * \brief           Print formatted data from variable argument list to the output at default LwPRINTF instance
+ * \brief           Print formatted data from variable argument list to the output with default LwPRINTF instance
  * \param[in]       format: C string that contains the text to be written to output
  * \param[in]       arg: A value identifying a variable arguments list initialized with `va_start`.
  *                      `va_list` is a special type defined in `<cstdarg>`.
@@ -123,7 +123,7 @@ int         lwprintf_snprintf_ex(lwprintf_t* const lw, char* s, size_t n, const 
 #define     lwprintf_vprintf(format, arg)               lwprintf_vprintf_ex(NULL, (format), (arg))
 
 /**
- * \brief           Print formatted data to the output at default LwPRINTF instance
+ * \brief           Print formatted data to the output with default LwPRINTF instance
  * \param[in]       format: C string that contains the text to be written to output
  * \param[in]       ...: Optional arguments for format string
  * \return          The number of characters that would have been written if `n` had been sufficiently large,
@@ -132,7 +132,7 @@ int         lwprintf_snprintf_ex(lwprintf_t* const lw, char* s, size_t n, const 
 #define     lwprintf_printf(format, ...)                lwprintf_printf_ex(NULL, (format), ## __VA_ARGS__)
 
 /**
- * \brief           Write formatted data from variable argument list to sized buffer at default LwPRINTF instance
+ * \brief           Write formatted data from variable argument list to sized buffer with default LwPRINTF instance
  * \param[in]       s: Pointer to a buffer where the resulting C-string is stored.
  *                      The buffer should have a size of at least `n` characters
  * \param[in]       n: Maximum number of bytes to be used in the buffer.
@@ -147,7 +147,7 @@ int         lwprintf_snprintf_ex(lwprintf_t* const lw, char* s, size_t n, const 
 #define     lwprintf_vsnprintf(s, n, format, arg)       lwprintf_vsnprintf_ex(NULL, (s), (n), (format), (arg))
 
 /**
- * \brief           Write formatted data from variable argument list to sized buffer at default LwPRINTF instance
+ * \brief           Write formatted data from variable argument list to sized buffer with default LwPRINTF instance
  * \param[in]       s: Pointer to a buffer where the resulting C-string is stored.
  *                      The buffer should have a size of at least `n` characters
  * \param[in]       n: Maximum number of bytes to be used in the buffer.
@@ -161,7 +161,7 @@ int         lwprintf_snprintf_ex(lwprintf_t* const lw, char* s, size_t n, const 
 #define     lwprintf_snprintf(s, n, format, ...)        lwprintf_snprintf_ex(NULL, (s), (n), (format), ## __VA_ARGS__)
 
 /**
- * \brief           Write formatted data from variable argument list to sized buffer at default LwPRINTF instance
+ * \brief           Write formatted data from variable argument list to sized buffer with default LwPRINTF instance
  * \param[in]       s: Pointer to a buffer where the resulting C-string is stored.
  *                      The buffer should have a size of at least `n` characters
  * \param[in]       format: C string that contains a format string that follows the same specifications as format in printf
