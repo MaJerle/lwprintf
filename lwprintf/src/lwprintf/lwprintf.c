@@ -8,7 +8,7 @@
  *
  * Permission is hereby granted, free of charge, to any person
  * obtaining a copy of this software and associated documentation
- * files (the "Software"), to deal in the Software without restriction,
+ * files (the "Software"), to deal in the Software without restriction, '
  * including without limitation the rights to use, copy, modify, merge,
  * publish, distribute, sublicense, and/or sell copies of the Software,
  * and to permit persons to whom the Software is furnished to do so,
@@ -21,7 +21,7 @@
  * EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES
  * OF MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE
  * AND NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT
- * HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY,
+ * HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, '
  * WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING
  * FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR
  * OTHER DEALINGS IN THE SOFTWARE.
@@ -294,7 +294,7 @@ prv_out_str_before(lwprintf_int_t* p, size_t buff_size) {
                 --p->m.width;
             }
         } else if (p->m.base == 16 || p->m.base == 2) {
-            if (p->m.width > 2) {
+            if (p->m.width >= 2) {
                 p->m.width -= 2;
             } else {
                 p->m.width = 0;
@@ -361,7 +361,6 @@ prv_out_str_after(lwprintf_int_t* p, size_t buff_size) {
             p->out_fn(p, ' ');
         }
     }
-
     return 1;
 }
 
@@ -540,7 +539,7 @@ prv_calculate_dbl_num_data(lwprintf_int_t* p, float_num_t* n, double num, const 
      *
      * As an example, with input number of 12.345678 and precision digits set as 4, then result is the following:
      *
-     * integer_part = 11            -> Actual integer part of the double number
+     * integer_part = 12            -> Actual integer part of the double number
      * decimal_part_dbl = 3456.78   -> Decimal part multiplied by 10^precision, keeping it in double format
      * decimal_part = 3456          -> Integer part of decimal number
      * diff = 0.78                  -> Difference between actual decimal and integer part of decimal
