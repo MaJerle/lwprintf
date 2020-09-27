@@ -180,7 +180,7 @@ Those are more targeting embedded systems although they may be used in any gener
 +-------------+--------------------------------------------------------------------------+
 | ``K`` ``k`` | Prints ``unsigned char`` based data array as sequence of hex numbers.    |
 |             | Use *width* field to specify length of input array.                      |
-|             | Use ``K`` for upper-case hex letters, ``k`` for small.                   |
+|             | Use ``K`` for upper-case hex letters, ``k`` for lower-case.              |
 +-------------+--------------------------------------------------------------------------+
 
 .. literalinclude:: ../../examples/additional_format_specifiers.c
