@@ -931,8 +931,7 @@ prv_format(lwprintf_int_t* p, va_list arg) {
         p->m.precision = 0;
         if (*fmt == '.') {                      /* Precision flag is detected */
             p->m.flags.precision = 1;
-            ++fmt;
-            if (*fmt == '*') {                  /* Variable check */
+            if (*++fmt == '*') {                /* Variable check */
                 const int pr = (int)va_arg(arg, int);
                 p->m.precision = pr > 0 ? pr : 0;
                 ++fmt;
