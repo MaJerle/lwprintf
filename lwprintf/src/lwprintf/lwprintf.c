@@ -611,7 +611,7 @@ prv_double_to_str(lwprintf_int_t* p, double in_num) {
     char str[11];
 #endif /* LWPRINTF_CFG_SUPPORT_LONG_LONG */
 #if LWPRINTF_CFG_SUPPORT_TYPE_ENGINEERING
-    int exp_cnt;
+    int exp_cnt = 0;
 #endif /* LWPRINTF_CFG_SUPPORT_TYPE_ENGINEERING */
 
     /*
