@@ -29,7 +29,7 @@
  * This file is part of LwPRINTF - Lightweight stdio manager library.
  *
  * Author:          Tilen MAJERLE <tilen@majerle.eu>
- * Version:         $_version_$
+ * Version:         v1.0.0
  */
 #include <limits.h>
 #include <float.h>
@@ -610,7 +610,7 @@ prv_double_to_str(lwprintf_int_t* p, double in_num) {
     size_t i;
     int digits_cnt, chosen_precision;
     char def_type = p->m.type;
-    
+
 #if LWPRINTF_CFG_SUPPORT_LONG_LONG
     char str[22];
 #else
@@ -705,14 +705,14 @@ prv_double_to_str(lwprintf_int_t* p, double in_num) {
      * depending on the value converted and the precision.
      * Let 'P' equal the precision if nonzero, '6' if the precision is omitted, or '1' if the precision is zero.
      * Then, if a conversion with style 'E' would have an exponent of 'X':
-     * 
+     *
      * if 'P > X >= -4', the conversion is with style 'f' (or 'F') and precision 'P - (X + 1)'.
      * otherwise, the conversion is with style 'e' (or 'E') and precision 'P - 1'.
      *
      * Finally, unless the '#' flag is used,
      * any trailing zeros are removed from the fractional portion of the result
      * and the decimal-point character is removed if there is no fractional portion remaining.
-     * 
+     *
      * A double argument representing an infinity or 'NaN' is converted in the style of an 'f' or 'F' conversion specifier.
      */
 
@@ -872,7 +872,7 @@ prv_format(lwprintf_int_t* p, va_list arg) {
         if (p->is_print_cancelled) {
             break;
         }
-        
+
         /* Parse format */
         /* %[flags][width][.precision][length]type */
         /* Go to https://docs.majerle.eu for more info about supported features */
