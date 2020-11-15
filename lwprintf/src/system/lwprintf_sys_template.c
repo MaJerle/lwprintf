@@ -29,13 +29,11 @@
  * This file is part of LwPRINTF - Lightweight stdio manager library.
  *
  * Author:          Tilen MAJERLE <tilen@majerle.eu>
- * Version:         $_version_$
+ * Version:         v1.0.0
  */
 #include "system/lwprintf_sys.h"
 
 #if LWPRINTF_CFG_OS || __DOXYGEN__
-
-#include "cmsis_os.h"
 
 /**
  * \brief           Create a new mutex and assign value to handle

@@ -1,5 +1,5 @@
 /**
- * \file            lwprintf_config_template.h
+ * \file            lwprintf_opts_template.h
  * \brief           LwPRINTF configuration file
  */
 
@@ -29,19 +29,16 @@
  * This file is part of LwPRINTF - Lightweight stdio manager library.
  *
  * Author:          Tilen MAJERLE <tilen@majerle.eu>
- * Version:         $_version_$
+ * Version:         v1.0.0
  */
-#ifndef LWPRINTF_HDR_CONFIG_H
-#define LWPRINTF_HDR_CONFIG_H
+#ifndef LWPRINTF_HDR_OPTS_H
+#define LWPRINTF_HDR_OPTS_H
 
-/* Rename this file to "lwprintf_config.h" for your application */
+/* Rename this file to "lwprintf_opts.h" for your application */
 
 /*
- * Open "include/lwprintf/lwprintf_config_default.h" and
+ * Open "include/lwprintf/lwprintf_opt.h" and
  * copy & replace here settings you want to change values
  */
 
-/* After user configuration, call default config to merge config together */
-#include "lwprintf/lwprintf_config_default.h"
-
-#endif /* LWPRINTF_HDR_CONFIG_H */
+#endif /* LWPRINTF_HDR_OPTS_H */

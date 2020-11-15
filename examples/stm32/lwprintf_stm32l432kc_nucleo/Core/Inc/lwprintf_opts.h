@@ -1,6 +1,6 @@
 /**
- * \file            lwprintf_config_default.h
- * \brief           LwPRINTF default config
+ * \file            lwprintf_opts.h
+ * \brief           LwPRINTF configuration file
  */
 
 /*
@@ -29,47 +29,11 @@
  * This file is part of LwPRINTF - Lightweight stdio manager library.
  *
  * Author:          Tilen MAJERLE <tilen@majerle.eu>
- * Version:         $_version_$
+ * Version:         v1.0.0
  */
-#ifndef LWPRINTF_HDR_CONFIG_DEFAULT_H
-#define LWPRINTF_HDR_CONFIG_DEFAULT_H
+#ifndef LWPRINTF_HDR_OPTS_H
+#define LWPRINTF_HDR_OPTS_H
 
-#ifdef __cplusplus
-extern "C" {
-#endif /* __cplusplus */
 
-/**
- * \defgroup        LWPRINTF_CONFIG Configuration
- * \brief           Configuration for LwPRINTF library
- * \{
- */
 
-/**
- * \brief           Enables `1` or disables `0` operating system support in the library
- *
- * \note            When `LWPRINTF_CFG_OS` is enabled, user must implement functions in \ref LWPRINTF_SYS group.
- */
-#ifndef LWPRINTF_CFG_OS
-#define LWPRINTF_CFG_OS                            0
-#endif
-
-/**
- * \brief           Mutex handle type
- *
- * \note            This value must be set in case \ref LWPRINTF_CFG_OS is set to `1`.
- *                  If data type is not known to compiler, include header file with
- *                  definition before you define handle type
- */
-#ifndef LWPRINTF_CFG_OS_MUTEX_HANDLE
-#define LWPRINTF_CFG_OS_MUTEX_HANDLE               void *
-#endif
-
-/**
- * \}
- */
-
-#ifdef __cplusplus
-}
-#endif /* __cplusplus */
-
-#endif /* LWPRINTF_HDR_CONFIG_DEFAULT_H */
+#endif /* LWPRINTF_HDR_OPTS_H */
