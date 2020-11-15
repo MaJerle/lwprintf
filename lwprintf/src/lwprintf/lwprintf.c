@@ -559,7 +559,7 @@ prv_calculate_dbl_num_data(lwprintf_int_t* p, float_num_t* n, double num, const 
         }
     } else if (n->diff < 0.5f) {
         /* When entered number is around 0.5 but less than this */
-        if (0.5f - n->diff < 0.000001f && n->decimal_part & 1) {
+        if (0.5f - n->diff < 0.0000001f) {
             ++n->decimal_part;
         }
         /* Used in separate if, since comparing float to == will certainly result to false */
@@ -650,7 +650,7 @@ prv_double_to_str(lwprintf_int_t* p, double in_num) {
         strcpy(s_ptr, p->m.flags.uc ? "INF" : "inf");
         return prv_out_str(p, str, p->m.flags.plus ? 4 : 3);
 #if LWPRINTF_CFG_SUPPORT_TYPE_ENGINEERING
-    } else if (in_num < -FLOAT_MAX_B_ENG || in_num > FLOAT_MAX_B_ENG) {
+    } else if ((in_num < -FLOAT_MAX_B_ENG || in_num > FLOAT_MAX_B_ENG) && def_type != 'g') {
         p->m.type = def_type = 'e';             /* Go to engineering mode */
 #endif /* LWPRINTF_CFG_SUPPORT_TYPE_ENGINEERING */
     }
@@ -669,7 +669,7 @@ prv_double_to_str(lwprintf_int_t* p, double in_num) {
 
         /* Normalize number to be between 0 and 1 and count decimals for exponent */
         if (in_num < 1) {
-            for (exp_cnt = 0; in_num < 1; in_num *= 10, --exp_cnt) {}
+            for (exp_cnt = 0; in_num < 1 && in_num > 0; in_num *= 10, --exp_cnt) {}
         } else {
             for (exp_cnt = 0; in_num >= 10; in_num /= 10, ++exp_cnt) {}
         }
