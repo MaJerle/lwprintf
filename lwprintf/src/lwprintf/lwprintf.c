@@ -546,7 +546,7 @@ prv_calculate_dbl_num_data(lwprintf_int_t* p, float_num_t* n, double num, const 
      *                                  This is used for rounding of last digit (if necessary)
      */
     n->integer_part = (float_long_t)num;
-    n->decimal_part_dbl = (num - n->integer_part) * (double)powers_of_10[p->m.precision];
+    n->decimal_part_dbl = (num - (double)n->integer_part) * (double)powers_of_10[p->m.precision];
     n->decimal_part = (float_long_t)n->decimal_part_dbl;
     n->diff = n->decimal_part_dbl - (float_long_t)n->decimal_part;
 
@@ -587,6 +587,8 @@ prv_calculate_dbl_num_data(lwprintf_int_t* p, float_num_t* n, double num, const 
                 adder = 1;
             }
         }
+    } else {
+        n->digits_cnt_decimal_part_useful = p->m.precision;
     }
 #endif /* LWPRINTF_CFG_SUPPORT_TYPE_ENGINEERING */
 }
@@ -679,7 +681,6 @@ prv_double_to_str(lwprintf_int_t* p, double in_num) {
          * It means that we have to append ending zeros for precision when printing data
          */
     } else if (!p->m.flags.precision) {
-        p->m.flags.precision = 1;
         p->m.precision = LWPRINTF_CFG_FLOAT_DEFAULT_PRECISION;  /* Default precision when not used */
         chosen_precision = p->m.precision;      /* There was no precision, update chosen precision */
     } else if (p->m.flags.precision && p->m.precision == 0) {
@@ -743,10 +744,13 @@ prv_double_to_str(lwprintf_int_t* p, double in_num) {
     digits_cnt = dblnum.digits_cnt_integer_part;
 #if LWPRINTF_CFG_SUPPORT_TYPE_ENGINEERING
     if (def_type == 'g' && p->m.precision > 0) {
-        digits_cnt += dblnum.digits_cnt_decimal_part_useful + 1;
+        digits_cnt += dblnum.digits_cnt_decimal_part_useful;
+        if (dblnum.digits_cnt_decimal_part_useful > 0) {
+            ++digits_cnt;
+        }
     } else
 #endif /* LWPRINTF_CFG_SUPPORT_TYPE_ENGINEERING */
-    if (chosen_precision > 0) {
+    if (chosen_precision > 0 && p->m.flags.precision) {
         /* Add precision digits + dot separator */
         digits_cnt += chosen_precision + 1;
     }
@@ -777,7 +781,9 @@ prv_double_to_str(lwprintf_int_t* p, double in_num) {
     /* Output decimal part */
     if (p->m.precision > 0) {
         int x;
-        p->out_fn(p, '.');
+        if (dblnum.digits_cnt_decimal_part_useful > 0) {
+            p->out_fn(p, '.');
+        }
         for (i = 0; dblnum.decimal_part > 0; dblnum.decimal_part /= 10, ++i) {
             str[i] = '0' + (dblnum.decimal_part % 10);
         }
@@ -786,7 +792,7 @@ prv_double_to_str(lwprintf_int_t* p, double in_num) {
 #if LWPRINTF_CFG_SUPPORT_TYPE_ENGINEERING
         if (def_type == 'g') {
             /* TODO: This is to be checked */
-            for (x = 0; x < p->m.precision - i; ++x, --dblnum.digits_cnt_decimal_part_useful) {
+            for (x = 0; x < p->m.precision - i && dblnum.digits_cnt_decimal_part_useful > 0; ++x, --dblnum.digits_cnt_decimal_part_useful) {
                 p->out_fn(p, '0');
             }
         } else
