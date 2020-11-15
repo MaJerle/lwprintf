@@ -558,6 +558,10 @@ prv_calculate_dbl_num_data(lwprintf_int_t* p, float_num_t* n, double num, const 
             ++n->integer_part;
         }
     } else if (n->diff < 0.5f) {
+        /* When entered number is around 0.5 but less than this */
+        if (0.5f - n->diff < 0.000001f && n->decimal_part & 1) {
+            ++n->decimal_part;
+        }
         /* Used in separate if, since comparing float to == will certainly result to false */
     } else {
         /* Difference is exactly 0.5 */
