@@ -525,9 +525,14 @@ prv_signed_longlong_int_to_str(lwprintf_int_t* p, signed long long int num) {
 
 /**
  * \brief           Calculate necessary parameters for input number
+ * \param[in,out]   p: LwPRINTF internal instance
+ * \param[in]       n: Float number instance
+ * \param[in]       num: Input number
+ * \param[in]       e: Exponent number (to normalize)
+ * \param[in]       type: Format type
  */
 static void
-prv_calculate_dbl_num_data(lwprintf_int_t* p, float_num_t* n, double num, const char type) {
+prv_calculate_dbl_num_data(lwprintf_int_t* p, float_num_t* n, double num, uint8_t e, const char type) {
     memset(n, 0x00, sizeof(*n));
 
     if (p->m.precision >= LWPRINTF_ARRAYSIZE(powers_of_10)) {
@@ -545,6 +550,7 @@ prv_calculate_dbl_num_data(lwprintf_int_t* p, float_num_t* n, double num, const 
      * diff = 0.78                  -> Difference between actual decimal and integer part of decimal
      *                                  This is used for rounding of last digit (if necessary)
      */
+    num += 0.000000000000005;
     n->integer_part = (float_long_t)num;
     n->decimal_part_dbl = (num - (double)n->integer_part) * (double)powers_of_10[p->m.precision];
     n->decimal_part = (float_long_t)n->decimal_part_dbl;
@@ -558,10 +564,6 @@ prv_calculate_dbl_num_data(lwprintf_int_t* p, float_num_t* n, double num, const 
             ++n->integer_part;
         }
     } else if (n->diff < 0.5f) {
-        /* When entered number is around 0.5 but less than this */
-        if (0.5f - n->diff < 0.0000001f) {
-            ++n->decimal_part;
-        }
         /* Used in separate if, since comparing float to == will certainly result to false */
     } else {
         /* Difference is exactly 0.5 */
@@ -717,7 +719,8 @@ prv_double_to_str(lwprintf_int_t* p, double in_num) {
      */
 
     /* Calculate data for number */
-    prv_calculate_dbl_num_data(p, &dblnum, def_type == 'e' ? in_num : orig_num, def_type);
+    prv_calculate_dbl_num_data(p, &dblnum, def_type == 'e' ? in_num : orig_num, def_type == 'e' ? 0 : exp_cnt, def_type);
+    //prv_calculate_dbl_num_data(p, &dblnum, orig_num, exp_cnt, def_type);
 
 #if LWPRINTF_CFG_SUPPORT_TYPE_ENGINEERING
     /* Set type G */
@@ -740,7 +743,7 @@ prv_double_to_str(lwprintf_int_t* p, double in_num) {
                 --chosen_precision;
             }
         }
-        prv_calculate_dbl_num_data(p, &dblnum, in_num, def_type);
+        prv_calculate_dbl_num_data(p, &dblnum, in_num, 0, def_type);
     }
 #endif /* LWPRINTF_CFG_SUPPORT_TYPE_ENGINEERING */
 
