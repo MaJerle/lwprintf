@@ -9,7 +9,7 @@ It includes implementation of standard output functions such as ``printf``, ``vp
 .. rst-class:: center
 .. rst-class:: index_links
 
-	:ref:`download_library` :ref:`getting_started` `Open Github <https://github.com/MaJerle/lwprintf>`_
+	:ref:`download_library` :ref:`getting_started` `Open Github <https://github.com/MaJerle/lwprintf>`_ `Donate <https://paypal.me/tilz0R>`_
 
 Features
 ^^^^^^^^
