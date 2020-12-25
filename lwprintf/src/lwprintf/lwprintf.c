@@ -69,9 +69,7 @@ typedef struct {
 
     short digits_cnt_integer_part;              /*!< Number of digits for integer part */
     short digits_cnt_decimal_part;              /*!< Number of digits for decimal part */
-#if LWPRINTF_CFG_SUPPORT_TYPE_ENGINEERING
     short digits_cnt_decimal_part_useful;       /*!< Number of useful digits to print */
-#endif /* LWPRINTF_CFG_SUPPORT_TYPE_ENGINEERING */
 } float_num_t;
 
 #if LWPRINTF_CFG_SUPPORT_TYPE_FLOAT
@@ -608,9 +606,9 @@ prv_calculate_dbl_num_data(lwprintf_int_t* p, float_num_t* n, double num, uint8_
 static int
 prv_double_to_str(lwprintf_int_t* p, double in_num) {
     float_num_t dblnum;
-    double orig_num = in_num;
     size_t i;
-    int digits_cnt, chosen_precision;
+    double orig_num = in_num;
+    int digits_cnt, chosen_precision, exp_cnt = 0;
     char def_type = p->m.type;
 
 #if LWPRINTF_CFG_SUPPORT_LONG_LONG
@@ -618,9 +616,6 @@ prv_double_to_str(lwprintf_int_t* p, double in_num) {
 #else
     char str[11];
 #endif /* LWPRINTF_CFG_SUPPORT_LONG_LONG */
-#if LWPRINTF_CFG_SUPPORT_TYPE_ENGINEERING
-    int exp_cnt = 0;
-#endif /* LWPRINTF_CFG_SUPPORT_TYPE_ENGINEERING */
 
     /*
      * Check for corner cases
