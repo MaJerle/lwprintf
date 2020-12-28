@@ -29,7 +29,7 @@
  * This file is part of LwPRINTF - Lightweight stdio manager library.
  *
  * Author:          Tilen MAJERLE <tilen@majerle.eu>
- * Version:         v1.0.0
+ * Version:         v1.0.1
  */
 #include <limits.h>
 #include <float.h>
