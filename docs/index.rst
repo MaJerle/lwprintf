@@ -6,10 +6,13 @@ Welcome to the documentation for version |version|.
 LwPRINTF is lightweight stdio manager optimized for embedded systems.
 It includes implementation of standard output functions such as ``printf``, ``vprintf``, ``snprintf``, ``sprintf`` and ``vsnprintf`` in an embedded-systems optimized way.
 
+.. image:: static/images/logo.svg
+    :align: center
+
 .. rst-class:: center
 .. rst-class:: index_links
 
-	:ref:`download_library` :ref:`getting_started` `Open Github <https://github.com/MaJerle/lwprintf>`_
+	:ref:`download_library` :ref:`getting_started` `Open Github <https://github.com/MaJerle/lwprintf>`_ `Donate <https://paypal.me/tilz0R>`_
 
 Features
 ^^^^^^^^

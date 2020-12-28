@@ -27,7 +27,7 @@ copyright = '2020, Tilen MAJERLE'
 author = 'Tilen MAJERLE'
 
 # The full version, including alpha/beta/rc tags
-version = '1.0.0'
+version = 'v1.0.1'
 
 # Try to get branch at which this is running
 # and try to determine which version to display in sphinx
@@ -99,7 +99,7 @@ html_theme_options = {
     'includehidden': True,
     'titles_only': False
 }
-html_logo = 'static/images/logo_tm.png'
+html_logo = 'static/images/logo.svg'
 github_url = 'https://github.com/MaJerle/lwprintf'
 html_baseurl = 'https://docs.majerle.eu/projects/lwprintf/'
 
@@ -112,7 +112,7 @@ html_css_files = [
     'css/custom.css',
 ]
 html_js_files = [
-    'https://kit.fontawesome.com/3102794088.js'
+    'https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.1/css/all.min.css'
 ]
 
 master_doc = 'index'

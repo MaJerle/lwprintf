@@ -29,10 +29,13 @@
  * This file is part of LwPRINTF - Lightweight stdio manager library.
  *
  * Author:          Tilen MAJERLE <tilen@majerle.eu>
- * Version:         v1.0.0
+ * Version:         v1.0.1
  */
 #ifndef LWPRINTF_HDR_OPT_H
 #define LWPRINTF_HDR_OPT_H
+
+/* Uncomment to ignore user options (or set macro in compiler flags) */
+/* #define LWPRINTF_IGNORE_USER_OPTS */
 
 /* Include application options */
 #ifndef LWPRINTF_IGNORE_USER_OPTS

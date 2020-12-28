@@ -29,7 +29,7 @@
  * This file is part of LwPRINTF - Lightweight stdio manager library.
  *
  * Author:          Tilen MAJERLE <tilen@majerle.eu>
- * Version:         v1.0.0
+ * Version:         v1.0.1
  */
 #include <limits.h>
 #include <float.h>
@@ -69,9 +69,7 @@ typedef struct {
 
     short digits_cnt_integer_part;              /*!< Number of digits for integer part */
     short digits_cnt_decimal_part;              /*!< Number of digits for decimal part */
-#if LWPRINTF_CFG_SUPPORT_TYPE_ENGINEERING
     short digits_cnt_decimal_part_useful;       /*!< Number of useful digits to print */
-#endif /* LWPRINTF_CFG_SUPPORT_TYPE_ENGINEERING */
 } float_num_t;
 
 #if LWPRINTF_CFG_SUPPORT_TYPE_FLOAT
@@ -525,9 +523,14 @@ prv_signed_longlong_int_to_str(lwprintf_int_t* p, signed long long int num) {
 
 /**
  * \brief           Calculate necessary parameters for input number
+ * \param[in,out]   p: LwPRINTF internal instance
+ * \param[in]       n: Float number instance
+ * \param[in]       num: Input number
+ * \param[in]       e: Exponent number (to normalize)
+ * \param[in]       type: Format type
  */
 static void
-prv_calculate_dbl_num_data(lwprintf_int_t* p, float_num_t* n, double num, const char type) {
+prv_calculate_dbl_num_data(lwprintf_int_t* p, float_num_t* n, double num, uint8_t e, const char type) {
     memset(n, 0x00, sizeof(*n));
 
     if (p->m.precision >= LWPRINTF_ARRAYSIZE(powers_of_10)) {
@@ -545,6 +548,7 @@ prv_calculate_dbl_num_data(lwprintf_int_t* p, float_num_t* n, double num, const 
      * diff = 0.78                  -> Difference between actual decimal and integer part of decimal
      *                                  This is used for rounding of last digit (if necessary)
      */
+    num += 0.000000000000005;
     n->integer_part = (float_long_t)num;
     n->decimal_part_dbl = (num - (double)n->integer_part) * (double)powers_of_10[p->m.precision];
     n->decimal_part = (float_long_t)n->decimal_part_dbl;
@@ -558,10 +562,6 @@ prv_calculate_dbl_num_data(lwprintf_int_t* p, float_num_t* n, double num, const 
             ++n->integer_part;
         }
     } else if (n->diff < 0.5f) {
-        /* When entered number is around 0.5 but less than this */
-        if (0.5f - n->diff < 0.000001f && n->decimal_part & 1) {
-            ++n->decimal_part;
-        }
         /* Used in separate if, since comparing float to == will certainly result to false */
     } else {
         /* Difference is exactly 0.5 */
@@ -606,9 +606,9 @@ prv_calculate_dbl_num_data(lwprintf_int_t* p, float_num_t* n, double num, const 
 static int
 prv_double_to_str(lwprintf_int_t* p, double in_num) {
     float_num_t dblnum;
-    double orig_num = in_num;
     size_t i;
-    int digits_cnt, chosen_precision;
+    double orig_num = in_num;
+    int digits_cnt, chosen_precision, exp_cnt = 0;
     char def_type = p->m.type;
 
 #if LWPRINTF_CFG_SUPPORT_LONG_LONG
@@ -616,9 +616,6 @@ prv_double_to_str(lwprintf_int_t* p, double in_num) {
 #else
     char str[11];
 #endif /* LWPRINTF_CFG_SUPPORT_LONG_LONG */
-#if LWPRINTF_CFG_SUPPORT_TYPE_ENGINEERING
-    int exp_cnt = 0;
-#endif /* LWPRINTF_CFG_SUPPORT_TYPE_ENGINEERING */
 
     /*
      * Check for corner cases
@@ -650,7 +647,7 @@ prv_double_to_str(lwprintf_int_t* p, double in_num) {
         strcpy(s_ptr, p->m.flags.uc ? "INF" : "inf");
         return prv_out_str(p, str, p->m.flags.plus ? 4 : 3);
 #if LWPRINTF_CFG_SUPPORT_TYPE_ENGINEERING
-    } else if (in_num < -FLOAT_MAX_B_ENG || in_num > FLOAT_MAX_B_ENG) {
+    } else if ((in_num < -FLOAT_MAX_B_ENG || in_num > FLOAT_MAX_B_ENG) && def_type != 'g') {
         p->m.type = def_type = 'e';             /* Go to engineering mode */
 #endif /* LWPRINTF_CFG_SUPPORT_TYPE_ENGINEERING */
     }
@@ -669,7 +666,7 @@ prv_double_to_str(lwprintf_int_t* p, double in_num) {
 
         /* Normalize number to be between 0 and 1 and count decimals for exponent */
         if (in_num < 1) {
-            for (exp_cnt = 0; in_num < 1; in_num *= 10, --exp_cnt) {}
+            for (exp_cnt = 0; in_num < 1 && in_num > 0; in_num *= 10, --exp_cnt) {}
         } else {
             for (exp_cnt = 0; in_num >= 10; in_num /= 10, ++exp_cnt) {}
         }
@@ -717,7 +714,8 @@ prv_double_to_str(lwprintf_int_t* p, double in_num) {
      */
 
     /* Calculate data for number */
-    prv_calculate_dbl_num_data(p, &dblnum, def_type == 'e' ? in_num : orig_num, def_type);
+    prv_calculate_dbl_num_data(p, &dblnum, def_type == 'e' ? in_num : orig_num, def_type == 'e' ? 0 : exp_cnt, def_type);
+    //prv_calculate_dbl_num_data(p, &dblnum, orig_num, exp_cnt, def_type);
 
 #if LWPRINTF_CFG_SUPPORT_TYPE_ENGINEERING
     /* Set type G */
@@ -740,7 +738,7 @@ prv_double_to_str(lwprintf_int_t* p, double in_num) {
                 --chosen_precision;
             }
         }
-        prv_calculate_dbl_num_data(p, &dblnum, in_num, def_type);
+        prv_calculate_dbl_num_data(p, &dblnum, in_num, 0, def_type);
     }
 #endif /* LWPRINTF_CFG_SUPPORT_TYPE_ENGINEERING */
 
