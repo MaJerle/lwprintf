@@ -871,11 +871,6 @@ prv_format(lwprintf_int_t* p, va_list arg) {
             break;
         }
 
-        /* Parse format */
-        /* %[flags][width][.precision][length]type */
-        /* Go to https://docs.majerle.eu for more info about supported features */
-        memset(&p->m, 0x00, sizeof(p->m));      /* Reset structure */
-
         /* Detect beginning */
         if (*fmt != '%') {
             p->out_fn(p, *fmt);                 /* Output character */
@@ -883,6 +878,11 @@ prv_format(lwprintf_int_t* p, va_list arg) {
             continue;
         }
         ++fmt;
+
+        /* Parse format */
+        /* %[flags][width][.precision][length]type */
+        /* Go to https://docs.majerle.eu for more info about supported features */
+        memset(&p->m, 0x00, sizeof(p->m));      /* Reset structure */
 
         /* Check [parameter] */
         /* Not used */
