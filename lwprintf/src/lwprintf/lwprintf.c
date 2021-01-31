@@ -29,7 +29,7 @@
  * This file is part of LwPRINTF - Lightweight stdio manager library.
  *
  * Author:          Tilen MAJERLE <tilen@majerle.eu>
- * Version:         v1.0.1
+ * Version:         v1.0.2
  */
 #include <limits.h>
 #include <float.h>
@@ -591,10 +591,11 @@ prv_calculate_dbl_num_data(lwprintf_int_t* p, float_num_t* n, double num, uint8_
                 adder = 1;
             }
         }
-    } else {
+    } else
+#endif /* LWPRINTF_CFG_SUPPORT_TYPE_ENGINEERING */
+    {
         n->digits_cnt_decimal_part_useful = p->m.precision;
     }
-#endif /* LWPRINTF_CFG_SUPPORT_TYPE_ENGINEERING */
 }
 
 /**
@@ -871,11 +872,6 @@ prv_format(lwprintf_int_t* p, va_list arg) {
             break;
         }
 
-        /* Parse format */
-        /* %[flags][width][.precision][length]type */
-        /* Go to https://docs.majerle.eu for more info about supported features */
-        memset(&p->m, 0x00, sizeof(p->m));      /* Reset structure */
-
         /* Detect beginning */
         if (*fmt != '%') {
             p->out_fn(p, *fmt);                 /* Output character */
@@ -883,9 +879,11 @@ prv_format(lwprintf_int_t* p, va_list arg) {
             continue;
         }
         ++fmt;
+        memset(&p->m, 0x00, sizeof(p->m));      /* Reset structure */
 
-        /* Check [parameter] */
-        /* Not used */
+        /* Parse format */
+        /* %[flags][width][.precision][length]type */
+        /* Go to https://docs.majerle.eu for more info about supported features */
 
         /* Check [flags] */
         /* It can have multiple flags in any order */
