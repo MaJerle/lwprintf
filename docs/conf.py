@@ -27,7 +27,7 @@ copyright = '2020, Tilen MAJERLE'
 author = 'Tilen MAJERLE'
 
 # The full version, including alpha/beta/rc tags
-version = 'v1.0.1'
+version = 'v1.0.2'
 
 # Try to get branch at which this is running
 # and try to determine which version to display in sphinx
