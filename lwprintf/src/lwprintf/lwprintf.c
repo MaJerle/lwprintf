@@ -591,10 +591,11 @@ prv_calculate_dbl_num_data(lwprintf_int_t* p, float_num_t* n, double num, uint8_
                 adder = 1;
             }
         }
-    } else {
+    } else
+#endif /* LWPRINTF_CFG_SUPPORT_TYPE_ENGINEERING */
+    {
         n->digits_cnt_decimal_part_useful = p->m.precision;
     }
-#endif /* LWPRINTF_CFG_SUPPORT_TYPE_ENGINEERING */
 }
 
 /**
@@ -878,14 +879,11 @@ prv_format(lwprintf_int_t* p, va_list arg) {
             continue;
         }
         ++fmt;
+        memset(&p->m, 0x00, sizeof(p->m));      /* Reset structure */
 
         /* Parse format */
         /* %[flags][width][.precision][length]type */
         /* Go to https://docs.majerle.eu for more info about supported features */
-        memset(&p->m, 0x00, sizeof(p->m));      /* Reset structure */
-
-        /* Check [parameter] */
-        /* Not used */
 
         /* Check [flags] */
         /* It can have multiple flags in any order */
