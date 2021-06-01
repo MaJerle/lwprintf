@@ -39,8 +39,10 @@
 
 uint8_t
 lwprintf_sys_mutex_create(LWPRINTF_CFG_OS_MUTEX_HANDLE* m) {
-    *m = osMutexNew(NULL);
-    return lwprintf_sys_mutex_isvalid(m);
+    const osMutexAttr_t attr = {
+        .name = "lwprintf_mutex",
+    };
+    return (*m = osMutexNew(&attr)) != NULL;
 }
 
 uint8_t
