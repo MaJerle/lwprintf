@@ -1,10 +1,14 @@
 # Changelog
 
-## v1.0.0
+## v1.0.3
+
+- CMSIS-OS improvements for Kernel aware debuggers
+
+## v1.0.2
 
 - Fixed `float` output when engineering mode is disabled
 
-## v1.0.0
+## v1.0.1
 
 - Fixed compiler error when engineering mode disabled but float enabled
 - Properly handled `zero` float inputs
