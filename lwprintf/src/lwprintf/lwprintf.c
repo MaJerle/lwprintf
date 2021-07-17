@@ -955,6 +955,7 @@ prv_format(lwprintf_int_t* p, va_list arg) {
                     p->m.flags.char_short = 2;  /* Second h detected */
                     ++fmt;
                 }
+                break;
             case 'l':
                 p->m.flags.longlong = 1;        /* Single l detected */
                 if (*++fmt == 'l') {            /* Does it follow by another l? */
@@ -1031,7 +1032,7 @@ prv_format(lwprintf_int_t* p, va_list arg) {
 
                 } else if (p->m.flags.sz_t) {
                     prv_sizet_to_str(p, (size_t)va_arg(arg, size_t));
-                } else if (p->m.flags.sz_t) {
+                } else if (p->m.flags.umax_t) {
                     prv_umaxt_to_str(p, (uintmax_t)va_arg(arg, uintmax_t));
                 } else if (p->m.flags.longlong == 0 || p->m.base == 2) {
                     unsigned int v;
