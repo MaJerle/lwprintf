@@ -1,0 +1,31 @@
+{
+	"name": "LwPRINTF",
+	"version": "1.0.3",
+	"description": "Lightweight printf and sprintf library for embedded systems",
+	"keywords": "printf, lightweight, lwprintf, sprintf, snprintf, embedded, stdio, manager, library",
+	"repository": {
+		"type": "git",
+		"url": "https://github.com/MaJerle/lwprintf.git"
+	},
+	"authors": [
+		{
+			"name": "Tilen Majerle",
+			"email": "tilen@majerle.eu",
+			"url": "https://majerle.eu"
+		}
+	],
+	"license": "MIT",
+	"homepage": "https://github.com/MaJerle/lwprintf",
+	"dependencies": {
+
+	},
+	"frameworks": "*",
+	"platforms": "*",
+	"export": {
+		"exclude": [
+			"docs",
+			"**/.vs",
+			"**/Debug"
+		]
+	}
+}
