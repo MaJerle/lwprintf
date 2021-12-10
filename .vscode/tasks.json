@@ -1,0 +1,49 @@
+{
+	"version": "2.0.0",
+	"tasks": [
+        {
+            "type": "cppbuild",
+            "label": "Build project",
+            "command": "gcc",
+            "args": [
+                // Precompiled headers
+                "-DWIN32",
+                "-D_DEBUG",
+                "-DUNICODE",
+                "-D_UNICODE",
+                "-DLWPRINTF_DEV",
+
+                // Source files
+                "-g",
+                "${workspaceFolder}\\dev\\VisualStudio\\main.c",
+                "${workspaceFolder}\\lwprintf\\src\\lwprintf\\lwprintf.c",
+                "${workspaceFolder}\\lwprintf\\src\\system\\lwprintf_sys_win32.c",
+                
+                // Include paths
+                "-I${workspaceFolder}\\dev\\VisualStudio\\",
+                "-I${workspaceFolder}\\lwprintf\\src\\include\\",
+
+                // Output object
+                "-o",
+                "${workspaceFolder}\\project_vscode_compiled.exe"
+            ],
+            "options": {
+                "cwd": "${workspaceFolder}"
+            },
+            "problemMatcher": [
+                "$gcc"
+            ],
+            "group": {
+                "kind": "build",
+                "isDefault": true
+            }
+        },
+        {
+            "type": "shell",
+            "label": "Run application",
+            "command": "${workspaceFolder}\\project_vscode_compiled.exe",
+            "args": [],
+            "problemMatcher": [],
+        },
+    ]
+}
