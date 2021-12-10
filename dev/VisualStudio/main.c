@@ -249,6 +249,8 @@ main(void) {
     printf_run(NULL, "%.4.2s", "123456");
     printf_run(NULL, "%.*s", 3, "123456");
     printf_run(NULL, "%.3s", "");
+    printf_run(NULL, "%.0s", "Shouldn't print");
+    printf_run(NULL, "%.*s", 0, "Also shouldn't print");
     printf_run(NULL, "%yunknown", "");
 
     /* Alternate form */

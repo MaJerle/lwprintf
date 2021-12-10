@@ -389,9 +389,6 @@ prv_out_str_raw(lwprintf_int_t* p, const char* buff, size_t buff_size) {
 static int
 prv_out_str(lwprintf_int_t* p, const char* buff, size_t buff_size) {
     /* Output string */
-    if (buff_size == 0) {
-        buff_size = strlen(buff);
-    }
     prv_out_str_before(p, buff_size);           /* Implement pre-format */
     prv_out_str_raw(p, buff, buff_size);        /* Print actual string */
     prv_out_str_after(p, buff_size);            /* Implement post-format */
