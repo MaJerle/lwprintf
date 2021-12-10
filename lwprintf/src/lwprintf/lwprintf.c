@@ -388,8 +388,13 @@ prv_out_str_raw(lwprintf_int_t* p, const char* buff, size_t buff_size) {
  */
 static int
 prv_out_str(lwprintf_int_t* p, const char* buff, size_t buff_size) {
-    /* Output string */
-    if (buff_size == 0) {
+    /*
+     * Find necessary buffer size used for string.
+     *
+     * When not known, get it from string length, but only if precision flag is not set.
+     * Setting precision flag with value == 0, means no output anyway
+     */
+    if (buff_size == 0 && !p->m.flags.precision) {
         buff_size = strlen(buff);
     }
     prv_out_str_before(p, buff_size);           /* Implement pre-format */

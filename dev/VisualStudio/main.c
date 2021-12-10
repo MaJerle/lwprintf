@@ -160,6 +160,10 @@ main(void) {
     for (int i = 0; i < 20; ++i) {
         printf_run(NULL, "Precision: %3d, %20.*g", i, i, 0.0001234567);
     }
+    for (int i = 0; i < strlen("Text string 123"); ++i) {
+        printf_run(NULL, "%.*s", i, "Text string 123");
+    }
+    
     printf_run(NULL, "%.4f", 3.23321321);
     printf_run(NULL, "%.45f", 3.23321321);
     printf_run(NULL, "%.4F", 3.23321321);
@@ -297,6 +301,7 @@ main(void) {
     printf("Number of tests failed: %d\n", (int)tests_failed);
     printf("Coverage: %f %%\n", (float)((tests_passed * 100) / ((float)(tests_passed + tests_failed))));
 
+test_result:
     /* Tests that failed */
     printf("------------------------\n\n");
     printf("Negative tests\n\n");
