@@ -1058,7 +1058,14 @@ prv_format(lwprintf_int_t* p, va_list arg) {
 #if LWPRINTF_CFG_SUPPORT_TYPE_STRING
             case 's': {
                 const char* b = va_arg(arg, const char*);
-                prv_out_str(p, b, strnlen(b, p->m.flags.precision ? p->m.precision : SIZE_MAX));
+                /*
+                 * Calculate length of the string:
+                 *
+                 * - If precision is given, max len is up to precision value
+                 * - if user selects write to buffer, go up to buffer size (-1 actually, but handled by write function)
+                 * - Otherwise use max available system length
+                 */
+                prv_out_str(p, b, strnlen(b, p->m.flags.precision ? p->m.precision : (p->buff != NULL ? p->buff_size : SIZE_MAX)));
                 break;
             }
 #endif /* LWPRINTF_CFG_SUPPORT_TYPE_STRING */
