@@ -64,8 +64,12 @@ printf_run_fn(const char* expected, const char* fmt, ...) {
     test_data_t* test;
     
     /* Temporary strings array */
-    char b1[255] = { 0 }, b2[255] = { 0 };
+    char b1[255] = { 0 }, b2[sizeof(b1)] = { 0 };
     int l1, l2;
+
+    /* Set variables to non-0 values */
+    memset(b1, 0xFFFFFFFF, sizeof(b1));
+    memset(b2, 0xFFFFFFFF, sizeof(b2));
 
     console = GetStdHandle(STD_OUTPUT_HANDLE);  /* Get console */
 
@@ -294,14 +298,8 @@ main(void) {
     printf_run("0102b5", "%*k", 3, my_arr);
     printf_run("01 02 b5", "% *k", 3, my_arr);
 
-    /* Print final output */
-    printf("------------------------\n");
-    printf("Number of tests run: %d\n", (int)(tests_passed + tests_failed));
-    printf("Number of tests passed: %d\n", (int)tests_passed);
-    printf("Number of tests failed: %d\n", (int)tests_failed);
-    printf("Coverage: %f %%\n", (float)((tests_passed * 100) / ((float)(tests_passed + tests_failed))));
-
 test_result:
+#if 1
     /* Tests that failed */
     printf("------------------------\n\n");
     printf("Negative tests\n\n");
@@ -312,7 +310,9 @@ test_result:
             output_test_result(t);
         }
     }
+#endif
 
+#if 0
     /* Tests that went through */
     printf("------------------------\n\n");
     printf("Positive tests\n\n");
@@ -323,5 +323,13 @@ test_result:
             output_test_result(t);
         }
     }
+#endif
+
+    /* Print final output */
+    printf("------------------------\n");
+    printf("Number of tests run: %d\n", (int)(tests_passed + tests_failed));
+    printf("Number of tests passed: %d\n", (int)tests_passed);
+    printf("Number of tests failed: %d\n", (int)tests_failed);
+    printf("Coverage: %f %%\n", (float)((tests_passed * 100) / ((float)(tests_passed + tests_failed))));
     return 0;
 }
