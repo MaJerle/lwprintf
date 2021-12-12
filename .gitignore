@@ -24,6 +24,7 @@
 *.i
 *.txt
 !docs/*.txt
+!CMakeLists.txt
 RTE/
 
 *debug
@@ -79,6 +80,7 @@ bld/
 [Oo]bj/
 [Ll]og/
 _build/
+build/
 
 # Visual Studio 2015/2017 cache/options directory
 .vs/
