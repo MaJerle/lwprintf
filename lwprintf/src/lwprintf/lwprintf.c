@@ -245,9 +245,11 @@ prv_out_fn_print(lwprintf_int_t* p, const char c) {
  */
 static int
 prv_out_fn_write_buff(lwprintf_int_t* p, const char c) {
-    if (c != '\0' && p->n < (p->buff_size - 1)) {
-        p->buff[p->n++] = c;
-        p->buff[p->n] = '\0';
+    if (p->n < (p->buff_size - 1)) {
+        p->buff[p->n] = c;
+        if (c != '\0') {
+            p->buff[++p->n] = '\0';
+        }
         return 1;
     }
     return 0;
@@ -388,15 +390,6 @@ prv_out_str_raw(lwprintf_int_t* p, const char* buff, size_t buff_size) {
  */
 static int
 prv_out_str(lwprintf_int_t* p, const char* buff, size_t buff_size) {
-    /*
-     * Find necessary buffer size used for string.
-     *
-     * When not known, get it from string length, but only if precision flag is not set.
-     * Setting precision flag with value == 0, means no output anyway
-     */
-    if (buff_size == 0 && !p->m.flags.precision) {
-        buff_size = strlen(buff);
-    }
     prv_out_str_before(p, buff_size);           /* Implement pre-format */
     prv_out_str_raw(p, buff, buff_size);        /* Print actual string */
     prv_out_str_after(p, buff_size);            /* Implement post-format */
@@ -1065,15 +1058,7 @@ prv_format(lwprintf_int_t* p, va_list arg) {
 #if LWPRINTF_CFG_SUPPORT_TYPE_STRING
             case 's': {
                 const char* b = va_arg(arg, const char*);
-                size_t len = strlen(b);
-
-                /* Precision gives maximum output len */
-                if (p->m.flags.precision) {
-                    if (len > p->m.precision) {
-                        len = p->m.precision;
-                    }
-                }
-                prv_out_str(p, b, len);
+                prv_out_str(p, b, strnlen(b, p->m.flags.precision ? p->m.precision : SIZE_MAX));
                 break;
             }
 #endif /* LWPRINTF_CFG_SUPPORT_TYPE_STRING */
