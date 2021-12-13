@@ -1,5 +1,5 @@
 cmake_minimum_required(VERSION 3.0.0)
-project(LwPRINTF VERSION 0.1.0)
+project(LwLibPROJECT VERSION 0.1.0)
 
 include(CTest)
 enable_testing()
@@ -19,7 +19,6 @@ target_compile_definitions(${PROJECT_NAME} PRIVATE
     WIN32
     _DEBUG
     CONSOLE
-    TEST_CONSOLE_123
     )
 
 set(CPACK_PROJECT_NAME ${PROJECT_NAME})
