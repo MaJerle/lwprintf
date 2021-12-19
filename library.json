@@ -23,9 +23,12 @@
 	"platforms": "*",
 	"export": {
 		"exclude": [
+			".github",
+			"dev",
 			"docs",
 			"**/.vs",
-			"**/Debug"
+			"**/Debug",
+			"build"
 		]
 	}
 }
