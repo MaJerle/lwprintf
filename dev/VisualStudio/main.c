@@ -4,6 +4,8 @@
 #include <stdint.h>
 #include "windows.h"
 
+#define TEST_BUF_SIZE (255)
+
 typedef struct {
     char* format;                   /*!< Input format */
     char* input_data;               /*!< Input parameters */
@@ -64,7 +66,7 @@ printf_run_fn(const char* expected, const char* fmt, ...) {
     test_data_t* test;
     
     /* Temporary strings array */
-    char b1[255] = { 0 }, b2[sizeof(b1)] = { 0 };
+    char b1[TEST_BUF_SIZE] = { 0 }, b2[sizeof(b1)] = { 0 };
     int l1, l2;
 
     /* Set variables to non-0 values */
@@ -258,6 +260,11 @@ main(void) {
     printf_run(NULL, "%.*s", 3, "123456");
     printf_run(NULL, "%.3s", "");
     printf_run(NULL, "%yunknown", "");
+
+    /* Source string which exceeds output buffer size */
+    char c[TEST_BUF_SIZE+10];
+    memset(c, 0x5a5a5a5a, sizeof(c));
+    printf_run(NULL, "%s", c);
 
     /* Alternate form */
     printf_run(NULL, "%#2X", 123);
