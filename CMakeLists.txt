@@ -1,16 +1,16 @@
 cmake_minimum_required(VERSION 3.0.0)
 
 # Setup project
-project(LwLibPROJECT VERSION 2.0.1)
+project(LwLibPROJECT)
 
 # -------------------------------------------------
 # This CMakeLists.txt is used only if it is a top-level file.
 # Purpose of it is to be able to compile project in standalone way only
 #
 # When library sources are to be included in another project
-# user shall use /lwmem/CMakeLists.txt instead
+# user shall use /lwprintf/CMakeLists.txt instead
 if (NOT PROJECT_IS_TOP_LEVEL)
-    message(FATAL_ERROR "This CMakeLists.txt can only be used as top-level. Use /lwmem/CMakeLists.txt for library include purpose")
+    message(FATAL_ERROR "This CMakeLists.txt can only be used as top-level. Use /lwprintf/CMakeLists.txt for library include purpose")
 endif()
 
 # Set as executable
@@ -32,9 +32,9 @@ target_compile_definitions(${PROJECT_NAME} PUBLIC
     WIN32
     _DEBUG
     CONSOLE
-    LWMEM_DEV
+    LWPRINTF_DEV
     )
 
-# Add subdir with lwmem and link to the project
+# Add subdir with lwprintf and link to the project
 add_subdirectory("lwprintf")
 target_link_libraries(${PROJECT_NAME} lwprintf)
