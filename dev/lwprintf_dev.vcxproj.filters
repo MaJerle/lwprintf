@@ -13,13 +13,13 @@
     <ClCompile Include="main.c">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="..\..\lwprintf\src\lwprintf\lwprintf.c">
+    <ClCompile Include="..\lwprintf\src\lwprintf\lwprintf.c">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="..\..\lwprintf\src\system\lwprintf_sys_win32.c">
+    <ClCompile Include="..\lwprintf\src\system\lwprintf_sys_win32.c">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="..\..\examples\additional_format_specifiers.c">
+    <ClCompile Include="..\examples\additional_format_specifiers.c">
       <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>
