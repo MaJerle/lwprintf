@@ -74,6 +74,7 @@ printf_run_fn(const char* expected, const char* fmt, ...) {
     memset(b2, 0xFFFFFFFF, sizeof(b2));
 
     console = GetStdHandle(STD_OUTPUT_HANDLE);  /* Get console */
+    (void)console;
 
     /* Generate strings with original and custom printf */
     va_start(va, fmt);
@@ -156,17 +157,19 @@ int n;
 int
 main(void) {
     double num = 2123213213142.032;
+
+    (void)num;
     
     lwprintf_init(lwprintf_output);
 
     printf_run(NULL, "Precision: %3d, %.*g", 17, 17, 0.0001234567);
-    for (int i = 0; i < 20; ++i) {
+    for (size_t i = 0; i < 20; ++i) {
         printf_run(NULL, "Precision: %3d, %20.*g", i, i, 432432423.342321321);
     }
-    for (int i = 0; i < 20; ++i) {
+    for (size_t i = 0; i < 20; ++i) {
         printf_run(NULL, "Precision: %3d, %20.*g", i, i, 0.0001234567);
     }
-    for (int i = 0; i < strlen("Text string 123"); ++i) {
+    for (size_t i = 0; i < strlen("Text string 123"); ++i) {
         printf_run(NULL, "%.*s", i, "Text string 123");
     }
     

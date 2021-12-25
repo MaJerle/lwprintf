@@ -144,7 +144,7 @@ typedef struct lwprintf_int {
     const char* fmt;                            /*!< Format string */
     char* const buff;                           /*!< Pointer to buffer when not using print option */
     const size_t buff_size;                     /*!< Buffer size of input buffer (when used) */
-    int n;                                      /*!< Full length of formatted text */
+    size_t n;                                   /*!< Full length of formatted text */
     prv_output_fn out_fn;                       /*!< Output internal function */
     uint8_t is_print_cancelled;                 /*!< Status if print should be cancelled */
 
@@ -328,7 +328,7 @@ prv_out_str_before(lwprintf_int_t* p, size_t buff_size) {
 
     /* Right alignment, spaces or zeros */
     if (!p->m.flags.left_align && p->m.width > 0) {
-        for (size_t i = buff_size; !p->m.flags.left_align && i < p->m.width; ++i) {
+        for (size_t i = buff_size; !p->m.flags.left_align && i < (size_t)p->m.width; ++i) {
             p->out_fn(p, p->m.flags.zero ? '0' : ' ');
         }
     }
@@ -339,7 +339,7 @@ prv_out_str_before(lwprintf_int_t* p, size_t buff_size) {
             p->out_fn(p, '-');
         } else if (p->m.flags.plus) {
             p->out_fn(p, '+');
-        } else if (p->m.flags.space && buff_size >= p->m.width) {
+        } else if (p->m.flags.space && buff_size >= (size_t)p->m.width) {
             p->out_fn(p, ' ');
         }
     }
@@ -357,7 +357,7 @@ static int
 prv_out_str_after(lwprintf_int_t* p, size_t buff_size) {
     /* Left alignment, but only with spaces */
     if (p->m.flags.left_align) {
-        for (size_t i = buff_size; i < p->m.width; ++i) {
+        for (size_t i = buff_size; i < (size_t)p->m.width; ++i) {
             p->out_fn(p, ' ');
         }
     }
@@ -531,8 +531,8 @@ static void
 prv_calculate_dbl_num_data(lwprintf_int_t* p, float_num_t* n, double num, uint8_t e, const char type) {
     memset(n, 0x00, sizeof(*n));
 
-    if (p->m.precision >= LWPRINTF_ARRAYSIZE(powers_of_10)) {
-        p->m.precision = LWPRINTF_ARRAYSIZE(powers_of_10) - 1;
+    if (p->m.precision >= (int)LWPRINTF_ARRAYSIZE(powers_of_10)) {
+        p->m.precision = (int)LWPRINTF_ARRAYSIZE(powers_of_10) - 1;
     }
 
     /*
@@ -583,8 +583,8 @@ prv_calculate_dbl_num_data(lwprintf_int_t* p, float_num_t* n, double num, uint8_
     /* Calculate minimum useful digits for decimal (excl last useless zeros) */
     if (type == 'g') {
         float_long_t tmp = n->decimal_part;
-        int adder, i;
-        for (adder = 0, i = 0; tmp > 0 || i < p->m.precision; tmp /= 10, n->digits_cnt_decimal_part_useful += adder, ++i) {
+        size_t adder, i;
+        for (adder = 0, i = 0; tmp > 0 || i < (size_t)p->m.precision; tmp /= 10, n->digits_cnt_decimal_part_useful += adder, ++i) {
             if (adder == 0 && (tmp % 10) > 0) {
                 adder = 1;
             }
@@ -607,7 +607,7 @@ prv_double_to_str(lwprintf_int_t* p, double in_num) {
     float_num_t dblnum;
     size_t i;
     double orig_num = in_num;
-    int digits_cnt, chosen_precision, exp_cnt = 0;
+    int digits_cnt, exp_cnt = 0, chosen_precision;
     char def_type = p->m.type;
 
 #if LWPRINTF_CFG_SUPPORT_LONG_LONG
@@ -674,8 +674,8 @@ prv_double_to_str(lwprintf_int_t* p, double in_num) {
 
     /* Check precision data */
     chosen_precision = p->m.precision;          /* This is default value coming from app */
-    if (p->m.precision >= LWPRINTF_ARRAYSIZE(powers_of_10)) {
-        p->m.precision = LWPRINTF_ARRAYSIZE(powers_of_10) - 1;  /* Limit to maximum precision */
+    if (p->m.precision >= (int)LWPRINTF_ARRAYSIZE(powers_of_10)) {
+        p->m.precision = (int)LWPRINTF_ARRAYSIZE(powers_of_10) - 1; /* Limit to maximum precision */
         /*
          * Precision is lower than the one selected by app (or user).
          * It means that we have to append ending zeros for precision when printing data
@@ -793,7 +793,7 @@ prv_double_to_str(lwprintf_int_t* p, double in_num) {
 #if LWPRINTF_CFG_SUPPORT_TYPE_ENGINEERING
         if (def_type == 'g') {
             /* TODO: This is to be checked */
-            for (x = 0; x < p->m.precision - i && dblnum.digits_cnt_decimal_part_useful > 0; ++x, --dblnum.digits_cnt_decimal_part_useful) {
+            for (x = 0; (size_t)x < p->m.precision - i && dblnum.digits_cnt_decimal_part_useful > 0; ++x, --dblnum.digits_cnt_decimal_part_useful) {
                 p->out_fn(p, '0');
             }
         } else
@@ -1065,7 +1065,7 @@ prv_format(lwprintf_int_t* p, va_list arg) {
                  * - if user selects write to buffer, go up to buffer size (-1 actually, but handled by write function)
                  * - Otherwise use max available system length
                  */
-                prv_out_str(p, b, strnlen(b, p->m.flags.precision ? p->m.precision : (p->buff != NULL ? p->buff_size : SIZE_MAX)));
+                prv_out_str(p, b, strnlen(b, p->m.flags.precision ? (size_t)p->m.precision : (p->buff != NULL ? p->buff_size : SIZE_MAX)));
                 break;
             }
 #endif /* LWPRINTF_CFG_SUPPORT_TYPE_STRING */

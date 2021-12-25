@@ -4,6 +4,7 @@
 
 - da808ecf0122a6a11eaf896fd1025c1e4f1e0ce8 Fix calculation for NULL terminated string and precision with 0 as an input
 - Split CMakeLists.txt files between library and executable
+- Fix missing break in switch statement
 
 ## v1.0.3
 

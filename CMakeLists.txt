@@ -38,3 +38,12 @@ target_compile_definitions(${PROJECT_NAME} PUBLIC
 # Add subdir with lwprintf and link to the project
 add_subdirectory("lwprintf")
 target_link_libraries(${PROJECT_NAME} lwprintf)
+
+# Compiler and linker options
+target_compile_options(${PROJECT_NAME} PRIVATE
+    ${CPU_PARAMETERS}
+    -Wall
+    -Wextra
+    -Wpedantic
+    -Wno-unused-parameter
+    )
