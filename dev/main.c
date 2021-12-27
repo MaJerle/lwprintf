@@ -5,7 +5,6 @@
 #include "windows.h"
 
 #define TEST_BUF_SIZE (255)
-
 typedef struct {
     char* format;                   /*!< Input format */
     char* input_data;               /*!< Input parameters */

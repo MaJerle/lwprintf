@@ -3,7 +3,7 @@
         {
             "name": "Win32",
             "includePath": [
-                "${workspaceFolder}\\dev\\VisualStudio\\",
+                "${workspaceFolder}\\dev\\",
                 "${workspaceFolder}\\lwprintf\\src\\include\\"
             ],
             "defines": [

@@ -19,6 +19,7 @@ add_executable(${PROJECT_NAME})
 # Add key executable block
 target_sources(${PROJECT_NAME} PUBLIC
     ${CMAKE_CURRENT_LIST_DIR}/dev/main.c
+    ${CMAKE_CURRENT_LIST_DIR}/lwprintf/src/system/lwprintf_sys_win32.c
     )
 
 # Add key include paths
@@ -45,7 +46,5 @@ target_compile_options(${PROJECT_NAME} PRIVATE
     )
 
 # Add subdir with lwprintf and link to the project
-set(LWPRINTF_SYS_ADD_FILES ON)
-set(LWPRINTF_SYS_ARCH "win32")
 add_subdirectory("lwprintf")
 target_link_libraries(${PROJECT_NAME} lwprintf)
