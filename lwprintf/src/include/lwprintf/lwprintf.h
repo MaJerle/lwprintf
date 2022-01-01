@@ -171,6 +171,18 @@ int         lwprintf_snprintf_ex(lwprintf_t* const lw, char* s, size_t n, const 
  */
 #define     lwprintf_sprintf(s, format, ...)            lwprintf_sprintf_ex(NULL, (s), (format), ## __VA_ARGS__)
 
+/**
+ * \brief           Manually enable mutual exclusion
+ * \return          `1` if protected, `0` otherwise
+ */
+#define     lwprintf_protect()                          lwprintf_protect(NULL)
+
+/**
+ * \brief           Manually disable mutual exclusion
+ * \return          `1` if protected, `0` otherwise
+ */
+#define     lwprintf_unprotect()                        lwprintf_unprotect_ex(NULL)
+
 #if LWPRINTF_CFG_ENABLE_SHORTNAMES || __DOXYGEN__
 
 /**

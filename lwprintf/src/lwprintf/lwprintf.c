@@ -44,6 +44,9 @@
 #if LWPRINTF_CFG_SUPPORT_TYPE_ENGINEERING && !LWPRINTF_CFG_SUPPORT_TYPE_FLOAT
 #error "Cannot use engineering type without float!"
 #endif /* LWPRINTF_CFG_SUPPORT_TYPE_ENGINEERING && !LWPRINTF_CFG_SUPPORT_TYPE_FLOAT */
+#if !LWPRINTF_CFG_OS && LWPRINTF_CFG_OS_MANUAL_PROTECT
+#error "LWPRINTF_CFG_OS_MANUAL_PROTECT can only be used if LWPRINTF_CFG_OS is enabled"
+#endif /* !LWPRINTF_CFG_OS && LWPRINTF_CFG_OS_MANUAL_PROTECT */
 
 #define CHARISNUM(x)                    ((x) >= '0' && (x) <= '9')
 #define CHARTONUM(x)                    ((x) - '0')
@@ -856,13 +859,13 @@ prv_format(lwprintf_int_t* p, va_list arg) {
     uint8_t detected = 0;
     const char* fmt = p->fmt;
 
-#if LWPRINTF_CFG_OS
+#if LWPRINTF_CFG_OS && !LWPRINTF_CFG_OS_MANUAL_PROTECT
     if (IS_PRINT_MODE(p) &&                     /* OS protection only for print */
         (!lwprintf_sys_mutex_isvalid(&p->lw->mutex) /* Invalid mutex handle */
             || !lwprintf_sys_mutex_wait(&p->lw->mutex))) {  /* Cannot acquire mutex */
         return 0;
     }
-#endif /* LWPRINTF_CFG_OS */
+#endif /* LWPRINTF_CFG_OS && !LWPRINTF_CFG_OS_MANUAL_PROTECT */
 
     while (fmt != NULL && *fmt != '\0') {
         /* Check if we should stop processing */
@@ -1154,11 +1157,11 @@ prv_format(lwprintf_int_t* p, va_list arg) {
         ++fmt;
     }
     p->out_fn(p, '\0');                         /* Output last zero number */
-#if LWPRINTF_CFG_OS
+#if LWPRINTF_CFG_OS && !LWPRINTF_CFG_OS_MANUAL_PROTECT
     if (IS_PRINT_MODE(p)) {                     /* Mutex only for print operation */
         lwprintf_sys_mutex_release(&p->lw->mutex);
     }
-#endif /* LWPRINTF_CFG_OS */
+#endif /* LWPRINTF_CFG_OS && !LWPRINTF_CFG_OS_MANUAL_PROTECT */
     return 1;
 }
 
@@ -1279,3 +1282,28 @@ lwprintf_snprintf_ex(lwprintf_t* const lw, char* s, size_t n, const char* format
 
     return len;
 }
+
+#if LWPRINTF_CFG_OS_MANUAL_PROTECT || __DOXYGEN__
+
+/**
+ * \brief           Manually enable mutual exclusion
+ * \param[in,out]   lw: LwPRINTF instance. Set to `NULL` to use default instance
+ * \return          `1` if protected, `0` otherwise
+ */
+uint8_t
+lwprintf_protect_ex(lwprintf_t* const lw) {
+    return lwprintf_sys_mutex_isvalid(&LWPRINTF_GET_LW(lw)->mutex)
+            && lwprintf_sys_mutex_wait(&LWPRINTF_GET_LW(lw)->mutex);
+}
+
+/**
+ * \brief           Manually disable mutual exclusion
+ * \param[in,out]   lw: LwPRINTF instance. Set to `NULL` to use default instance
+ * \return          `1` if protection disabled, `0` otherwise
+ */
+uint8_t
+lwprintf_unprotect_ex(lwprintf_t* const lw) {
+    return lwprintf_sys_mutex_release(&LWPRINTF_GET_LW(lw)->mutex);
+}
+
+#endif /* LWPRINTF_CFG_OS_MANUAL_PROTECT || __DOXYGEN__ */

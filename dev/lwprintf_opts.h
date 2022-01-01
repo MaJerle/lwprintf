@@ -42,9 +42,10 @@
  * Open "include/lwprintf/lwprintf_opt.h" and
  * copy & replace here settings you want to change values
  */
-#define LWPRINTF_CFG_OS                     1
-#define LWPRINTF_CFG_OS_MUTEX_HANDLE        HANDLE
+#define LWPRINTF_CFG_OS                             1
+#define LWPRINTF_CFG_OS_MUTEX_HANDLE                HANDLE
 
-#define LWPRINTF_CFG_SUPPORT_LONG_LONG      1
+#define LWPRINTF_CFG_SUPPORT_LONG_LONG              1
+#define LWPRINTF_CFG_OS_MANUAL_PROTECT              1
 
 #endif /* OW_HDR_OPTS_H */

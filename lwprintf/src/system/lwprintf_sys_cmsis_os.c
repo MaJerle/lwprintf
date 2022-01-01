@@ -41,6 +41,7 @@ uint8_t
 lwprintf_sys_mutex_create(LWPRINTF_CFG_OS_MUTEX_HANDLE* m) {
     const osMutexAttr_t attr = {
         .name = "lwprintf_mutex",
+        .attr_bits = osMutexRecursive,
     };
     return (*m = osMutexNew(&attr)) != NULL;
 }
