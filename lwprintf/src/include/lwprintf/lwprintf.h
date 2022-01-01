@@ -91,6 +91,8 @@ int         lwprintf_vprintf_ex(lwprintf_t* const lw, const char* format, va_lis
 int         lwprintf_printf_ex(lwprintf_t* const lw, const char* format, ...);
 int         lwprintf_vsnprintf_ex(lwprintf_t* const lw, char* s, size_t n, const char* format, va_list arg);
 int         lwprintf_snprintf_ex(lwprintf_t* const lw, char* s, size_t n, const char* format, ...);
+uint8_t     lwprintf_protect_ex(lwprintf_t* const lw);
+uint8_t     lwprintf_unprotect_ex(lwprintf_t* const lw);
 
 /**
  * \brief           Write formatted data from variable argument list to sized buffer
@@ -175,7 +177,7 @@ int         lwprintf_snprintf_ex(lwprintf_t* const lw, char* s, size_t n, const 
  * \brief           Manually enable mutual exclusion
  * \return          `1` if protected, `0` otherwise
  */
-#define     lwprintf_protect()                          lwprintf_protect(NULL)
+#define     lwprintf_protect()                          lwprintf_protect_ex(NULL)
 
 /**
  * \brief           Manually disable mutual exclusion
