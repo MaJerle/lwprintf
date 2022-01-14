@@ -6,6 +6,7 @@
 - Split CMakeLists.txt files between library and executable
 - Fix missing break in switch statement
 - Add support for manual mutual-exclusion setup in OS mode
+- Change license year to 2022
 
 ## v1.0.3
 
