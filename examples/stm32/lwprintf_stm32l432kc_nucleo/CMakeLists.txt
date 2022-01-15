@@ -23,9 +23,11 @@ set(CMAKE_CXX_EXTENSIONS            ON)
 #
 set(CPU_PARAMETERS
     -mthumb
+    # Other parameters
+    # -mcpu, -mfloat, -mfloat-abi, ...
     -mcpu=cortex-m4
-    -mfpu=fpv4-sp-d16
-    -mfloat-abi=hard
+	-mfpu=fpv4-sp-d16
+	-mfloat-abi=hard
 )
 
 # Set linker script
@@ -35,22 +37,21 @@ set(EXECUTABLE                      ${CMAKE_PROJECT_NAME})
 #
 # Source files
 #
-set(linked_SRCS
-    ${PROJ_PATH}/../../../lwprintf/src/lwprintf/lwprintf.c
-)
-set(source_folder_Core_SRCS 
+set(src_lwprintf_SRCS 
+	${PROJ_PATH}/../../../lwprintf/src/lwprintf/lwprintf.c)
+
+set(src_core_src_SRCS 
 	${PROJ_PATH}/Core/Src/main.c
 	${PROJ_PATH}/Core/Src/stm32l4xx_hal_msp.c
 	${PROJ_PATH}/Core/Src/stm32l4xx_it.c
 	${PROJ_PATH}/Core/Src/syscalls.c
 	${PROJ_PATH}/Core/Src/sysmem.c
-	${PROJ_PATH}/Core/Src/system_stm32l4xx.c
+	${PROJ_PATH}/Core/Src/system_stm32l4xx.c)
+
+set(src_core_startup_SRCS 
 	${PROJ_PATH}/Core/Startup/startup_stm32l412kbux.s)
 
-set(source_folder_lwprintf_SRCS 
-	)
-
-set(source_folder_Drivers_SRCS 
+set(src_drivers_stm32l4xx_hal_driver_src_SRCS 
 	${PROJ_PATH}/Drivers/STM32L4xx_HAL_Driver/Src/stm32l4xx_hal.c
 	${PROJ_PATH}/Drivers/STM32L4xx_HAL_Driver/Src/stm32l4xx_hal_cortex.c
 	${PROJ_PATH}/Drivers/STM32L4xx_HAL_Driver/Src/stm32l4xx_hal_dma.c
@@ -70,11 +71,6 @@ set(source_folder_Drivers_SRCS
 	${PROJ_PATH}/Drivers/STM32L4xx_HAL_Driver/Src/stm32l4xx_hal_tim_ex.c
 	${PROJ_PATH}/Drivers/STM32L4xx_HAL_Driver/Src/stm32l4xx_hal_uart.c
 	${PROJ_PATH}/Drivers/STM32L4xx_HAL_Driver/Src/stm32l4xx_hal_uart_ex.c)
-
-# Source files in the same path as ".cproject/.project" but nowhere included in file descriptions
-set(all_project_dir_SRCS
-    
-)
 
 #
 # Include directories
@@ -121,12 +117,11 @@ link_directories(${EXECUTABLE} ${link_DIRS})
 #
 # Executable files
 #
-add_executable(${EXECUTABLE}
-    ${linked_SRCS}
-    ${all_project_dir_SRCS} 
-	${source_folder_Core_SRCS}
-	${source_folder_lwprintf_SRCS}
-	${source_folder_Drivers_SRCS})
+add_executable(${EXECUTABLE} 
+	${src_lwprintf_SRCS}
+	${src_core_src_SRCS}
+	${src_core_startup_SRCS}
+	${src_drivers_stm32l4xx_hal_driver_src_SRCS})
 
 #
 # Add linked libraries for linker
@@ -183,7 +178,9 @@ target_compile_options(${EXECUTABLE} PRIVATE
         #-Wsuggest-override
     >
     $<$<COMPILE_LANGUAGE:ASM>:
-
+        -x assembler-with-cpp
+        -MMD
+        -MP
     >
     $<$<CONFIG:Debug>:
         -Og -g3 -ggdb
