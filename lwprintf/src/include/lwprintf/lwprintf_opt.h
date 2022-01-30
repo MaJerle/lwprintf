@@ -74,18 +74,18 @@ extern "C" {
 
 /**
  * \brief           Enables `1` or disables `0` manual mutex lock.
- * 
+ *
  * When this feature is enabled, together with \ref LWPRINTF_CFG_OS, behavior is as following:
  * - System mutex is kept created
  * - Calls to direct printing functions are not thread-safe by default anymore
  * - Calls to sprintf (buffer functions) are kept thread-fe
  * - User must manually call \ref lwprintf_protect or \ref lwprintf_protect_ex functions to protect direct printing operation
  * - User must manually call \ref lwprintf_unprotect or \ref lwprintf_unprotect_ex functions to exit protected area
- * 
+ *
  * \note            If you prefer to completely disable locking mechanism with this library,
  *                  turn off \ref LWPRINTF_CFG_OS and fully manually handle mutual exclusion for non-reentrant functions
  */
-#ifndef LWPRINTF_CFG_OS_MANUAL_PROTECT              
+#ifndef LWPRINTF_CFG_OS_MANUAL_PROTECT
 #define LWPRINTF_CFG_OS_MANUAL_PROTECT              0
 #endif
 

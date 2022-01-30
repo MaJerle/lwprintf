@@ -80,9 +80,9 @@ typedef struct {
 static const float_long_t
 powers_of_10[] = { 1E00, 1E01, 1E02, 1E03, 1E04, 1E05, 1E06, 1E07, 1E08, 1E09,
 #if LWPRINTF_CFG_SUPPORT_LONG_LONG
-                    1E10, 1E11, 1E12, 1E13, 1E14, 1E15, 1E16, 1E17, 1E18
+                   1E10, 1E11, 1E12, 1E13, 1E14, 1E15, 1E16, 1E17, 1E18
 #endif /* LWPRINTF_CFG_SUPPORT_LONG_LONG */
-};
+                 };
 #endif /* LWPRINTF_CFG_SUPPORT_TYPE_FLOAT */
 
 /**
@@ -90,42 +90,42 @@ powers_of_10[] = { 1E00, 1E01, 1E02, 1E03, 1E04, 1E05, 1E06, 1E07, 1E08, 1E09,
  * Implemented as big macro since `d`, `digit` and `num` are of different types vs int size
  */
 #define OUTPUT_ANY_INT_TYPE(ttype, num) {                               \
-    ttype d, digit;                                                     \
-    uint8_t digits_cnt;                                                 \
-    char c;                                                             \
-                                                                        \
-    /* Check if number is zero */                                       \
-    p->m.flags.is_num_zero = (num) == 0;                                \
-    if ((num) == 0) {                                                   \
-        prv_out_str_before(p, 1);                                       \
-        p->out_fn(p, '0');                                              \
-        prv_out_str_after(p, 1);                                        \
-    } else {                                                            \
-        /* Start with digits length */                                  \
-        for (digits_cnt = 0, d = (num); d > 0; ++digits_cnt, d /= p->m.base) {} \
-        for (d = 1; ((num) / d) >= p->m.base; d *= p->m.base) {}        \
-                                                                        \
-        prv_out_str_before(p, digits_cnt);                              \
-        for (; d > 0; ) {                                               \
-            digit = (num) / d;                                          \
-            num = (num) % d;                                            \
-            d = d / p->m.base;                                          \
-            c = (char)digit + (char)(digit >= 10 ? ((p->m.flags.uc ? 'A' : 'a') - 10) : '0');   \
-            p->out_fn(p, c);                                            \
-        }                                                               \
-        prv_out_str_after(p, digits_cnt);                               \
-    }                                                                   \
-}
+        ttype d, digit;                                                     \
+        uint8_t digits_cnt;                                                 \
+        char c;                                                             \
+        \
+        /* Check if number is zero */                                       \
+        p->m.flags.is_num_zero = (num) == 0;                                \
+        if ((num) == 0) {                                                   \
+            prv_out_str_before(p, 1);                                       \
+            p->out_fn(p, '0');                                              \
+            prv_out_str_after(p, 1);                                        \
+        } else {                                                            \
+            /* Start with digits length */                                  \
+            for (digits_cnt = 0, d = (num); d > 0; ++digits_cnt, d /= p->m.base) {} \
+            for (d = 1; ((num) / d) >= p->m.base; d *= p->m.base) {}        \
+            \
+            prv_out_str_before(p, digits_cnt);                              \
+            for (; d > 0; ) {                                               \
+                digit = (num) / d;                                          \
+                num = (num) % d;                                            \
+                d = d / p->m.base;                                          \
+                c = (char)digit + (char)(digit >= 10 ? ((p->m.flags.uc ? 'A' : 'a') - 10) : '0');   \
+                p->out_fn(p, c);                                            \
+            }                                                               \
+            prv_out_str_after(p, digits_cnt);                               \
+        }                                                                   \
+    }
 
 /**
  * \brief           Check for negative input number before outputting signed integers
  */
 #define SIGNED_CHECK_NEGATIVE(pp, nnum) {   \
-    if ((nnum) < 0) {                       \
-        (pp)->m.flags.is_negative = 1;      \
-        nnum = -(nnum);                     \
-    }                                       \
-}
+        if ((nnum) < 0) {                       \
+            (pp)->m.flags.is_negative = 1;      \
+            nnum = -(nnum);                     \
+        }                                       \
+    }
 
 /**
  * \brief           Forward declaration
@@ -633,15 +633,15 @@ prv_double_to_str(lwprintf_int_t* p, double in_num) {
         return prv_out_str(p, p->m.flags.uc ? "NAN" : "nan", 3);
     } else if (in_num < -DBL_MAX
 #if !LWPRINTF_CFG_SUPPORT_TYPE_ENGINEERING
-            || in_num < -FLOAT_MAX_B_ENG
+               || in_num < -FLOAT_MAX_B_ENG
 #endif /* !LWPRINTF_CFG_SUPPORT_TYPE_ENGINEERING */
-    ) {
+              ) {
         return prv_out_str(p, p->m.flags.uc ? "-INF" : "-inf", 4);
     } else if (in_num > DBL_MAX
 #if !LWPRINTF_CFG_SUPPORT_TYPE_ENGINEERING
-            || in_num > FLOAT_MAX_B_ENG
+               || in_num > FLOAT_MAX_B_ENG
 #endif /* !LWPRINTF_CFG_SUPPORT_TYPE_ENGINEERING */
-    ) {
+              ) {
         char str[5], *s_ptr = str;
         if (p->m.flags.plus) {
             *s_ptr++ = '+';
@@ -754,10 +754,10 @@ prv_double_to_str(lwprintf_int_t* p, double in_num) {
         }
     } else
 #endif /* LWPRINTF_CFG_SUPPORT_TYPE_ENGINEERING */
-    if (chosen_precision > 0 && p->m.flags.precision) {
-        /* Add precision digits + dot separator */
-        digits_cnt += chosen_precision + 1;
-    }
+        if (chosen_precision > 0 && p->m.flags.precision) {
+            /* Add precision digits + dot separator */
+            digits_cnt += chosen_precision + 1;
+        }
 
 #if LWPRINTF_CFG_SUPPORT_TYPE_ENGINEERING
     /* Increase number of digits to display */
@@ -862,7 +862,7 @@ prv_format(lwprintf_int_t* p, va_list arg) {
 #if LWPRINTF_CFG_OS && !LWPRINTF_CFG_OS_MANUAL_PROTECT
     if (IS_PRINT_MODE(p) &&                     /* OS protection only for print */
         (!lwprintf_sys_mutex_isvalid(&p->lw->mutex) /* Invalid mutex handle */
-            || !lwprintf_sys_mutex_wait(&p->lw->mutex))) {  /* Cannot acquire mutex */
+         || !lwprintf_sys_mutex_wait(&p->lw->mutex))) {  /* Cannot acquire mutex */
         return 0;
     }
 #endif /* LWPRINTF_CFG_OS && !LWPRINTF_CFG_OS_MANUAL_PROTECT */
@@ -1114,7 +1114,7 @@ prv_format(lwprintf_int_t* p, va_list arg) {
              */
             case 'k':
             case 'K': {
-                unsigned char* ptr = (void *)va_arg(arg, unsigned char *);  /* Get input parameter as unsigned char pointer */
+                unsigned char* ptr = (void*)va_arg(arg, unsigned char*);    /* Get input parameter as unsigned char pointer */
                 int len = p->m.width, full_width;
                 uint8_t is_space = p->m.flags.space == 1;
 
@@ -1293,7 +1293,7 @@ lwprintf_snprintf_ex(lwprintf_t* const lw, char* s, size_t n, const char* format
 uint8_t
 lwprintf_protect_ex(lwprintf_t* const lw) {
     return lwprintf_sys_mutex_isvalid(&LWPRINTF_GET_LW(lw)->mutex)
-            && lwprintf_sys_mutex_wait(&LWPRINTF_GET_LW(lw)->mutex);
+           && lwprintf_sys_mutex_wait(&LWPRINTF_GET_LW(lw)->mutex);
 }
 
 /**
