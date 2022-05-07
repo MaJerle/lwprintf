@@ -76,9 +76,9 @@ extern "C" {
  * \brief           Enables `1` or disables `0` manual mutex lock.
  *
  * When this feature is enabled, together with \ref LWPRINTF_CFG_OS, behavior is as following:
- * - System mutex is kept created
+ * - System mutex is kept created during init phase
  * - Calls to direct printing functions are not thread-safe by default anymore
- * - Calls to sprintf (buffer functions) are kept thread-fe
+ * - Calls to sprintf (buffer functions) are kept thread-safe
  * - User must manually call \ref lwprintf_protect or \ref lwprintf_protect_ex functions to protect direct printing operation
  * - User must manually call \ref lwprintf_unprotect or \ref lwprintf_unprotect_ex functions to exit protected area
  *
