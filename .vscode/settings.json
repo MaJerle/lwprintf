@@ -1,9 +1,10 @@
 {
     "files.associations": {
-        "lwprintf.h": "c",
-        "float.h": "c",
-        "stdint.h": "c",
-        "lwprintf_opt.h": "c",
-        "lwprintf_opts.h": "c"
-    }
+        "lwevt_types.h": "c",
+        "lwevt_type.h": "c",
+        "lwevt.h": "c",
+        "string.h": "c",
+        "lwevt_opt.h": "c"
+    },
+    "esbonio.sphinx.confDir": ""
 }
