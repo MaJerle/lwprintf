@@ -42,6 +42,8 @@
 extern "C" {
 #endif /* __cplusplus */
 
+#if LWPRINTF_CFG_OS || __DOXYGEN__
+
 /**
  * \defgroup        LWPRINTF_SYS System functions
  * \brief           System functions when used with operating system
@@ -79,6 +81,8 @@ uint8_t     lwprintf_sys_mutex_release(LWPRINTF_CFG_OS_MUTEX_HANDLE* m);
 /**
  * \}
  */
+
+#endif /* LWPRINTF_CFG_OS || __DOXYGEN__ */
 
 #ifdef __cplusplus
 }
