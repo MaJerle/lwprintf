@@ -31,6 +31,7 @@ static size_t tests_cnt;
  */
 int
 lwprintf_output(int ch, lwprintf_t* lw) {
+    LWPRINTF_UNUSED(lw);
     if (ch != '\0') {
         printf("%c", (char)ch);
     }
@@ -307,6 +308,7 @@ main(void) {
     printf_run("0102b5", "%*k", 3, my_arr);
     printf_run("01 02 b5", "% *k", 3, my_arr);
 
+    goto test_result;
 test_result:
 #if 1
     /* Tests that failed */

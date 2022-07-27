@@ -20,13 +20,13 @@ add_executable(${PROJECT_NAME})
 target_sources(${PROJECT_NAME} PUBLIC
     ${CMAKE_CURRENT_LIST_DIR}/dev/main.c
     ${CMAKE_CURRENT_LIST_DIR}/lwprintf/src/system/lwprintf_sys_win32.c
-    )
+)
 
 # Add key include paths
 target_include_directories(${PROJECT_NAME} PUBLIC
     ${CMAKE_CURRENT_LIST_DIR}
     ${CMAKE_CURRENT_LIST_DIR}/dev
-    )
+)
 
 # Compilation definition information
 target_compile_definitions(${PROJECT_NAME} PUBLIC
@@ -34,16 +34,14 @@ target_compile_definitions(${PROJECT_NAME} PUBLIC
     _DEBUG
     CONSOLE
     LWPRINTF_DEV
-    )
+)
 
-# Compiler and linker options
+# Compiler options
 target_compile_options(${PROJECT_NAME} PRIVATE
-    ${CPU_PARAMETERS}
     -Wall
     -Wextra
     -Wpedantic
-    -Wno-unused-parameter
-    )
+)
 
 # Add subdir with lwprintf and link to the project
 add_subdirectory("lwprintf")
