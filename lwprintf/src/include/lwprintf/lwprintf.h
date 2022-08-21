@@ -104,7 +104,7 @@ uint8_t     lwprintf_unprotect_ex(lwprintf_t* const lw);
  * \return          The number of characters that would have been written,
  *                      not counting the terminating null character.
  */
-#define     lwprintf_sprintf_ex(lw, s, format, ...)     lwprintf_snprintf((lw), (s), SIZE_MAX, (format), ## __VA_ARGS__)
+#define     lwprintf_sprintf_ex(lw, s, format, ...)     lwprintf_snprintf_ex((lw), (s), SIZE_MAX, (format), ## __VA_ARGS__)
 
 /**
  * \brief           Initialize default LwPRINTF instance
