@@ -1075,7 +1075,7 @@ prv_format(lwprintf_int_t* p, va_list arg) {
 #if LWPRINTF_CFG_SUPPORT_TYPE_POINTER
             case 'p': {
                 p->m.base = 16;                 /* Go to hex format */
-                p->m.flags.uc = 1;              /* Uppercase numbers */
+                p->m.flags.uc = 0;              /* Uppercase characters */
                 p->m.flags.zero = 1;            /* Zero padding */
                 p->m.width = sizeof(uintptr_t) * 2; /* Number is in hex format and byte is represented with 2 letters */
 
