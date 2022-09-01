@@ -34,11 +34,11 @@
 #ifndef LWPRINTF_HDR_H
 #define LWPRINTF_HDR_H
 
-#include "lwprintf/lwprintf_opt.h"
 #include <limits.h>
 #include <stdarg.h>
 #include <stdint.h>
 #include <string.h>
+#include "lwprintf/lwprintf_opt.h"
 
 #ifdef __cplusplus
 extern "C" {
