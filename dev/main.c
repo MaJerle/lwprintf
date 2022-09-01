@@ -157,6 +157,9 @@ int n;
 int
 main(void) {
     double num = 2123213213142.032;
+    char test[123];
+
+    lwprintf_sprintf(test, "%d", 123);
 
     (void)num;
     
