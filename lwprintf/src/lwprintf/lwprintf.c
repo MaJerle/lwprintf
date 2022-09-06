@@ -573,6 +573,7 @@ prv_calculate_dbl_num_data(lwprintf_int_t* p, float_num_t* n, double num, uint8_
     {
         n->digits_cnt_decimal_part_useful = p->m.precision;
     }
+    (void)e;
 }
 
 /**
