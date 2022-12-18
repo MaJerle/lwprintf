@@ -31,8 +31,8 @@
  * Author:          Tilen MAJERLE <tilen@majerle.eu>
  * Version:         v1.0.3
  */
-#ifndef LWPRINTF_HDR_OPTS_H
-#define LWPRINTF_HDR_OPTS_H
+#ifndef LWPRINTF_OPTS_HDR_H
+#define LWPRINTF_OPTS_HDR_H
 
 /* Rename this file to "lwprintf_opts.h" for your application */
 
@@ -41,4 +41,4 @@
  * copy & replace here settings you want to change values
  */
 
-#endif /* LWPRINTF_HDR_OPTS_H */
+#endif /* LWPRINTF_OPTS_HDR_H */

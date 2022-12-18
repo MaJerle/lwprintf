@@ -31,8 +31,8 @@
  * Author:          Tilen MAJERLE <tilen@majerle.eu>
  * Version:         v1.0.3
  */
-#ifndef LWPRINTF_HDR_SYS_H
-#define LWPRINTF_HDR_SYS_H
+#ifndef LWPRINTF_SYS_HDR_H
+#define LWPRINTF_SYS_HDR_H
 
 #include <stddef.h>
 #include <stdint.h>
@@ -88,4 +88,4 @@ uint8_t lwprintf_sys_mutex_release(LWPRINTF_CFG_OS_MUTEX_HANDLE* m);
 }
 #endif /* __cplusplus */
 
-#endif /* LWPRINTF_HDR_SYS_H */
+#endif /* LWPRINTF_SYS_HDR_H */

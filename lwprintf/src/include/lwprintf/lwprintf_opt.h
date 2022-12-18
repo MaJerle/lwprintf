@@ -31,8 +31,8 @@
  * Author:          Tilen MAJERLE <tilen@majerle.eu>
  * Version:         v1.0.3
  */
-#ifndef LWPRINTF_HDR_OPT_H
-#define LWPRINTF_HDR_OPT_H
+#ifndef LWPRINTF_OPT_HDR_H
+#define LWPRINTF_OPT_HDR_H
 
 /* Uncomment to ignore user options (or set macro in compiler flags) */
 /* #define LWPRINTF_IGNORE_USER_OPTS */
@@ -188,4 +188,4 @@ extern "C" {
 }
 #endif /* __cplusplus */
 
-#endif /* LWPRINTF_HDR_OPT_H */
+#endif /* LWPRINTF_OPT_HDR_H */
