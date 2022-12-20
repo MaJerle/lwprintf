@@ -146,7 +146,7 @@ typedef int (*prv_output_fn)(struct lwprintf_int* p, const char c);
  * \brief           Internal structure
  */
 typedef struct lwprintf_int {
-    lwprintf_t* lw;             /*!< Instance handle */
+    lwprintf_t* lwobj;             /*!< Instance handle */
     const char* fmt;            /*!< Format string */
     char* const buff;           /*!< Pointer to buffer when not using print option */
     const size_t buff_size;     /*!< Buffer size of input buffer (when used) */
@@ -188,7 +188,7 @@ typedef struct lwprintf_int {
  * \param[in]       p: LwPRINTF instance.
  *                      Set to `NULL` for default instance
  */
-#define LWPRINTF_GET_LW(p) ((p) != NULL ? (p) : (&lwprintf_default))
+#define LWPRINTF_GET_LWOBJ(p) ((p) != NULL ? (p) : (&lwprintf_default))
 
 /**
  * \brief           LwPRINTF default structure used by application
@@ -206,7 +206,7 @@ prv_out_fn_print(lwprintf_int_t* p, const char c) {
     if (p->is_print_cancelled) {
         return 0;
     }
-    if (!p->lw->out_fn(c, p->lw)) { /*!< Send character to output */
+    if (!p->lwobj->out_fn(c, p->lwobj)) { /*!< Send character to output */
         p->is_print_cancelled = 1;
     }
     if (c != '\0' && !p->is_print_cancelled) {
@@ -840,8 +840,8 @@ prv_format(lwprintf_int_t* p, va_list arg) {
 
 #if LWPRINTF_CFG_OS && !LWPRINTF_CFG_OS_MANUAL_PROTECT
     if (IS_PRINT_MODE(p) &&                             /* OS protection only for print */
-        (!lwprintf_sys_mutex_isvalid(&p->lw->mutex)     /* Invalid mutex handle */
-         || !lwprintf_sys_mutex_wait(&p->lw->mutex))) { /* Cannot acquire mutex */
+        (!lwprintf_sys_mutex_isvalid(&p->lwobj->mutex)     /* Invalid mutex handle */
+         || !lwprintf_sys_mutex_wait(&p->lwobj->mutex))) { /* Cannot acquire mutex */
         return 0;
     }
 #endif /* LWPRINTF_CFG_OS && !LWPRINTF_CFG_OS_MANUAL_PROTECT */
@@ -1141,7 +1141,7 @@ prv_format(lwprintf_int_t* p, va_list arg) {
     p->out_fn(p, '\0'); /* Output last zero number */
 #if LWPRINTF_CFG_OS && !LWPRINTF_CFG_OS_MANUAL_PROTECT
     if (IS_PRINT_MODE(p)) { /* Mutex only for print operation */
-        lwprintf_sys_mutex_release(&p->lw->mutex);
+        lwprintf_sys_mutex_release(&p->lwobj->mutex);
     }
 #endif /* LWPRINTF_CFG_OS && !LWPRINTF_CFG_OS_MANUAL_PROTECT */
     return 1;
@@ -1149,18 +1149,18 @@ prv_format(lwprintf_int_t* p, va_list arg) {
 
 /**
  * \brief           Initialize LwPRINTF instance
- * \param[in,out]   lw: LwPRINTF working instance
+ * \param[in,out]   lwobj: LwPRINTF working instance
  * \param[in]       out_fn: Output function used for print operation
  * \return          `1` on success, `0` otherwise
  */
 uint8_t
-lwprintf_init_ex(lwprintf_t* lw, lwprintf_output_fn out_fn) {
-    LWPRINTF_GET_LW(lw)->out_fn = out_fn;
+lwprintf_init_ex(lwprintf_t* lwobj, lwprintf_output_fn out_fn) {
+    LWPRINTF_GET_LWOBJ(lwobj)->out_fn = out_fn;
 
 #if LWPRINTF_CFG_OS
     /* Create system mutex */
-    if (lwprintf_sys_mutex_isvalid(&LWPRINTF_GET_LW(lw)->mutex)
-        || !lwprintf_sys_mutex_create(&LWPRINTF_GET_LW(lw)->mutex)) {
+    if (lwprintf_sys_mutex_isvalid(&LWPRINTF_GET_LWOBJ(lwobj)->mutex)
+        || !lwprintf_sys_mutex_create(&LWPRINTF_GET_LWOBJ(lwobj)->mutex)) {
         return 0;
     }
 #endif /* LWPRINTF_CFG_OS */
@@ -1169,7 +1169,7 @@ lwprintf_init_ex(lwprintf_t* lw, lwprintf_output_fn out_fn) {
 
 /**
  * \brief           Print formatted data from variable argument list to the output
- * \param[in,out]   lw: LwPRINTF instance. Set to `NULL` to use default instance
+ * \param[in,out]   lwobj: LwPRINTF instance. Set to `NULL` to use default instance
  * \param[in]       format: C string that contains the text to be written to output
  * \param[in]       arg: A value identifying a variable arguments list initialized with `va_start`.
  *                      `va_list` is a special type defined in `<cstdarg>`.
@@ -1177,11 +1177,11 @@ lwprintf_init_ex(lwprintf_t* lw, lwprintf_output_fn out_fn) {
  *                      not counting the terminating null character.
  */
 int
-lwprintf_vprintf_ex(lwprintf_t* const lw, const char* format, va_list arg) {
+lwprintf_vprintf_ex(lwprintf_t* const lwobj, const char* format, va_list arg) {
     lwprintf_int_t f = {
-        .lw = LWPRINTF_GET_LW(lw), .out_fn = prv_out_fn_print, .fmt = format, .buff = NULL, .buff_size = 0};
+        .lwobj = LWPRINTF_GET_LWOBJ(lwobj), .out_fn = prv_out_fn_print, .fmt = format, .buff = NULL, .buff_size = 0};
     /* For direct print, output function must be set by user */
-    if (f.lw->out_fn == NULL) {
+    if (f.lwobj->out_fn == NULL) {
         return 0;
     }
     prv_format(&f, arg);
@@ -1190,19 +1190,19 @@ lwprintf_vprintf_ex(lwprintf_t* const lw, const char* format, va_list arg) {
 
 /**
  * \brief           Print formatted data to the output
- * \param[in,out]   lw: LwPRINTF instance. Set to `NULL` to use default instance
+ * \param[in,out]   lwobj: LwPRINTF instance. Set to `NULL` to use default instance
  * \param[in]       format: C string that contains the text to be written to output
  * \param[in]       ...: Optional arguments for format string
  * \return          The number of characters that would have been written if `n` had been sufficiently large,
  *                      not counting the terminating null character.
  */
 int
-lwprintf_printf_ex(lwprintf_t* const lw, const char* format, ...) {
+lwprintf_printf_ex(lwprintf_t* const lwobj, const char* format, ...) {
     va_list va;
     int n;
 
     va_start(va, format);
-    n = lwprintf_vprintf_ex(lw, format, va);
+    n = lwprintf_vprintf_ex(lwobj, format, va);
     va_end(va);
 
     return n;
@@ -1210,7 +1210,7 @@ lwprintf_printf_ex(lwprintf_t* const lw, const char* format, ...) {
 
 /**
  * \brief           Write formatted data from variable argument list to sized buffer
- * \param[in,out]   lw: LwPRINTF instance. Set to `NULL` to use default instance
+ * \param[in,out]   lwobj: LwPRINTF instance. Set to `NULL` to use default instance
  * \param[in]       s: Pointer to a buffer where the resulting C-string is stored.
  *                      The buffer should have a size of at least `n` characters
  * \param[in]       n: Maximum number of bytes to be used in the buffer.
@@ -1223,16 +1223,16 @@ lwprintf_printf_ex(lwprintf_t* const lw, const char* format, ...) {
  *                      not counting the terminating null character.
  */
 int
-lwprintf_vsnprintf_ex(lwprintf_t* const lw, char* s, size_t n, const char* format, va_list arg) {
+lwprintf_vsnprintf_ex(lwprintf_t* const lwobj, char* s, size_t n, const char* format, va_list arg) {
     lwprintf_int_t f = {
-        .lw = LWPRINTF_GET_LW(lw), .out_fn = prv_out_fn_write_buff, .fmt = format, .buff = s, .buff_size = n};
+        .lwobj = LWPRINTF_GET_LWOBJ(lwobj), .out_fn = prv_out_fn_write_buff, .fmt = format, .buff = s, .buff_size = n};
     prv_format(&f, arg);
     return f.n;
 }
 
 /**
  * \brief           Write formatted data from variable argument list to sized buffer
- * \param[in,out]   lw: LwPRINTF instance. Set to `NULL` to use default instance
+ * \param[in,out]   lwobj: LwPRINTF instance. Set to `NULL` to use default instance
  * \param[in]       s: Pointer to a buffer where the resulting C-string is stored.
  *                      The buffer should have a size of at least `n` characters
  * \param[in]       n: Maximum number of bytes to be used in the buffer.
@@ -1244,12 +1244,12 @@ lwprintf_vsnprintf_ex(lwprintf_t* const lw, char* s, size_t n, const char* forma
  *                      not counting the terminating null character.
  */
 int
-lwprintf_snprintf_ex(lwprintf_t* const lw, char* s, size_t n, const char* format, ...) {
+lwprintf_snprintf_ex(lwprintf_t* const lwobj, char* s, size_t n, const char* format, ...) {
     va_list va;
     int len;
 
     va_start(va, format);
-    len = lwprintf_vsnprintf_ex(lw, s, n, format, va);
+    len = lwprintf_vsnprintf_ex(lwobj, s, n, format, va);
     va_end(va);
 
     return len;
@@ -1259,23 +1259,23 @@ lwprintf_snprintf_ex(lwprintf_t* const lw, char* s, size_t n, const char* format
 
 /**
  * \brief           Manually enable mutual exclusion
- * \param[in,out]   lw: LwPRINTF instance. Set to `NULL` to use default instance
+ * \param[in,out]   lwobj: LwPRINTF instance. Set to `NULL` to use default instance
  * \return          `1` if protected, `0` otherwise
  */
 uint8_t
-lwprintf_protect_ex(lwprintf_t* const lw) {
-    return lwprintf_sys_mutex_isvalid(&LWPRINTF_GET_LW(lw)->mutex)
-           && lwprintf_sys_mutex_wait(&LWPRINTF_GET_LW(lw)->mutex);
+lwprintf_protect_ex(lwprintf_t* const lwobj) {
+    return lwprintf_sys_mutex_isvalid(&LWPRINTF_GET_LWOBJ(lwobj)->mutex)
+           && lwprintf_sys_mutex_wait(&LWPRINTF_GET_LWOBJ(lwobj)->mutex);
 }
 
 /**
  * \brief           Manually disable mutual exclusion
- * \param[in,out]   lw: LwPRINTF instance. Set to `NULL` to use default instance
+ * \param[in,out]   lwobj: LwPRINTF instance. Set to `NULL` to use default instance
  * \return          `1` if protection disabled, `0` otherwise
  */
 uint8_t
-lwprintf_unprotect_ex(lwprintf_t* const lw) {
-    return lwprintf_sys_mutex_release(&LWPRINTF_GET_LW(lw)->mutex);
+lwprintf_unprotect_ex(lwprintf_t* const lwobj) {
+    return lwprintf_sys_mutex_release(&LWPRINTF_GET_LWOBJ(lwobj)->mutex);
 }
 
 #endif /* LWPRINTF_CFG_OS_MANUAL_PROTECT || __DOXYGEN__ */

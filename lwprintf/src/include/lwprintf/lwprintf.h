@@ -71,10 +71,10 @@ struct lwprintf;
 /**
  * \brief           Callback function for character output
  * \param[in]       ch: Character to print
- * \param[in]       lw: LwPRINTF instance
+ * \param[in]       lwobj: LwPRINTF instance
  * \return          `ch` on success, `0` to terminate further string processing
  */
-typedef int (*lwprintf_output_fn)(int ch, struct lwprintf* lw);
+typedef int (*lwprintf_output_fn)(int ch, struct lwprintf* lwobj);
 
 /**
  * \brief           LwPRINTF instance
@@ -86,17 +86,17 @@ typedef struct lwprintf {
 #endif                                  /* LWPRINTF_CFG_OS || __DOXYGEN__ */
 } lwprintf_t;
 
-uint8_t lwprintf_init_ex(lwprintf_t* lw, lwprintf_output_fn out_fn);
-int lwprintf_vprintf_ex(lwprintf_t* const lw, const char* format, va_list arg);
-int lwprintf_printf_ex(lwprintf_t* const lw, const char* format, ...);
-int lwprintf_vsnprintf_ex(lwprintf_t* const lw, char* s, size_t n, const char* format, va_list arg);
-int lwprintf_snprintf_ex(lwprintf_t* const lw, char* s, size_t n, const char* format, ...);
-uint8_t lwprintf_protect_ex(lwprintf_t* const lw);
-uint8_t lwprintf_unprotect_ex(lwprintf_t* const lw);
+uint8_t lwprintf_init_ex(lwprintf_t* lwobj, lwprintf_output_fn out_fn);
+int lwprintf_vprintf_ex(lwprintf_t* const lwobj, const char* format, va_list arg);
+int lwprintf_printf_ex(lwprintf_t* const lwobj, const char* format, ...);
+int lwprintf_vsnprintf_ex(lwprintf_t* const lwobj, char* s, size_t n, const char* format, va_list arg);
+int lwprintf_snprintf_ex(lwprintf_t* const lwobj, char* s, size_t n, const char* format, ...);
+uint8_t lwprintf_protect_ex(lwprintf_t* const lwobj);
+uint8_t lwprintf_unprotect_ex(lwprintf_t* const lwobj);
 
 /**
  * \brief           Write formatted data from variable argument list to sized buffer
- * \param[in,out]   lw: LwPRINTF instance. Set to `NULL` to use default instance
+ * \param[in,out]   lwobj: LwPRINTF instance. Set to `NULL` to use default instance
  * \param[in]       s: Pointer to a buffer where the resulting C-string is stored.
  *                      The buffer should have a size of at least `n` characters
  * \param[in]       format: C string that contains a format string that follows the same specifications as format in printf
@@ -104,7 +104,7 @@ uint8_t lwprintf_unprotect_ex(lwprintf_t* const lw);
  * \return          The number of characters that would have been written,
  *                      not counting the terminating null character.
  */
-#define lwprintf_sprintf_ex(lw, s, format, ...) lwprintf_snprintf_ex((lw), (s), SIZE_MAX, (format), ##__VA_ARGS__)
+#define lwprintf_sprintf_ex(lwobj, s, format, ...) lwprintf_snprintf_ex((lwobj), (s), SIZE_MAX, (format), ##__VA_ARGS__)
 
 /**
  * \brief           Initialize default LwPRINTF instance
