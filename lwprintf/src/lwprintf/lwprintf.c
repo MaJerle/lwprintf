@@ -146,7 +146,7 @@ typedef int (*prv_output_fn)(struct lwprintf_int* p, const char c);
  * \brief           Internal structure
  */
 typedef struct lwprintf_int {
-    lwprintf_t* lwobj;             /*!< Instance handle */
+    lwprintf_t* lwobj;          /*!< Instance handle */
     const char* fmt;            /*!< Format string */
     char* const buff;           /*!< Pointer to buffer when not using print option */
     const size_t buff_size;     /*!< Buffer size of input buffer (when used) */
@@ -839,7 +839,7 @@ prv_format(lwprintf_int_t* p, va_list arg) {
     const char* fmt = p->fmt;
 
 #if LWPRINTF_CFG_OS && !LWPRINTF_CFG_OS_MANUAL_PROTECT
-    if (IS_PRINT_MODE(p) &&                             /* OS protection only for print */
+    if (IS_PRINT_MODE(p) &&                                /* OS protection only for print */
         (!lwprintf_sys_mutex_isvalid(&p->lwobj->mutex)     /* Invalid mutex handle */
          || !lwprintf_sys_mutex_wait(&p->lwobj->mutex))) { /* Cannot acquire mutex */
         return 0;
@@ -1179,7 +1179,12 @@ lwprintf_init_ex(lwprintf_t* lwobj, lwprintf_output_fn out_fn) {
 int
 lwprintf_vprintf_ex(lwprintf_t* const lwobj, const char* format, va_list arg) {
     lwprintf_int_t f = {
-        .lwobj = LWPRINTF_GET_LWOBJ(lwobj), .out_fn = prv_out_fn_print, .fmt = format, .buff = NULL, .buff_size = 0};
+        .lwobj = LWPRINTF_GET_LWOBJ(lwobj),
+        .out_fn = prv_out_fn_print,
+        .fmt = format,
+        .buff = NULL,
+        .buff_size = 0,
+    };
     /* For direct print, output function must be set by user */
     if (f.lwobj->out_fn == NULL) {
         return 0;
@@ -1225,7 +1230,12 @@ lwprintf_printf_ex(lwprintf_t* const lwobj, const char* format, ...) {
 int
 lwprintf_vsnprintf_ex(lwprintf_t* const lwobj, char* s, size_t n, const char* format, va_list arg) {
     lwprintf_int_t f = {
-        .lwobj = LWPRINTF_GET_LWOBJ(lwobj), .out_fn = prv_out_fn_write_buff, .fmt = format, .buff = s, .buff_size = n};
+        .lwobj = LWPRINTF_GET_LWOBJ(lwobj),
+        .out_fn = prv_out_fn_write_buff,
+        .fmt = format,
+        .buff = s,
+        .buff_size = n,
+    };
     prv_format(&f, arg);
     return f.n;
 }
