@@ -112,7 +112,7 @@ uint8_t lwprintf_unprotect_ex(lwprintf_t* const lwobj);
  * \return          `1` on success, `0` otherwise
  * \sa              lwprintf_init_ex
  */
-#define lwprintf_init(out_fn)                   lwprintf_init_ex(NULL, (out_fn))
+#define lwprintf_init(out_fn)                      lwprintf_init_ex(NULL, (out_fn))
 
 /**
  * \brief           Print formatted data from variable argument list to the output with default LwPRINTF instance
@@ -122,7 +122,7 @@ uint8_t lwprintf_unprotect_ex(lwprintf_t* const lwobj);
  * \return          The number of characters that would have been written if `n` had been sufficiently large,
  *                      not counting the terminating null character.
  */
-#define lwprintf_vprintf(format, arg)           lwprintf_vprintf_ex(NULL, (format), (arg))
+#define lwprintf_vprintf(format, arg)              lwprintf_vprintf_ex(NULL, (format), (arg))
 
 /**
  * \brief           Print formatted data to the output with default LwPRINTF instance
@@ -131,7 +131,7 @@ uint8_t lwprintf_unprotect_ex(lwprintf_t* const lwobj);
  * \return          The number of characters that would have been written if `n` had been sufficiently large,
  *                      not counting the terminating null character.
  */
-#define lwprintf_printf(format, ...)            lwprintf_printf_ex(NULL, (format), ##__VA_ARGS__)
+#define lwprintf_printf(format, ...)               lwprintf_printf_ex(NULL, (format), ##__VA_ARGS__)
 
 /**
  * \brief           Write formatted data from variable argument list to sized buffer with default LwPRINTF instance
@@ -146,7 +146,7 @@ uint8_t lwprintf_unprotect_ex(lwprintf_t* const lwobj);
  * \return          The number of characters that would have been written if `n` had been sufficiently large,
  *                      not counting the terminating null character.
  */
-#define lwprintf_vsnprintf(s, n, format, arg)   lwprintf_vsnprintf_ex(NULL, (s), (n), (format), (arg))
+#define lwprintf_vsnprintf(s, n, format, arg)      lwprintf_vsnprintf_ex(NULL, (s), (n), (format), (arg))
 
 /**
  * \brief           Write formatted data from variable argument list to sized buffer with default LwPRINTF instance
@@ -160,7 +160,7 @@ uint8_t lwprintf_unprotect_ex(lwprintf_t* const lwobj);
  * \return          The number of characters that would have been written if `n` had been sufficiently large,
  *                      not counting the terminating null character.
  */
-#define lwprintf_snprintf(s, n, format, ...)    lwprintf_snprintf_ex(NULL, (s), (n), (format), ##__VA_ARGS__)
+#define lwprintf_snprintf(s, n, format, ...)       lwprintf_snprintf_ex(NULL, (s), (n), (format), ##__VA_ARGS__)
 
 /**
  * \brief           Write formatted data from variable argument list to sized buffer with default LwPRINTF instance
@@ -171,19 +171,19 @@ uint8_t lwprintf_unprotect_ex(lwprintf_t* const lwobj);
  * \return          The number of characters that would have been written,
  *                      not counting the terminating null character.
  */
-#define lwprintf_sprintf(s, format, ...)        lwprintf_sprintf_ex(NULL, (s), (format), ##__VA_ARGS__)
+#define lwprintf_sprintf(s, format, ...)           lwprintf_sprintf_ex(NULL, (s), (format), ##__VA_ARGS__)
 
 /**
  * \brief           Manually enable mutual exclusion
  * \return          `1` if protected, `0` otherwise
  */
-#define lwprintf_protect()                      lwprintf_protect_ex(NULL)
+#define lwprintf_protect()                         lwprintf_protect_ex(NULL)
 
 /**
  * \brief           Manually disable mutual exclusion
  * \return          `1` if protected, `0` otherwise
  */
-#define lwprintf_unprotect()                    lwprintf_unprotect_ex(NULL)
+#define lwprintf_unprotect()                       lwprintf_unprotect_ex(NULL)
 
 #if LWPRINTF_CFG_ENABLE_SHORTNAMES || __DOXYGEN__
 

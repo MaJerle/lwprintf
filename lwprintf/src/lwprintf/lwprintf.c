@@ -870,27 +870,13 @@ prv_format(lwprintf_int_t* p, va_list arg) {
         detected = 1;
         do {
             switch (*fmt) {
-                case '-':
-                    p->m.flags.left_align = 1;
-                    break;
-                case '+':
-                    p->m.flags.plus = 1;
-                    break;
-                case ' ':
-                    p->m.flags.space = 1;
-                    break;
-                case '0':
-                    p->m.flags.zero = 1;
-                    break;
-                case '\'':
-                    p->m.flags.thousands = 1;
-                    break;
-                case '#':
-                    p->m.flags.alt = 1;
-                    break;
-                default:
-                    detected = 0;
-                    break;
+                case '-': p->m.flags.left_align = 1; break;
+                case '+': p->m.flags.plus = 1; break;
+                case ' ': p->m.flags.space = 1; break;
+                case '0': p->m.flags.zero = 1; break;
+                case '\'': p->m.flags.thousands = 1; break;
+                case '#': p->m.flags.alt = 1; break;
+                default: detected = 0; break;
             }
             if (detected) {
                 ++fmt;
@@ -943,8 +929,7 @@ prv_format(lwprintf_int_t* p, va_list arg) {
                     ++fmt;
                 }
                 break;
-            case 'L':
-                break;
+            case 'L': break;
             case 'z':
                 p->m.flags.sz_t = 1; /* Size T flag */
                 ++fmt;
@@ -953,10 +938,8 @@ prv_format(lwprintf_int_t* p, va_list arg) {
                 p->m.flags.umax_t = 1; /* uintmax_t flag */
                 ++fmt;
                 break;
-            case 't':
-                break;
-            default:
-                detected = 0;
+            case 't': break;
+            default: detected = 0;
         }
 
         /* Check type */
@@ -971,9 +954,7 @@ prv_format(lwprintf_int_t* p, va_list arg) {
                 (void)va_arg(arg, double);    /* Read argument to ignore it and move to next one */
                 prv_out_str_raw(p, "NaN", 3); /* Print string */
                 break;
-            case 'c':
-                p->out_fn(p, (char)va_arg(arg, int));
-                break;
+            case 'c': p->out_fn(p, (char)va_arg(arg, int)); break;
 #if LWPRINTF_CFG_SUPPORT_TYPE_INT
             case 'd':
             case 'i': {
@@ -1017,15 +998,9 @@ prv_format(lwprintf_int_t* p, va_list arg) {
                 } else if (p->m.flags.longlong == 0 || p->m.base == 2) {
                     unsigned int v;
                     switch (p->m.flags.char_short) {
-                        case 2:
-                            v = (unsigned int)((unsigned char)va_arg(arg, unsigned int));
-                            break;
-                        case 1:
-                            v = (unsigned int)((unsigned short int)va_arg(arg, unsigned int));
-                            break;
-                        default:
-                            v = (unsigned int)((unsigned int)va_arg(arg, unsigned int));
-                            break;
+                        case 2: v = (unsigned int)((unsigned char)va_arg(arg, unsigned int)); break;
+                        case 1: v = (unsigned int)((unsigned short int)va_arg(arg, unsigned int)); break;
+                        default: v = (unsigned int)((unsigned int)va_arg(arg, unsigned int)); break;
                     }
                     prv_unsigned_int_to_str(p, v);
                 } else if (p->m.flags.longlong == 1) {
@@ -1083,9 +1058,7 @@ prv_format(lwprintf_int_t* p, va_list arg) {
 
                 break;
             }
-            case '%':
-                p->out_fn(p, '%');
-                break;
+            case '%': p->out_fn(p, '%'); break;
 #if LWPRINTF_CFG_SUPPORT_TYPE_BYTE_ARRAY
             /*
              * This is to print unsigned-char formatted pointer in hex string
@@ -1133,8 +1106,7 @@ prv_format(lwprintf_int_t* p, va_list arg) {
                 break;
             }
 #endif /* LWPRINTF_CFG_SUPPORT_TYPE_BYTE_ARRAY */
-            default:
-                p->out_fn(p, *fmt);
+            default: p->out_fn(p, *fmt);
         }
         ++fmt;
     }
