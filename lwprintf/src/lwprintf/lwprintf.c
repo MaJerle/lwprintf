@@ -65,10 +65,10 @@ typedef long int float_long_t;
  * \brief           Float number splitted by parts
  */
 typedef struct {
-    float_long_t integer_part; /*!< Integer type of double number */
-    double decimal_part_dbl;   /*!< Decimal part of double number multiplied by 10^precision */
-    float_long_t decimal_part; /*!< Decimal part of double number in integer format */
-    double diff;               /*!< Difference between decimal parts (double - int) */
+    float_long_t integer_part;            /*!< Integer type of double number */
+    double decimal_part_dbl;              /*!< Decimal part of double number multiplied by 10^precision */
+    float_long_t decimal_part;            /*!< Decimal part of double number in integer format */
+    double diff;                          /*!< Difference between decimal parts (double - int) */
 
     short digits_cnt_integer_part;        /*!< Number of digits for integer part */
     short digits_cnt_decimal_part;        /*!< Number of digits for decimal part */
@@ -176,11 +176,11 @@ typedef struct lwprintf_int {
             uint8_t is_num_zero : 1; /*!< Status if input number is zero */
         } flags;                     /*!< List of flags */
 
-        int precision; /*!< Selected precision */
-        int width;     /*!< Text width indicator */
-        uint8_t base;  /*!< Base for number format output */
-        char type;     /*!< Format type */
-    } m;               /*!< Block that is reset on every start of format */
+        int precision;               /*!< Selected precision */
+        int width;                   /*!< Text width indicator */
+        uint8_t base;                /*!< Base for number format output */
+        char type;                   /*!< Format type */
+    } m;                             /*!< Block that is reset on every start of format */
 } lwprintf_int_t;
 
 /**
@@ -502,11 +502,10 @@ prv_signed_longlong_int_to_str(lwprintf_int_t* p, signed long long int num) {
  * \param[in,out]   p: LwPRINTF internal instance
  * \param[in]       n: Float number instance
  * \param[in]       num: Input number
- * \param[in]       e: Exponent number (to normalize)
  * \param[in]       type: Format type
  */
 static void
-prv_calculate_dbl_num_data(lwprintf_int_t* p, float_num_t* n, double num, uint8_t e, const char type) {
+prv_calculate_dbl_num_data(lwprintf_int_t* p, float_num_t* n, double num, const char type) {
     memset(n, 0x00, sizeof(*n));
 
     if (p->m.precision >= (int)LWPRINTF_ARRAYSIZE(powers_of_10)) {
@@ -571,9 +570,8 @@ prv_calculate_dbl_num_data(lwprintf_int_t* p, float_num_t* n, double num, uint8_
     } else
 #endif /* LWPRINTF_CFG_SUPPORT_TYPE_ENGINEERING */
     {
-        n->digits_cnt_decimal_part_useful = p->m.precision;
+        n->digits_cnt_decimal_part_useful = (short)p->m.precision;
     }
-    (void)e;
 }
 
 /**
@@ -653,7 +651,7 @@ prv_double_to_str(lwprintf_int_t* p, double in_num) {
 #endif /* LWPRINTF_CFG_SUPPORT_TYPE_ENGINEERING */
 
     /* Check precision data */
-    chosen_precision = p->m.precision; /* This is default value coming from app */
+    chosen_precision = p->m.precision;                              /* This is default value coming from app */
     if (p->m.precision >= (int)LWPRINTF_ARRAYSIZE(powers_of_10)) {
         p->m.precision = (int)LWPRINTF_ARRAYSIZE(powers_of_10) - 1; /* Limit to maximum precision */
         /*
@@ -693,9 +691,7 @@ prv_double_to_str(lwprintf_int_t* p, double in_num) {
      */
 
     /* Calculate data for number */
-    prv_calculate_dbl_num_data(p, &dblnum, def_type == 'e' ? in_num : orig_num, def_type == 'e' ? 0 : exp_cnt,
-                               def_type);
-    //prv_calculate_dbl_num_data(p, &dblnum, orig_num, exp_cnt, def_type);
+    prv_calculate_dbl_num_data(p, &dblnum, def_type == 'e' ? in_num : orig_num, def_type);
 
 #if LWPRINTF_CFG_SUPPORT_TYPE_ENGINEERING
     /* Set type G */
@@ -718,7 +714,7 @@ prv_double_to_str(lwprintf_int_t* p, double in_num) {
                 --chosen_precision;
             }
         }
-        prv_calculate_dbl_num_data(p, &dblnum, in_num, 0, def_type);
+        prv_calculate_dbl_num_data(p, &dblnum, in_num, def_type);
     }
 #endif /* LWPRINTF_CFG_SUPPORT_TYPE_ENGINEERING */
 
@@ -901,7 +897,7 @@ prv_format(lwprintf_int_t* p, va_list arg) {
 
         /* Check [.precision] */
         p->m.precision = 0;
-        if (*fmt == '.') { /* Precision flag is detected */
+        if (*fmt == '.') {       /* Precision flag is detected */
             p->m.flags.precision = 1;
             if (*++fmt == '*') { /* Variable check */
                 const int pr = (int)va_arg(arg, int);
@@ -1095,7 +1091,7 @@ prv_format(lwprintf_int_t* p, va_list arg) {
 
                     d = (*ptr >> 0x04) & 0x0F; /* Print MSB */
                     p->out_fn(p, (char)(d) + (d >= 10 ? ((p->m.flags.uc ? 'A' : 'a') - 10) : '0'));
-                    d = *ptr & 0x0F; /* Print LSB */
+                    d = *ptr & 0x0F;           /* Print LSB */
                     p->out_fn(p, (char)(d) + (d >= 10 ? ((p->m.flags.uc ? 'A' : 'a') - 10) : '0'));
 
                     if (is_space && i < (len - 1)) {
@@ -1110,7 +1106,7 @@ prv_format(lwprintf_int_t* p, va_list arg) {
         }
         ++fmt;
     }
-    p->out_fn(p, '\0'); /* Output last zero number */
+    p->out_fn(p, '\0');     /* Output last zero number */
 #if LWPRINTF_CFG_OS && !LWPRINTF_CFG_OS_MANUAL_PROTECT
     if (IS_PRINT_MODE(p)) { /* Mutex only for print operation */
         lwprintf_sys_mutex_release(&p->lwobj->mutex);
