@@ -55,10 +55,8 @@
 /* Define custom types */
 #if LWPRINTF_CFG_SUPPORT_LONG_LONG
 typedef long long int float_long_t;
-#define FLOAT_MAX_B_ENG (1E18)
 #else
 typedef long int float_long_t;
-#define FLOAT_MAX_B_ENG (1E09)
 #endif /* LWPRINTF_CFG_SUPPORT_LONG_LONG */
 
 /**
@@ -77,12 +75,16 @@ typedef struct {
 
 #if LWPRINTF_CFG_SUPPORT_TYPE_FLOAT
 /* Powers of 10 from beginning up to precision level */
-static const float_long_t powers_of_10[] = {1E00, 1E01, 1E02, 1E03, 1E04, 1E05, 1E06, 1E07, 1E08, 1E09,
+static const float_long_t powers_of_10[] = {
+    (float_long_t)1E00, (float_long_t)1E01, (float_long_t)1E02, (float_long_t)1E03, (float_long_t)1E04,
+    (float_long_t)1E05, (float_long_t)1E06, (float_long_t)1E07, (float_long_t)1E08, (float_long_t)1E09,
 #if LWPRINTF_CFG_SUPPORT_LONG_LONG
-                                            1E10, 1E11, 1E12, 1E13, 1E14, 1E15, 1E16, 1E17, 1E18
+    (float_long_t)1E10, (float_long_t)1E11, (float_long_t)1E12, (float_long_t)1E13, (float_long_t)1E14,
+    (float_long_t)1E15, (float_long_t)1E16, (float_long_t)1E17, (float_long_t)1E18,
 #endif /* LWPRINTF_CFG_SUPPORT_LONG_LONG */
 };
 #endif /* LWPRINTF_CFG_SUPPORT_TYPE_FLOAT */
+#define FLOAT_MAX_B_ENG (powers_of_10[LWPRINTF_ARRAYSIZE(powers_of_10) - 1])
 
 /**
  * \brief           Outputs any integer type to stream
@@ -108,7 +110,7 @@ static const float_long_t powers_of_10[] = {1E00, 1E01, 1E02, 1E03, 1E04, 1E05, 
             prv_out_str_before(p, digits_cnt);                                                                         \
             for (; d > 0;) {                                                                                           \
                 digit = (num) / d;                                                                                     \
-                num = (num) % d;                                                                                       \
+                (num) = (num) % d;                                                                                     \
                 d = d / p->m.base;                                                                                     \
                 c = (char)digit + (char)(digit >= 10 ? ((p->m.flags.uc ? 'A' : 'a') - 10) : '0');                      \
                 p->out_fn(p, c);                                                                                       \
@@ -126,7 +128,7 @@ static const float_long_t powers_of_10[] = {1E00, 1E01, 1E02, 1E03, 1E04, 1E05, 
     {                                                                                                                  \
         if ((nnum) < 0) {                                                                                              \
             (pp)->m.flags.is_negative = 1;                                                                             \
-            nnum = -(nnum);                                                                                            \
+            (nnum) = -(nnum);                                                                                          \
         }                                                                                                              \
     }
 
@@ -527,7 +529,7 @@ prv_calculate_dbl_num_data(lwprintf_int_t* p, float_num_t* n, double num, const 
     n->integer_part = (float_long_t)num;
     n->decimal_part_dbl = (num - (double)n->integer_part) * (double)powers_of_10[p->m.precision];
     n->decimal_part = (float_long_t)n->decimal_part_dbl;
-    n->diff = n->decimal_part_dbl - (float_long_t)n->decimal_part;
+    n->diff = n->decimal_part_dbl - (double)((float_long_t)n->decimal_part);
 
     /* Rounding check of last digit */
     if (n->diff > 0.5f) {
@@ -554,14 +556,15 @@ prv_calculate_dbl_num_data(lwprintf_int_t* p, float_num_t* n, double num, const 
         float_long_t tmp;
         for (n->digits_cnt_integer_part = 0, tmp = n->integer_part; tmp > 0; ++n->digits_cnt_integer_part, tmp /= 10) {}
     }
-    n->digits_cnt_decimal_part = p->m.precision;
+    n->digits_cnt_decimal_part = (short)p->m.precision;
 
 #if LWPRINTF_CFG_SUPPORT_TYPE_ENGINEERING
     /* Calculate minimum useful digits for decimal (excl last useless zeros) */
     if (type == 'g') {
         float_long_t tmp = n->decimal_part;
-        size_t adder, i;
-        for (adder = 0, i = 0; tmp > 0 || i < (size_t)p->m.precision;
+        short adder, i;
+
+        for (adder = 0, i = 0; tmp > 0 || i < (short)p->m.precision;
              tmp /= 10, n->digits_cnt_decimal_part_useful += adder, ++i) {
             if (adder == 0 && (tmp % 10) > 0) {
                 adder = 1;
@@ -583,9 +586,8 @@ prv_calculate_dbl_num_data(lwprintf_int_t* p, float_num_t* n, double num, const 
 static int
 prv_double_to_str(lwprintf_int_t* p, double in_num) {
     float_num_t dblnum;
-    size_t i;
     double orig_num = in_num;
-    int digits_cnt, exp_cnt = 0, chosen_precision;
+    int digits_cnt, exp_cnt = 0, chosen_precision, i;
     char def_type = p->m.type;
     char str[LWPRINTF_CFG_SUPPORT_LONG_LONG ? 22 : 11];
 
@@ -631,7 +633,7 @@ prv_double_to_str(lwprintf_int_t* p, double in_num) {
 #if LWPRINTF_CFG_SUPPORT_TYPE_ENGINEERING
     /* Engineering mode check for number of exponents */
     if (def_type == 'e' || def_type == 'g'
-        || in_num > (powers_of_10[LWPRINTF_ARRAYSIZE(powers_of_10) - 1])) { /* More vs what float can hold */
+        || in_num > (double)(powers_of_10[LWPRINTF_ARRAYSIZE(powers_of_10) - 1])) { /* More vs what float can hold */
         if (p->m.type != 'g') {
             p->m.type = 'e';
         }
@@ -744,7 +746,7 @@ prv_double_to_str(lwprintf_int_t* p, double in_num) {
         p->out_fn(p, '0');
     } else {
         for (i = 0; dblnum.integer_part > 0; dblnum.integer_part /= 10, ++i) {
-            str[i] = '0' + (char)(dblnum.integer_part % 10);
+            str[i] = (char)'0' + (char)(dblnum.integer_part % 10);
         }
         for (; i > 0; --i) {
             p->out_fn(p, str[i - 1]);
@@ -758,14 +760,14 @@ prv_double_to_str(lwprintf_int_t* p, double in_num) {
             p->out_fn(p, '.');
         }
         for (i = 0; dblnum.decimal_part > 0; dblnum.decimal_part /= 10, ++i) {
-            str[i] = '0' + (dblnum.decimal_part % 10);
+            str[i] = (char)'0' + (char)(dblnum.decimal_part % 10);
         }
 
         /* Output relevant zeros first, string to print is opposite way */
 #if LWPRINTF_CFG_SUPPORT_TYPE_ENGINEERING
         if (def_type == 'g') {
             /* TODO: This is to be checked */
-            for (x = 0; (size_t)x < p->m.precision - i && dblnum.digits_cnt_decimal_part_useful > 0;
+            for (x = 0; x < (p->m.precision - i) && dblnum.digits_cnt_decimal_part_useful > 0;
                  ++x, --dblnum.digits_cnt_decimal_part_useful) {
                 p->out_fn(p, '0');
             }
@@ -804,11 +806,11 @@ prv_double_to_str(lwprintf_int_t* p, double in_num) {
             exp_cnt = -exp_cnt;
         }
         if (exp_cnt >= 100) {
-            p->out_fn(p, '0' + (char)(exp_cnt / 100));
+            p->out_fn(p, (char)'0' + (char)(exp_cnt / 100));
             exp_cnt /= 100;
         }
-        p->out_fn(p, '0' + (char)(exp_cnt / 10));
-        p->out_fn(p, '0' + (char)(exp_cnt % 10));
+        p->out_fn(p, (char)'0' + (char)(exp_cnt / 10));
+        p->out_fn(p, (char)'0' + (char)(exp_cnt % 10));
     }
 #endif /* LWPRINTF_CFG_SUPPORT_TYPE_ENGINEERING */
     prv_out_str_after(p, digits_cnt);
@@ -934,7 +936,7 @@ prv_format(lwprintf_int_t* p, va_list arg) {
         }
 
         /* Check type */
-        p->m.type = *fmt + ((*fmt >= 'A' && *fmt <= 'Z') ? 0x20 : 0x00);
+        p->m.type = *fmt + (char)((*fmt >= 'A' && *fmt <= 'Z') ? 0x20 : 0x00);
         if (*fmt >= 'A' && *fmt <= 'Z') {
             p->m.flags.uc = 1;
         }
@@ -1045,7 +1047,7 @@ prv_format(lwprintf_int_t* p, va_list arg) {
 #endif /* LWPRINTF_CFG_SUPPORT_TYPE_FLOAT */
             case 'n': {
                 int* ptr = (void*)va_arg(arg, int*);
-                *ptr = p->n; /* Write current length */
+                *ptr = (int)p->n; /* Write current length */
 
                 break;
             }
@@ -1085,9 +1087,9 @@ prv_format(lwprintf_int_t* p, va_list arg) {
                     uint8_t d;
 
                     d = (*ptr >> 0x04) & 0x0F; /* Print MSB */
-                    p->out_fn(p, (char)(d) + (d >= 10 ? ((p->m.flags.uc ? 'A' : 'a') - 10) : '0'));
+                    p->out_fn(p, (char)(d) + (char)(d >= 10 ? ((p->m.flags.uc ? 'A' : 'a') - 10) : '0'));
                     d = *ptr & 0x0F; /* Print LSB */
-                    p->out_fn(p, (char)(d) + (d >= 10 ? ((p->m.flags.uc ? 'A' : 'a') - 10) : '0'));
+                    p->out_fn(p, (char)(d) + (char)(d >= 10 ? ((p->m.flags.uc ? 'A' : 'a') - 10) : '0'));
 
                     if (is_space && i < (len - 1)) {
                         p->out_fn(p, ' '); /* Generate space between numbers */
@@ -1153,7 +1155,7 @@ lwprintf_vprintf_ex(lwprintf_t* const lwobj, const char* format, va_list arg) {
         return 0;
     }
     prv_format(&f, arg);
-    return f.n;
+    return (int)f.n;
 }
 
 /**
@@ -1200,7 +1202,7 @@ lwprintf_vsnprintf_ex(lwprintf_t* const lwobj, char* s, size_t n, const char* fo
         .buff_size = n,
     };
     prv_format(&f, arg);
-    return f.n;
+    return (int)f.n;
 }
 
 /**
