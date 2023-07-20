@@ -17,7 +17,7 @@ It includes implementation of standard output functions such as ``printf``, ``vp
 Features
 ^^^^^^^^
 
-* Written in ANSI C99, compatible with ``size_t`` and ``uintmax_t`` types for some specifiers
+* Written in C (C11), compatible with ``size_t`` and ``uintmax_t`` types for some specifiers
 * Implements output functions compatible with ``printf``, ``vprintf``, ``snprintf``, ``sprintf`` and ``vsnprintf``
 * Low-memory footprint, suitable for embedded systems
 * Reentrant access to all API functions
@@ -78,7 +78,7 @@ Table of contents
     LwESP - ESP-AT library <https://github.com/MaJerle/lwesp>
     LwEVT - Event manager <https://github.com/MaJerle/lwevt>
     LwGPS - GPS NMEA parser <https://github.com/MaJerle/lwgps>
-    LwGSM - GSM-AT library <https://github.com/MaJerle/lwgsm>
+    LwCELL - Cellular modem host AT library <https://github.com/MaJerle/lwcell>
     LwJSON - JSON parser <https://github.com/MaJerle/lwjson>
     LwMEM - Memory manager <https://github.com/MaJerle/lwmem>
     LwOW - OneWire with UART <https://github.com/MaJerle/lwow>

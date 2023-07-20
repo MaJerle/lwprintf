@@ -4,7 +4,7 @@
 
 ## Features
 
-* Written in ANSI C99, compatible with ``size_t`` and ``uintmax_t`` types for some specifiers
+* Written in C (C11), compatible with ``size_t`` and ``uintmax_t`` types for some specifiers
 * Implements output functions compatible with ``printf``, ``vprintf``, ``snprintf``, ``sprintf`` and ``vsnprintf``
 * Low-memory footprint, suitable for embedded systems
 * Reentrant access to all API functions
