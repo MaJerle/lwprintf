@@ -1115,7 +1115,12 @@ prv_format(lwprintf_int_t* p, va_list arg) {
 /**
  * \brief           Initialize LwPRINTF instance
  * \param[in,out]   lwobj: LwPRINTF working instance
- * \param[in]       out_fn: Output function used for print operation
+ * \param[in]       out_fn: Output function used for print operation.
+ *                      When set to `NULL`, direct print to stream functions won't work
+ *                      and will return error if called by the application.
+ *                      Also, system mutex for this specific instance won't be called
+ *                      as system mutex isn't needed. All formatting functions (with print being an exception)
+ *                      are thread safe. Library utilizes stack-based variables
  * \return          `1` on success, `0` otherwise
  */
 uint8_t
@@ -1123,9 +1128,10 @@ lwprintf_init_ex(lwprintf_t* lwobj, lwprintf_output_fn out_fn) {
     LWPRINTF_GET_LWOBJ(lwobj)->out_fn = out_fn;
 
 #if LWPRINTF_CFG_OS
-    /* Create system mutex */
-    if (lwprintf_sys_mutex_isvalid(&LWPRINTF_GET_LWOBJ(lwobj)->mutex)
-        || !lwprintf_sys_mutex_create(&LWPRINTF_GET_LWOBJ(lwobj)->mutex)) {
+    /* Create system mutex, but only if user selected to ever use print mode */
+    if (out_fn != NULL
+        && (lwprintf_sys_mutex_isvalid(&LWPRINTF_GET_LWOBJ(lwobj)->mutex)
+            || !lwprintf_sys_mutex_create(&LWPRINTF_GET_LWOBJ(lwobj)->mutex))) {
         return 0;
     }
 #endif /* LWPRINTF_CFG_OS */
