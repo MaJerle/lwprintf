@@ -587,7 +587,10 @@ static int
 prv_double_to_str(lwprintf_int_t* p, double in_num) {
     float_num_t dblnum;
     double orig_num = in_num;
-    int digits_cnt, exp_cnt = 0, chosen_precision, i;
+    int digits_cnt, chosen_precision, i;
+#if LWPRINTF_CFG_SUPPORT_TYPE_ENGINEERING
+    int exp_cnt = 0;
+#endif /* LWPRINTF_CFG_SUPPORT_TYPE_ENGINEERING */
     char def_type = p->m.type;
     char str[LWPRINTF_CFG_SUPPORT_LONG_LONG ? 22 : 11];
 
@@ -717,18 +720,20 @@ prv_double_to_str(lwprintf_int_t* p, double in_num) {
 
     /* Set number of digits to display */
     digits_cnt = dblnum.digits_cnt_integer_part;
+    if (0) {
 #if LWPRINTF_CFG_SUPPORT_TYPE_ENGINEERING
-    if (def_type == 'g' && p->m.precision > 0) {
+    } else if (def_type == 'g' && p->m.precision > 0) {
         digits_cnt += dblnum.digits_cnt_decimal_part_useful;
         if (dblnum.digits_cnt_decimal_part_useful > 0) {
             ++digits_cnt;
         }
-    } else
 #endif /* LWPRINTF_CFG_SUPPORT_TYPE_ENGINEERING */
+    } else {
         if (chosen_precision > 0 && p->m.flags.precision) {
             /* Add precision digits + dot separator */
             digits_cnt += chosen_precision + 1;
         }
+    }
 
 #if LWPRINTF_CFG_SUPPORT_TYPE_ENGINEERING
     /* Increase number of digits to display */
