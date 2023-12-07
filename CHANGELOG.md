@@ -2,6 +2,8 @@
 
 ## Develop
 
+## v1.0.4
+
 - Fix calculation for NULL terminated string and precision with 0 as an input
 - Split CMakeLists.txt files between library and executable
 - Fix missing break in switch statement

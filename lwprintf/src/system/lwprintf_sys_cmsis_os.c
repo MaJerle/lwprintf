@@ -29,7 +29,7 @@
  * This file is part of LwPRINTF - Lightweight stdio manager library.
  *
  * Author:          Tilen MAJERLE <tilen@majerle.eu>
- * Version:         v1.0.3
+ * Version:         v1.0.4
  */
 #include "system/lwprintf_sys.h"
 
