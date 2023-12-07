@@ -16,32 +16,32 @@ Flags
 
 .. rst-class:: table-nowrap
 
-+------------------+--------------------------------------------------------------------------+
-| Character        | Description                                                              |
-+==================+==========================================================================+
-| minus ``-``      | Left-align the output of this placeholder.                               |
-|                  | The default is to right-align the output                                 |
-+------------------+--------------------------------------------------------------------------+
-| plus ``+``       | Prepends a plus for positive signed-numeric types.                       |
-|                  | positive = ``+``, negative = ``-``                                       |
-+------------------+--------------------------------------------------------------------------+
-| space `` ``      | Prepends a space for positive signed-numeric types.                      |
-|                  | positive = `` ``, negative = ``-``.                                      |
-|                  | This flag is ignored if the + flag exists                                |
-+------------------+--------------------------------------------------------------------------+
-| zero ``0``       | When the *width* option is specified, prepends zeros for numeric types.  |
-|                  | The default prepends spaces, if this flag is not set                     |
-+------------------+--------------------------------------------------------------------------+
-| apostrophe ``'`` | The integer or exponent of a decimal has the thousands                   |
-|                  | grouping separator applied.                                              |
-+------------------+--------------------------------------------------------------------------+
-| has ``#``        | Alternate form:                                                          |
-|                  | For ``g`` and ``G`` types, trailing zeros are not removed.               |
-|                  | For ``f``, ``F``, ``e``, ``E``, ``g``, ``G`` types, the output always    |
-|                  | contains a decimal point.                                                |
-|                  | For ``o``, ``x``, ``X`` types, the text ``0``, ``0x``, ``0X``,           |
-|                  | respectively, is prepended to non-zero numbers.                          |
-+------------------+--------------------------------------------------------------------------+
++--------------------+--------------------------------------------------------------------------+
+| Character          | Description                                                              |
++====================+==========================================================================+
+| minus ``-``        | Left-align the output of this placeholder.                               |
+|                    | The default is to right-align the output                                 |
++--------------------+--------------------------------------------------------------------------+
+| plus ``+``         | Prepends a plus for positive signed-numeric types.                       |
+|                    | positive = ``+``, negative = ``-``                                       |
++--------------------+--------------------------------------------------------------------------+
+| space ``space ch`` | Prepends a space for positive signed-numeric types.                      |
+|                    | positive = ``space ch``, negative = ``-``.                               |
+|                    | This flag is ignored if the + flag exists                                |
++--------------------+--------------------------------------------------------------------------+
+| zero ``0``         | When the *width* option is specified, prepends zeros for numeric types.  |
+|                    | The default prepends spaces, if this flag is not set                     |
++--------------------+--------------------------------------------------------------------------+
+| apostrophe ``'``   | The integer or exponent of a decimal has the thousands                   |
+|                    | grouping separator applied.                                              |
++--------------------+--------------------------------------------------------------------------+
+| has ``#``          | Alternate form:                                                          |
+|                    | For ``g`` and ``G`` types, trailing zeros are not removed.               |
+|                    | For ``f``, ``F``, ``e``, ``E``, ``g``, ``G`` types, the output always    |
+|                    | contains a decimal point.                                                |
+|                    | For ``o``, ``x``, ``X`` types, the text ``0``, ``0x``, ``0X``,           |
+|                    | respectively, is prepended to non-zero numbers.                          |
++--------------------+--------------------------------------------------------------------------+
 
 Width
 *****

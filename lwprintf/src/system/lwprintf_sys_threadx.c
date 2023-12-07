@@ -1,10 +1,10 @@
 /**
- * \file            lwprintf_sys_template.c
- * \brief           System functions template file
+ * \file            lwprintf_sys_cmsis_os.c
+ * \brief           System functions for CMSIS-OS based operating system
  */
 
 /*
- * Copyright (c) 2020 Tilen MAJERLE
+ * Copyright (c) 2023 Tilen MAJERLE
  *
  * Permission is hereby granted, free of charge, to any person
  * obtaining a copy of this software and associated documentation
@@ -33,46 +33,37 @@
  */
 #include "system/lwprintf_sys.h"
 
-#if LWPRINTF_CFG_OS || __DOXYGEN__
+#if LWPRINTF_CFG_OS && !__DOXYGEN__
 
-/**
- * \brief           Create a new mutex and assign value to handle
- * \param[out]      m: Output variable to save mutex handle
- * \return          `1` on success, `0` otherwise
+/*
+ * To use this module, options must be defined as
+ *
+ * #define LWPRINTF_CFG_OS_MUTEX_HANDLE     TX_MUTEX
  */
+
+/* Include ThreadX API module */
+#include "tx_api.h"
+#include "tx_mutex.h"
+
 uint8_t
 lwprintf_sys_mutex_create(LWPRINTF_CFG_OS_MUTEX_HANDLE* m) {
-    return 1;
+    static char name[] = "lwprintf_mutex";
+    return tx_mutex_create(m, name, TX_INHERIT) == TX_SUCCESS;
 }
 
-/**
- * \brief           Check if mutex handle is valid
- * \param[in]       m: Mutex handle to check if valid
- * \return          `1` on success, `0` otherwise
- */
 uint8_t
 lwprintf_sys_mutex_isvalid(LWPRINTF_CFG_OS_MUTEX_HANDLE* m) {
-    return 1;
+    return m->tx_mutex_id == TX_MUTEX_ID;
 }
 
-/**
- * \brief           Wait for a mutex until ready (unlimited time)
- * \param[in]       m: Mutex handle to wait for
- * \return          `1` on success, `0` otherwise
- */
 uint8_t
 lwprintf_sys_mutex_wait(LWPRINTF_CFG_OS_MUTEX_HANDLE* m) {
-    return 1;
+    return tx_mutex_get(m, TX_WAIT_FOREVER) == TX_SUCCESS;
 }
 
-/**
- * \brief           Release already locked mutex
- * \param[in]       m: Mutex handle to release
- * \return          `1` on success, `0` otherwise
- */
 uint8_t
 lwprintf_sys_mutex_release(LWPRINTF_CFG_OS_MUTEX_HANDLE* m) {
-    return 1;
+    return tx_mutex_put(m) == TX_SUCCESS;
 }
 
-#endif /* LWPRINTF_CFG_OS || __DOXYGEN__ */
+#endif /* LWPRINTF_CFG_OS && !__DOXYGEN__ */

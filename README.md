@@ -4,7 +4,7 @@
 
 ## Features
 
-* Written in ANSI C99, compatible with ``size_t`` and ``uintmax_t`` types for some specifiers
+* Written in C (C11), compatible with ``size_t`` and ``uintmax_t`` types for some specifiers
 * Implements output functions compatible with ``printf``, ``vprintf``, ``snprintf``, ``sprintf`` and ``vsnprintf``
 * Low-memory footprint, suitable for embedded systems
 * Reentrant access to all API functions
@@ -17,10 +17,10 @@
 
 ## Contribute
 
-Fresh contributions are always welcome. Simple instructions to proceed::
+Fresh contributions are always welcome. Simple instructions to proceed:
 
 1. Fork Github repository
-2. Respect [C style & coding rules](https://github.com/MaJerle/c-code-style) used by the library
+2. Follow [C style & coding rules](https://github.com/MaJerle/c-code-style) already used in the project
 3. Create a pull request to develop branch with new features or bug fixes
 
 Alternatively you may:

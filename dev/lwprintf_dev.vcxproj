@@ -73,11 +73,11 @@
   <PropertyGroup Label="UserMacros" />
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
     <LinkIncremental>true</LinkIncremental>
-    <IncludePath>..\..\lwprintf\src\include;.;$(IncludePath)</IncludePath>
+    <IncludePath>..\lwprintf\src\include;.;$(IncludePath)</IncludePath>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
     <LinkIncremental>true</LinkIncremental>
-    <IncludePath>..\..\lwprintf\src\include;.;$(IncludePath)</IncludePath>
+    <IncludePath>..\lwprintf\src\include;.;$(IncludePath)</IncludePath>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
     <LinkIncremental>false</LinkIncremental>
@@ -144,9 +144,9 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
-    <ClCompile Include="..\..\examples\additional_format_specifiers.c" />
-    <ClCompile Include="..\..\lwprintf\src\lwprintf\lwprintf.c" />
-    <ClCompile Include="..\..\lwprintf\src\system\lwprintf_sys_win32.c" />
+    <ClCompile Include="..\examples\additional_format_specifiers.c" />
+    <ClCompile Include="..\lwprintf\src\lwprintf\lwprintf.c" />
+    <ClCompile Include="..\lwprintf\src\system\lwprintf_sys_win32.c" />
     <ClCompile Include="main.c" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />

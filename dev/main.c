@@ -4,6 +4,7 @@
 #include <stdint.h>
 #include "windows.h"
 
+#define TEST_BUF_SIZE (255)
 typedef struct {
     char* format;                   /*!< Input format */
     char* input_data;               /*!< Input parameters */
@@ -30,6 +31,7 @@ static size_t tests_cnt;
  */
 int
 lwprintf_output(int ch, lwprintf_t* lw) {
+    LWPRINTF_UNUSED(lw);
     if (ch != '\0') {
         printf("%c", (char)ch);
     }
@@ -64,10 +66,15 @@ printf_run_fn(const char* expected, const char* fmt, ...) {
     test_data_t* test;
     
     /* Temporary strings array */
-    char b1[255] = { 0 }, b2[255] = { 0 };
+    char b1[TEST_BUF_SIZE] = { 0 }, b2[sizeof(b1)] = { 0 };
     int l1, l2;
 
+    /* Set variables to non-0 values */
+    memset(b1, 0xFFFFFFFF, sizeof(b1));
+    memset(b2, 0xFFFFFFFF, sizeof(b2));
+
     console = GetStdHandle(STD_OUTPUT_HANDLE);  /* Get console */
+    (void)console;
 
     /* Generate strings with original and custom printf */
     va_start(va, fmt);
@@ -150,16 +157,25 @@ int n;
 int
 main(void) {
     double num = 2123213213142.032;
+    char test[123];
+
+    lwprintf_sprintf(test, "%d", 123);
+
+    (void)num;
     
     lwprintf_init(lwprintf_output);
 
     printf_run(NULL, "Precision: %3d, %.*g", 17, 17, 0.0001234567);
-    for (int i = 0; i < 20; ++i) {
+    for (size_t i = 0; i < 20; ++i) {
         printf_run(NULL, "Precision: %3d, %20.*g", i, i, 432432423.342321321);
     }
-    for (int i = 0; i < 20; ++i) {
+    for (size_t i = 0; i < 20; ++i) {
         printf_run(NULL, "Precision: %3d, %20.*g", i, i, 0.0001234567);
     }
+    for (size_t i = 0; i < strlen("Text string 123"); ++i) {
+        printf_run(NULL, "%.*s", i, "Text string 123");
+    }
+    
     printf_run(NULL, "%.4f", 3.23321321);
     printf_run(NULL, "%.45f", 3.23321321);
     printf_run(NULL, "%.4F", 3.23321321);
@@ -251,6 +267,11 @@ main(void) {
     printf_run(NULL, "%.3s", "");
     printf_run(NULL, "%yunknown", "");
 
+    /* Source string which exceeds output buffer size */
+    char c[TEST_BUF_SIZE+10];
+    memset(c, 0x5a5a5a5a, sizeof(c));
+    printf_run(NULL, "%s", c);
+
     /* Alternate form */
     printf_run(NULL, "%#2X", 123);
     printf_run(NULL, "%#2x", 123);
@@ -290,13 +311,9 @@ main(void) {
     printf_run("0102b5", "%*k", 3, my_arr);
     printf_run("01 02 b5", "% *k", 3, my_arr);
 
-    /* Print final output */
-    printf("------------------------\n");
-    printf("Number of tests run: %d\n", (int)(tests_passed + tests_failed));
-    printf("Number of tests passed: %d\n", (int)tests_passed);
-    printf("Number of tests failed: %d\n", (int)tests_failed);
-    printf("Coverage: %f %%\n", (float)((tests_passed * 100) / ((float)(tests_passed + tests_failed))));
-
+    goto test_result;
+test_result:
+#if 1
     /* Tests that failed */
     printf("------------------------\n\n");
     printf("Negative tests\n\n");
@@ -307,7 +324,9 @@ main(void) {
             output_test_result(t);
         }
     }
+#endif
 
+#if 0
     /* Tests that went through */
     printf("------------------------\n\n");
     printf("Positive tests\n\n");
@@ -318,5 +337,13 @@ main(void) {
             output_test_result(t);
         }
     }
+#endif
+
+    /* Print final output */
+    printf("------------------------\n");
+    printf("Number of tests run: %d\n", (int)(tests_passed + tests_failed));
+    printf("Number of tests passed: %d\n", (int)tests_passed);
+    printf("Number of tests failed: %d\n", (int)tests_failed);
+    printf("Coverage: %f %%\n", (float)((tests_passed * 100) / ((float)(tests_passed + tests_failed))));
     return 0;
 }

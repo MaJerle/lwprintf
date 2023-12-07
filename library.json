@@ -23,9 +23,16 @@
 	"platforms": "*",
 	"export": {
 		"exclude": [
+			".github",
+			"dev",
 			"docs",
 			"**/.vs",
-			"**/Debug"
+			"**/Debug",
+			"build",
+			"**/build"
 		]
-	}
+	},
+    "build": {
+        "includeDir": "lwprintf/src/include"
+    }
 }

@@ -4,7 +4,7 @@
  */
 
 /*
- * Copyright (c) 2020 Tilen MAJERLE
+ * Copyright (c) 2023 Tilen MAJERLE
  *
  * Permission is hereby granted, free of charge, to any person
  * obtaining a copy of this software and associated documentation
@@ -31,16 +31,18 @@
  * Author:          Tilen MAJERLE <tilen@majerle.eu>
  * Version:         v1.0.3
  */
-#ifndef LWPRINTF_HDR_SYS_H
-#define LWPRINTF_HDR_SYS_H
+#ifndef LWPRINTF_SYS_HDR_H
+#define LWPRINTF_SYS_HDR_H
 
-#include <stdint.h>
 #include <stddef.h>
+#include <stdint.h>
 #include "lwprintf/lwprintf.h"
 
 #ifdef __cplusplus
 extern "C" {
 #endif /* __cplusplus */
+
+#if LWPRINTF_CFG_OS || __DOXYGEN__
 
 /**
  * \defgroup        LWPRINTF_SYS System functions
@@ -48,17 +50,42 @@ extern "C" {
  * \{
  */
 
-uint8_t     lwprintf_sys_mutex_create(LWPRINTF_CFG_OS_MUTEX_HANDLE* m);
-uint8_t     lwprintf_sys_mutex_isvalid(LWPRINTF_CFG_OS_MUTEX_HANDLE* m);
-uint8_t     lwprintf_sys_mutex_wait(LWPRINTF_CFG_OS_MUTEX_HANDLE* m);
-uint8_t     lwprintf_sys_mutex_release(LWPRINTF_CFG_OS_MUTEX_HANDLE* m);
+/**
+ * \brief           Create a new mutex and assign value to handle
+ * \param[out]      m: Output variable to save mutex handle
+ * \return          `1` on success, `0` otherwise
+ */
+uint8_t lwprintf_sys_mutex_create(LWPRINTF_CFG_OS_MUTEX_HANDLE* m);
+
+/**
+ * \brief           Check if mutex handle is valid
+ * \param[in]       m: Mutex handle to check if valid
+ * \return          `1` on success, `0` otherwise
+ */
+uint8_t lwprintf_sys_mutex_isvalid(LWPRINTF_CFG_OS_MUTEX_HANDLE* m);
+
+/**
+ * \brief           Wait for a mutex until ready (unlimited time)
+ * \param[in]       m: Mutex handle to wait for
+ * \return          `1` on success, `0` otherwise
+ */
+uint8_t lwprintf_sys_mutex_wait(LWPRINTF_CFG_OS_MUTEX_HANDLE* m);
+
+/**
+ * \brief           Release already locked mutex
+ * \param[in]       m: Mutex handle to release
+ * \return          `1` on success, `0` otherwise
+ */
+uint8_t lwprintf_sys_mutex_release(LWPRINTF_CFG_OS_MUTEX_HANDLE* m);
 
 /**
  * \}
  */
 
+#endif /* LWPRINTF_CFG_OS || __DOXYGEN__ */
+
 #ifdef __cplusplus
 }
 #endif /* __cplusplus */
 
-#endif /* LWPRINTF_HDR_SYS_H */
+#endif /* LWPRINTF_SYS_HDR_H */

@@ -4,7 +4,7 @@
  */
 
 /*
- * Copyright (c) 2020 Tilen MAJERLE
+ * Copyright (c) 2023 Tilen MAJERLE
  *
  * Permission is hereby granted, free of charge, to any person
  * obtaining a copy of this software and associated documentation
@@ -31,8 +31,8 @@
  * Author:          Tilen MAJERLE <tilen@majerle.eu>
  * Version:         v1.0.3
  */
-#ifndef LWPRINTF_HDR_OPT_H
-#define LWPRINTF_HDR_OPT_H
+#ifndef LWPRINTF_OPT_HDR_H
+#define LWPRINTF_OPT_HDR_H
 
 /* Uncomment to ignore user options (or set macro in compiler flags) */
 /* #define LWPRINTF_IGNORE_USER_OPTS */
@@ -58,7 +58,7 @@ extern "C" {
  * \note            When `LWPRINTF_CFG_OS` is enabled, user must implement functions in \ref LWPRINTF_SYS group.
  */
 #ifndef LWPRINTF_CFG_OS
-#define LWPRINTF_CFG_OS                            0
+#define LWPRINTF_CFG_OS 0
 #endif
 
 /**
@@ -69,7 +69,24 @@ extern "C" {
  *                  definition before you define handle type
  */
 #ifndef LWPRINTF_CFG_OS_MUTEX_HANDLE
-#define LWPRINTF_CFG_OS_MUTEX_HANDLE               void *
+#define LWPRINTF_CFG_OS_MUTEX_HANDLE void*
+#endif
+
+/**
+ * \brief           Enables `1` or disables `0` manual mutex lock.
+ *
+ * When this feature is enabled, together with \ref LWPRINTF_CFG_OS, behavior is as following:
+ * - System mutex is kept created during init phase
+ * - Calls to direct printing functions are not thread-safe by default anymore
+ * - Calls to sprintf (buffer functions) are kept thread-safe
+ * - User must manually call \ref lwprintf_protect or \ref lwprintf_protect_ex functions to protect direct printing operation
+ * - User must manually call \ref lwprintf_unprotect or \ref lwprintf_unprotect_ex functions to exit protected area
+ *
+ * \note            If you prefer to completely disable locking mechanism with this library,
+ *                  turn off \ref LWPRINTF_CFG_OS and fully manually handle mutual exclusion for non-reentrant functions
+ */
+#ifndef LWPRINTF_CFG_OS_MANUAL_PROTECT
+#define LWPRINTF_CFG_OS_MANUAL_PROTECT 0
 #endif
 
 /**
@@ -77,7 +94,7 @@ extern "C" {
  *
  */
 #ifndef LWPRINTF_CFG_SUPPORT_LONG_LONG
-#define LWPRINTF_CFG_SUPPORT_LONG_LONG              1
+#define LWPRINTF_CFG_SUPPORT_LONG_LONG 1
 #endif
 
 /**
@@ -86,7 +103,7 @@ extern "C" {
  *
  */
 #ifndef LWPRINTF_CFG_SUPPORT_TYPE_INT
-#define LWPRINTF_CFG_SUPPORT_TYPE_INT               1
+#define LWPRINTF_CFG_SUPPORT_TYPE_INT 1
 #endif
 
 /**
@@ -95,7 +112,7 @@ extern "C" {
  * When enabled, architecture must support `uintptr_t` type, normally available with C11 standard
  */
 #ifndef LWPRINTF_CFG_SUPPORT_TYPE_POINTER
-#define LWPRINTF_CFG_SUPPORT_TYPE_POINTER           1
+#define LWPRINTF_CFG_SUPPORT_TYPE_POINTER 1
 #endif
 
 /**
@@ -103,7 +120,7 @@ extern "C" {
  *
  */
 #ifndef LWPRINTF_CFG_SUPPORT_TYPE_FLOAT
-#define LWPRINTF_CFG_SUPPORT_TYPE_FLOAT             1
+#define LWPRINTF_CFG_SUPPORT_TYPE_FLOAT 1
 #endif
 
 /**
@@ -113,7 +130,7 @@ extern "C" {
  *
  */
 #ifndef LWPRINTF_CFG_SUPPORT_TYPE_ENGINEERING
-#define LWPRINTF_CFG_SUPPORT_TYPE_ENGINEERING       1
+#define LWPRINTF_CFG_SUPPORT_TYPE_ENGINEERING 1
 #endif
 
 /**
@@ -121,7 +138,7 @@ extern "C" {
  *
  */
 #ifndef LWPRINTF_CFG_SUPPORT_TYPE_STRING
-#define LWPRINTF_CFG_SUPPORT_TYPE_STRING            1
+#define LWPRINTF_CFG_SUPPORT_TYPE_STRING 1
 #endif
 
 /**
@@ -129,7 +146,7 @@ extern "C" {
  *
  */
 #ifndef LWPRINTF_CFG_SUPPORT_TYPE_BYTE_ARRAY
-#define LWPRINTF_CFG_SUPPORT_TYPE_BYTE_ARRAY        1
+#define LWPRINTF_CFG_SUPPORT_TYPE_BYTE_ARRAY 1
 #endif
 
 /**
@@ -140,7 +157,7 @@ extern "C" {
  *
  */
 #ifndef LWPRINTF_CFG_FLOAT_DEFAULT_PRECISION
-#define LWPRINTF_CFG_FLOAT_DEFAULT_PRECISION        6
+#define LWPRINTF_CFG_FLOAT_DEFAULT_PRECISION 6
 #endif
 
 /**
@@ -149,7 +166,7 @@ extern "C" {
  * It adds functions for default instance: `lwprintf`, `lwsnprintf` and others
  */
 #ifndef LWPRINTF_CFG_ENABLE_SHORTNAMES
-#define LWPRINTF_CFG_ENABLE_SHORTNAMES              1
+#define LWPRINTF_CFG_ENABLE_SHORTNAMES 1
 #endif /* LWPRINTF_CFG_ENABLE_SHORTNAMES */
 
 /**
@@ -160,7 +177,7 @@ extern "C" {
  * to be able to properly compile LwPRINTF with this option enabled
  */
 #ifndef LWPRINTF_CFG_ENABLE_STD_NAMES
-#define LWPRINTF_CFG_ENABLE_STD_NAMES               0
+#define LWPRINTF_CFG_ENABLE_STD_NAMES 0
 #endif /* LWPRINTF_CFG_ENABLE_SHORTNAMES */
 
 /**
@@ -171,4 +188,4 @@ extern "C" {
 }
 #endif /* __cplusplus */
 
-#endif /* LWPRINTF_HDR_OPT_H */
+#endif /* LWPRINTF_OPT_HDR_H */

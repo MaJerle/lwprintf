@@ -4,7 +4,7 @@
  */
 
 /*
- * Copyright (c) 2020 Tilen MAJERLE
+ * Copyright (c) 2023 Tilen MAJERLE
  *
  * Permission is hereby granted, free of charge, to any person
  * obtaining a copy of this software and associated documentation
@@ -41,6 +41,7 @@ uint8_t
 lwprintf_sys_mutex_create(LWPRINTF_CFG_OS_MUTEX_HANDLE* m) {
     const osMutexAttr_t attr = {
         .name = "lwprintf_mutex",
+        .attr_bits = osMutexRecursive,
     };
     return (*m = osMutexNew(&attr)) != NULL;
 }

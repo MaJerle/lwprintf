@@ -17,7 +17,7 @@ It includes implementation of standard output functions such as ``printf``, ``vp
 Features
 ^^^^^^^^
 
-* Written in ANSI C99, compatible with ``size_t`` and ``uintmax_t`` types for some specifiers
+* Written in C (C11), compatible with ``size_t`` and ``uintmax_t`` types for some specifiers
 * Implements output functions compatible with ``printf``, ``vprintf``, ``snprintf``, ``sprintf`` and ``vsnprintf``
 * Low-memory footprint, suitable for embedded systems
 * Reentrant access to all API functions
@@ -58,6 +58,7 @@ Table of contents
 
 .. toctree::
     :maxdepth: 2
+    :caption: Contents
 
     self
     get-started/index
@@ -65,3 +66,25 @@ Table of contents
     api-reference/index
     test-results/index
     examples/index
+    changelog/index
+
+.. toctree::
+    :maxdepth: 2
+    :caption: Other projects
+    :hidden:
+
+    LwBTN - Button manager <https://github.com/MaJerle/lwbtn>
+    LwDTC - DateTimeCron <https://github.com/MaJerle/lwdtc>
+    LwESP - ESP-AT library <https://github.com/MaJerle/lwesp>
+    LwEVT - Event manager <https://github.com/MaJerle/lwevt>
+    LwGPS - GPS NMEA parser <https://github.com/MaJerle/lwgps>
+    LwCELL - Cellular modem host AT library <https://github.com/MaJerle/lwcell>
+    LwJSON - JSON parser <https://github.com/MaJerle/lwjson>
+    LwMEM - Memory manager <https://github.com/MaJerle/lwmem>
+    LwOW - OneWire with UART <https://github.com/MaJerle/lwow>
+    LwPKT - Packet protocol <https://github.com/MaJerle/lwpkt>
+    LwPRINTF - Printf <https://github.com/MaJerle/lwprintf>
+    LwRB - Ring buffer <https://github.com/MaJerle/lwrb>
+    LwSHELL - Shell <https://github.com/MaJerle/lwshell>
+    LwUTIL - Utility functions <https://github.com/MaJerle/lwutil>
+    LwWDG - RTOS task watchdog <https://github.com/MaJerle/lwwdg>

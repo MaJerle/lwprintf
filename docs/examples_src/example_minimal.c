@@ -5,9 +5,8 @@ int
 lwprintf_out(int ch, lwprintf_t* lwp) {
     /* May use printf to output it for test */
     if (ch != '\0') {
-    	printf("%c", (char)ch);
+        printf("%c", (char)ch);
     }
-
     return ch;
 }
 

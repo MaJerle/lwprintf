@@ -1,5 +1,16 @@
 # Changelog
 
+## Develop
+
+- Fix calculation for NULL terminated string and precision with 0 as an input
+- Split CMakeLists.txt files between library and executable
+- Fix missing break in switch statement
+- Add support for manual mutual-exclusion setup in OS mode
+- Change license year to 2022
+- Update code style with astyle
+- Add `.clang-format` draft
+- Fix protection functions for when print mode is not used
+
 ## v1.0.3
 
 - CMSIS-OS improvements for Kernel aware debuggers
