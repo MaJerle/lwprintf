@@ -1167,8 +1167,10 @@ lwprintf_vprintf_ex(lwprintf_t* const lwobj, const char* format, va_list arg) {
     if (fobj.lwobj->out_fn == NULL) {
         return 0;
     }
-    prv_format(&fobj, arg);
-    return (int)fobj.n_len;
+    if (prv_format(&fobj, arg)) {
+        return (int)fobj.n_len;
+    }
+    return 0;
 }
 
 /**
@@ -1214,8 +1216,10 @@ lwprintf_vsnprintf_ex(lwprintf_t* const lwobj, char* s_out, size_t n_maxlen, con
         .buff = s_out,
         .buff_size = n_maxlen,
     };
-    prv_format(&fobj, arg);
-    return (int)fobj.n_len;
+    if (prv_format(&fobj, arg)) {
+        return (int)fobj.n_len;
+    }
+    return 0;
 }
 
 /**
@@ -1252,8 +1256,8 @@ lwprintf_snprintf_ex(lwprintf_t* const lwobj, char* s_out, size_t n_maxlen, cons
  */
 uint8_t
 lwprintf_protect_ex(lwprintf_t* const lwobj) {
-    return lwprintf_sys_mutex_isvalid(&LWPRINTF_GET_LWOBJ(lwobj)->mutex)
-           && lwprintf_sys_mutex_wait(&LWPRINTF_GET_LWOBJ(lwobj)->mutex);
+    lwprintf_t* obj = LWPRINTF_GET_LWOBJ(lwobj);
+    return obj->out_fn != NULL && lwprintf_sys_mutex_isvalid(&obj->mutex) && lwprintf_sys_mutex_wait(&obj->mutex);
 }
 
 /**
@@ -1263,7 +1267,8 @@ lwprintf_protect_ex(lwprintf_t* const lwobj) {
  */
 uint8_t
 lwprintf_unprotect_ex(lwprintf_t* const lwobj) {
-    return lwprintf_sys_mutex_release(&LWPRINTF_GET_LWOBJ(lwobj)->mutex);
+    lwprintf_t* obj = LWPRINTF_GET_LWOBJ(lwobj);
+    return obj->out_fn != NULL && lwprintf_sys_mutex_release(&obj->mutex);
 }
 
 #endif /* LWPRINTF_CFG_OS_MANUAL_PROTECT || __DOXYGEN__ */
