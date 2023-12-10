@@ -838,7 +838,7 @@ prv_format(lwprintf_int_t* lwi, va_list arg) {
     const char* fmt = lwi->fmt;
 
 #if LWPRINTF_CFG_OS && !LWPRINTF_CFG_OS_MANUAL_PROTECT
-    if (IS_PRINT_MODE(p) &&                                  /* OS protection only for print */
+    if (IS_PRINT_MODE(lwi) &&                                /* OS protection only for print */
         (!lwprintf_sys_mutex_isvalid(&lwi->lwobj->mutex)     /* Invalid mutex handle */
          || !lwprintf_sys_mutex_wait(&lwi->lwobj->mutex))) { /* Cannot acquire mutex */
         return 0;
@@ -1112,7 +1112,7 @@ prv_format(lwprintf_int_t* lwi, va_list arg) {
     }
     lwi->out_fn(lwi, '\0'); /* Output last zero number */
 #if LWPRINTF_CFG_OS && !LWPRINTF_CFG_OS_MANUAL_PROTECT
-    if (IS_PRINT_MODE(p)) { /* Mutex only for print operation */
+    if (IS_PRINT_MODE(lwi)) { /* Mutex only for print operation */
         lwprintf_sys_mutex_release(&lwi->lwobj->mutex);
     }
 #endif /* LWPRINTF_CFG_OS && !LWPRINTF_CFG_OS_MANUAL_PROTECT */
