@@ -67,6 +67,7 @@ Table of contents
     test-results/index
     examples/index
     changelog/index
+    authors/index
 
 .. toctree::
     :maxdepth: 2

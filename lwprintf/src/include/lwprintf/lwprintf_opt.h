@@ -29,7 +29,7 @@
  * This file is part of LwPRINTF - Lightweight stdio manager library.
  *
  * Author:          Tilen MAJERLE <tilen@majerle.eu>
- * Version:         v1.0.4
+ * Version:         v1.0.5
  */
 #ifndef LWPRINTF_OPT_HDR_H
 #define LWPRINTF_OPT_HDR_H
