@@ -2,6 +2,8 @@
 
 ## Develop
 
+## v1.0.5
+
 - Fix building the library with `LWPRINTF_CFG_OS=1` and `LWPRINTF_CFG_OS_MANUAL_PROTECT=0` options
 
 ## v1.0.4
