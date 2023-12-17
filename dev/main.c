@@ -1,24 +1,24 @@
-#include <stdio.h>
-#include "lwprintf/lwprintf.h"
-#include <string.h>
 #include <stdint.h>
+#include <stdio.h>
+#include <string.h>
+#include "lwprintf/lwprintf.h"
 #include "windows.h"
 
 #define TEST_BUF_SIZE (255)
+
 typedef struct {
-    char* format;                   /*!< Input format */
-    char* input_data;               /*!< Input parameters */
-    char* p_orig;                   /*!< Result with built-in library */
-    size_t c_orig;                  /*!< Count returned by original lib */
-    char* p_lwpr;                   /*!< Result with lwprintf library */
-    size_t c_lwpr;                  /*!< Count returned by lwprintf lib */
-    char* e_resu;                   /*!< Expected result (if used) */
-    uint8_t pass;                   /*!< Status if test is pass or fail */
+    char* format;     /*!< Input format */
+    char* input_data; /*!< Input parameters */
+    char* p_orig;     /*!< Result with built-in library */
+    size_t c_orig;    /*!< Count returned by original lib */
+    char* p_lwpr;     /*!< Result with lwprintf library */
+    size_t c_lwpr;    /*!< Count returned by lwprintf lib */
+    char* e_resu;     /*!< Expected result (if used) */
+    uint8_t pass;     /*!< Status if test is pass or fail */
 } test_data_t;
 
 /* Array of tests */
-static test_data_t
-tests[500];
+static test_data_t tests[500];
 
 /* Number of tests done so far */
 static size_t tests_cnt;
@@ -44,12 +44,13 @@ lwprintf_output(int ch, lwprintf_t* lw) {
 size_t tests_passed, tests_failed;
 
 #define MY_MACRO " "
-const char* text_fmt, *text_params;
-#define printf_run(exp, fmt, ...) do {          \
-text_fmt = fmt;                               \
-text_params = # __VA_ARGS__;                    \
-printf_run_fn(exp, fmt, ## __VA_ARGS__);        \
-} while (0);
+const char *text_fmt, *text_params;
+#define printf_run(exp, fmt, ...)                                                                                      \
+    do {                                                                                                               \
+        text_fmt = fmt;                                                                                                \
+        text_params = #__VA_ARGS__;                                                                                    \
+        printf_run_fn(exp, fmt, ##__VA_ARGS__);                                                                        \
+    } while (0);
 
 /**
  * \brief           Run printf with built-in and custom implementation.
@@ -64,16 +65,16 @@ printf_run_fn(const char* expected, const char* fmt, ...) {
     HANDLE console;
     va_list va;
     test_data_t* test;
-    
+
     /* Temporary strings array */
-    char b1[TEST_BUF_SIZE] = { 0 }, b2[sizeof(b1)] = { 0 };
+    char b1[TEST_BUF_SIZE] = {0}, b2[sizeof(b1)] = {0};
     int l1, l2;
 
     /* Set variables to non-0 values */
     memset(b1, 0xFFFFFFFF, sizeof(b1));
     memset(b2, 0xFFFFFFFF, sizeof(b2));
 
-    console = GetStdHandle(STD_OUTPUT_HANDLE);  /* Get console */
+    console = GetStdHandle(STD_OUTPUT_HANDLE); /* Get console */
     (void)console;
 
     /* Generate strings with original and custom printf */
@@ -90,7 +91,7 @@ printf_run_fn(const char* expected, const char* fmt, ...) {
     test->p_lwpr = malloc(sizeof(char) * (strlen(b2) + 1));
     test->format = malloc(sizeof(char) * (strlen(fmt) + 1));
     test->input_data = malloc(sizeof(char) * (strlen(text_params) + 1));
-    
+
     /* Copy data */
     strcpy(test->p_orig, b1);
     strcpy(test->p_lwpr, b2);
@@ -118,7 +119,7 @@ printf_run_fn(const char* expected, const char* fmt, ...) {
         ++tests_failed;
     }
 
-/*
+    /*
     printf("Format: \"%s\"\r\n", fmt);
     printf("R: Len: %3d, result: \"%s\"\r\n", l1, b1);
     printf("L: Len: %3d, result: \"%s\"\r\n", l2, b2);
@@ -154,6 +155,7 @@ output_test_result(test_data_t* t) {
 }
 
 int n;
+
 int
 main(void) {
     double num = 2123213213142.032;
@@ -162,7 +164,7 @@ main(void) {
     lwprintf_sprintf(test, "%d", 123);
 
     (void)num;
-    
+
     lwprintf_init(lwprintf_output);
 
     printf_run(NULL, "Precision: %3d, %.*g", 17, 17, 0.0001234567);
@@ -175,7 +177,7 @@ main(void) {
     for (size_t i = 0; i < strlen("Text string 123"); ++i) {
         printf_run(NULL, "%.*s", i, "Text string 123");
     }
-    
+
     printf_run(NULL, "%.4f", 3.23321321);
     printf_run(NULL, "%.45f", 3.23321321);
     printf_run(NULL, "%.4F", 3.23321321);
@@ -268,7 +270,7 @@ main(void) {
     printf_run(NULL, "%yunknown", "");
 
     /* Source string which exceeds output buffer size */
-    char c[TEST_BUF_SIZE+10];
+    char c[TEST_BUF_SIZE + 10];
     memset(c, 0x5a5a5a5a, sizeof(c));
     printf_run(NULL, "%s", c);
 
@@ -303,7 +305,7 @@ main(void) {
     printf_run("0b110", "%#b", 6);
 
     /* Array test */
-    uint8_t my_arr[] = { 0x01, 0x02, 0xB5, 0xC6, 0xD7 };
+    uint8_t my_arr[] = {0x01, 0x02, 0xB5, 0xC6, 0xD7};
     printf_run("0102B5C6D7", "%5K", my_arr);
     printf_run("0102B5", "%*K", 3, my_arr);
     printf_run("01 02 B5", "% *K", 3, my_arr);

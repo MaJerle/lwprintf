@@ -263,6 +263,45 @@ uint8_t lwprintf_unprotect_ex(lwprintf_t* const lwobj);
 
 #endif /* LWPRINTF_CFG_ENABLE_STD_NAMES || __DOXYGEN__ */
 
+/* Debug module */
+#if !defined(NDEBUG)
+/**
+ * \brief           Debug output function
+ * 
+ *                  Its purpose is to have a debug printout to the defined output,
+ *                  which will get disabled for the release build (when NDEBUG is defined).
+ * 
+ * \note            It calls \ref lwprintf_printf to execute the print
+ * \note            Defined as empty when \ref NDEBUG is enabled
+ * \param[in]       fmt: Format text
+ * \param[in]       ...: Optional formatting parameters
+ */
+#define lwprintf_debug(fmt, ...) lwprintf_printf((fmt), ##__VA_ARGS__)
+/**
+ * \brief           Conditional debug output
+ * 
+ *                  It prints the formatted text only if condition is true
+ * 
+ *                  Its purpose is to have a debug printout to the defined output,
+ *                  which will get disabled for the release build (when NDEBUG is defined).
+ * 
+ * \note            It calls \ref lwprintf_debug to execute the print
+ * \note            Defined as empty when \ref NDEBUG is enabled
+ * \param[in]       cond: Condition to check before outputing the message
+ * \param[in]       fmt: Format text
+ * \param[in]       ...: Optional formatting parameters
+ */
+#define lwprintf_debug_cond(cond, fmt, ...)                                                                            \
+    do {                                                                                                               \
+        if ((cond)) {                                                                                                  \
+            lwprintf_debug((fmt), ##__VA_ARGS__)                                                                       \
+        }                                                                                                              \
+    } while (0)
+#else
+#define lwprintf_debug(fmt, ...)            ((void)0)
+#define lwprintf_debug_cond(cond, fmt, ...) ((void)0)
+#endif
+
 /**
  * \}
  */
