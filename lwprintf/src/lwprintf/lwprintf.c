@@ -533,13 +533,13 @@ prv_calculate_dbl_num_data(lwprintf_int_t* lwi, float_num_t* n, double num, cons
     n->diff = n->decimal_part_dbl - (double)((float_long_t)n->decimal_part);
 
     /* Rounding check of last digit */
-    if (n->diff > 0.5f) {
+    if (n->diff > 0.5) {
         ++n->decimal_part;
         if (n->decimal_part >= powers_of_10[lwi->m.precision]) {
             n->decimal_part = 0;
             ++n->integer_part;
         }
-    } else if (n->diff < 0.5f) {
+    } else if (n->diff < 0.5) {
         /* Used in separate if, since comparing float to == will certainly result to false */
     } else {
         /* Difference is exactly 0.5 */
