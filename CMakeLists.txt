@@ -37,7 +37,7 @@ else()
     )
 
     # Add subdir with lwprintf and link to the project
-    set(LWPRINTF_OPTS_DIR ${CMAKE_CURRENT_LIST_DIR}/dev)
+    set(LWPRINTF_OPTS_FILE ${CMAKE_CURRENT_LIST_DIR}/dev/lwprintf_opts.h)
     add_subdirectory(lwprintf)
     target_link_libraries(${PROJECT_NAME} lwprintf)
 endif()
