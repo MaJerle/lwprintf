@@ -402,6 +402,23 @@ prv_unsigned_long_int_to_str(lwprintf_int_t* lwi, unsigned long int num) {
     return 1;
 }
 
+/**
+ * \brief           Calculate string length, limited to the maximum value.
+ * 
+ * \note            Use custom implementation to support potential `< C11` versions
+ * 
+ * \param           str: String to calculate
+ * \param           max_n: Max number of bytes at which length is cut
+ * \return          String length in bytes
+ */
+size_t
+prv_strnlen(const char* str, size_t max_n) {
+    size_t length = 0;
+
+    for (; *str != '\0' && length < max_n; ++length, ++str) {}
+    return length;
+}
+
 #if LWPRINTF_CFG_SUPPORT_LONG_LONG
 
 /**
@@ -1022,8 +1039,8 @@ prv_format(lwprintf_int_t* lwi, va_list arg) {
                  * - Otherwise use max available system length
                  */
                 prv_out_str(lwi, b,
-                            strnlen(b, lwi->m.flags.precision ? (size_t)lwi->m.precision
-                                                              : (lwi->buff != NULL ? lwi->buff_size : SIZE_MAX)));
+                            prv_strnlen(b, lwi->m.flags.precision ? (size_t)lwi->m.precision
+                                                                  : (lwi->buff != NULL ? lwi->buff_size : SIZE_MAX)));
                 break;
             }
 #endif /* LWPRINTF_CFG_SUPPORT_TYPE_STRING */
