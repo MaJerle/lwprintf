@@ -55,8 +55,12 @@
 /* Define custom types */
 #if LWPRINTF_CFG_SUPPORT_LONG_LONG
 typedef long long int float_long_t;
+typedef unsigned long long int uint_maxtype_t;
+typedef long long int int_maxtype_t;
 #else
 typedef long int float_long_t;
+typedef unsigned long int uint_maxtype_t;
+typedef long int int_maxtype_t;
 #endif /* LWPRINTF_CFG_SUPPORT_LONG_LONG */
 
 /**
@@ -85,39 +89,6 @@ static const float_long_t powers_of_10[] = {
 };
 #endif /* LWPRINTF_CFG_SUPPORT_TYPE_FLOAT */
 #define FLOAT_MAX_B_ENG (powers_of_10[LWPRINTF_ARRAYSIZE(powers_of_10) - 1])
-
-/**
- * \brief           Outputs any integer type to stream
- * Implemented as big macro since `d`, `digit` and `num` are of different types vs int size
- */
-#define OUTPUT_ANY_INT_TYPE(ttype, num)                                                                                \
-    {                                                                                                                  \
-        ttype den, digit;                                                                                              \
-        uint8_t digits_cnt;                                                                                            \
-        char chr;                                                                                                      \
-                                                                                                                       \
-        /* Check if number is zero */                                                                                  \
-        lwi->m.flags.is_num_zero = (num) == 0;                                                                         \
-        if ((num) == 0) {                                                                                              \
-            prv_out_str_before(lwi, 1);                                                                                \
-            lwi->out_fn(lwi, '0');                                                                                     \
-            prv_out_str_after(lwi, 1);                                                                                 \
-        } else {                                                                                                       \
-            /* Start with digits length */                                                                             \
-            for (digits_cnt = 0, den = (num); den > 0; ++digits_cnt, den /= lwi->m.base) {}                            \
-            for (den = 1; ((num) / den) >= lwi->m.base; den *= lwi->m.base) {}                                         \
-                                                                                                                       \
-            prv_out_str_before(lwi, digits_cnt);                                                                       \
-            for (; den > 0;) {                                                                                         \
-                digit = (num) / den;                                                                                   \
-                (num) = (num) % den;                                                                                   \
-                den = den / lwi->m.base;                                                                               \
-                chr = (char)digit + (char)(digit >= 10 ? ((lwi->m.flags.uc ? 'A' : 'a') - 10) : '0');                  \
-                lwi->out_fn(lwi, chr);                                                                                 \
-            }                                                                                                          \
-            prv_out_str_after(lwi, digits_cnt);                                                                        \
-        }                                                                                                              \
-    }
 
 /**
  * \brief           Check for negative input number before outputting signed integers
@@ -387,21 +358,44 @@ prv_out_str(lwprintf_int_t* lwi, const char* buff, size_t buff_size) {
  * \return          `1` on success, `0` otherwise
  */
 static int
-prv_unsigned_int_to_str(lwprintf_int_t* lwi, unsigned int num) {
-    OUTPUT_ANY_INT_TYPE(unsigned int, num);
+prv_longest_unsigned_int_to_str(lwprintf_int_t* lwi, uint_maxtype_t num) {
+    uint_maxtype_t den, digit;
+    uint8_t digits_cnt;
+    char chr;
+
+    /* Check if number is zero */
+    lwi->m.flags.is_num_zero = (num) == 0;
+    if ((num) == 0) {
+        prv_out_str_before(lwi, 1);
+        lwi->out_fn(lwi, '0');
+        prv_out_str_after(lwi, 1);
+    } else { /* Start with digits length */
+        for (digits_cnt = 0, den = (num); den > 0; ++digits_cnt, den /= lwi->m.base) {}
+        for (den = 1; ((num) / den) >= lwi->m.base; den *= lwi->m.base) {}
+
+        prv_out_str_before(lwi, digits_cnt);
+        for (; den > 0;) {
+            digit = (num) / den;
+            (num) = (num) % den;
+            den = den / lwi->m.base;
+            chr = (char)digit + (char)(digit >= 10 ? ((lwi->m.flags.uc ? 'A' : 'a') - 10) : '0');
+            lwi->out_fn(lwi, chr);
+        }
+        prv_out_str_after(lwi, digits_cnt);
+    }
     return 1;
 }
 
 /**
- * \brief           Convert `unsigned long` to string
- * \param[in,out]   lwi: LwPRINTF internal instance
+ * \brief           Convert signed long int to string
+ * \param[in,out]   lwi: LwPRINTF instance
  * \param[in]       num: Number to convert to string
  * \return          `1` on success, `0` otherwise
  */
 static int
-prv_unsigned_long_int_to_str(lwprintf_int_t* lwi, unsigned long int num) {
-    OUTPUT_ANY_INT_TYPE(unsigned long int, num);
-    return 1;
+prv_longest_signed_int_to_str(lwprintf_int_t* lwi, signed long int num) {
+    SIGNED_CHECK_NEGATIVE(lwi, num);
+    return prv_longest_unsigned_int_to_str(lwi, num);
 }
 
 /**
@@ -420,102 +414,6 @@ prv_strnlen(const char* str, size_t max_n) {
     for (; *str != '\0' && length < max_n; ++length, ++str) {}
     return length;
 }
-
-#if LWPRINTF_CFG_SUPPORT_LONG_LONG
-
-/**
- * \brief           Convert `unsigned long-long` to string
- * \param[in,out]   lwi: LwPRINTF internal instance
- * \param[in]       num: Number to convert to string
- * \return          `1` on success, `0` otherwise
- */
-static int
-prv_unsigned_longlong_int_to_str(lwprintf_int_t* lwi, unsigned long long int num) {
-    OUTPUT_ANY_INT_TYPE(unsigned long long int, num);
-    return 1;
-}
-
-#endif /* LWPRINTF_CFG_SUPPORT_LONG_LONG */
-
-#if LWPRINTF_CFG_SUPPORT_TYPE_POINTER
-
-/**
- * \brief           Convert `uintptr_t` to string
- * \param[in,out]   lwi: LwPRINTF internal instance
- * \param[in]       num: Number to convert to string
- * \return          `1` on success, `0` otherwise
- */
-static int
-prv_uintptr_to_str(lwprintf_int_t* lwi, uintptr_t num) {
-    OUTPUT_ANY_INT_TYPE(uintptr_t, num);
-    return 1;
-}
-
-#endif /* LWPRINTF_CFG_SUPPORT_TYPE_POINTER */
-
-/**
- * \brief           Convert `size_t` number to string
- * \param[in,out]   lwi: LwPRINTF internal instance
- * \param[in]       num: Number to convert to string
- * \return          `1` on success, `0` otherwise
- */
-static int
-prv_sizet_to_str(lwprintf_int_t* lwi, size_t num) {
-    OUTPUT_ANY_INT_TYPE(size_t, num);
-    return 1;
-}
-
-/**
- * \brief           Convert `uintmax_t` number to string
- * \param[in,out]   lwi: LwPRINTF internal instance
- * \param[in]       num: Number to convert to string
- * \return          `1` on success, `0` otherwise
- */
-static int
-prv_umaxt_to_str(lwprintf_int_t* lwi, uintmax_t num) {
-    OUTPUT_ANY_INT_TYPE(uintmax_t, num);
-    return 1;
-}
-
-/**
- * \brief           Convert signed int to string
- * \param[in,out]   lwi: LwPRINTF internal instance
- * \param[in]       num: Number to convert to string
- * \return          `1` on success, `0` otherwise
- */
-static int
-prv_signed_int_to_str(lwprintf_int_t* lwi, signed int num) {
-    SIGNED_CHECK_NEGATIVE(lwi, num);
-    return prv_unsigned_int_to_str(lwi, num);
-}
-
-/**
- * \brief           Convert signed long int to string
- * \param[in,out]   lwi: LwPRINTF instance
- * \param[in]       num: Number to convert to string
- * \return          `1` on success, `0` otherwise
- */
-static int
-prv_signed_long_int_to_str(lwprintf_int_t* lwi, signed long int num) {
-    SIGNED_CHECK_NEGATIVE(lwi, num);
-    return prv_unsigned_long_int_to_str(lwi, num);
-}
-
-#if LWPRINTF_CFG_SUPPORT_LONG_LONG
-
-/**
- * \brief           Convert signed long-long int to string
- * \param[in,out]   lwi: LwPRINTF internal instance
- * \param[in]       num: Number to convert to string
- * \return          `1` on success, `0` otherwise
- */
-static int
-prv_signed_longlong_int_to_str(lwprintf_int_t* lwi, signed long long int num) {
-    SIGNED_CHECK_NEGATIVE(lwi, num);
-    return prv_unsigned_longlong_int_to_str(lwi, num);
-}
-
-#endif /* LWPRINTF_CFG_SUPPORT_LONG_LONG */
 
 #if LWPRINTF_CFG_SUPPORT_TYPE_FLOAT
 
@@ -979,12 +877,12 @@ prv_format(lwprintf_int_t* lwi, va_list arg) {
                 /* Check for different length parameters */
                 lwi->m.base = 10;
                 if (lwi->m.flags.longlong == 0) {
-                    prv_signed_int_to_str(lwi, (signed int)va_arg(arg, signed int));
+                    prv_longest_signed_int_to_str(lwi, (int_maxtype_t)va_arg(arg, signed int));
                 } else if (lwi->m.flags.longlong == 1) {
-                    prv_signed_long_int_to_str(lwi, (signed long int)va_arg(arg, signed long int));
+                    prv_longest_signed_int_to_str(lwi, (int_maxtype_t)va_arg(arg, signed long int));
 #if LWPRINTF_CFG_SUPPORT_LONG_LONG
                 } else if (lwi->m.flags.longlong == 2) {
-                    prv_signed_longlong_int_to_str(lwi, (signed long long int)va_arg(arg, signed long long int));
+                    prv_longest_signed_int_to_str(lwi, (int_maxtype_t)va_arg(arg, signed long long int));
 #endif /* LWPRINTF_CFG_SUPPORT_LONG_LONG */
                 }
                 break;
@@ -1010,22 +908,22 @@ prv_format(lwprintf_int_t* lwi, va_list arg) {
                 if (0) {
 
                 } else if (lwi->m.flags.sz_t) {
-                    prv_sizet_to_str(lwi, (size_t)va_arg(arg, size_t));
+                    prv_longest_unsigned_int_to_str(lwi, (uint_maxtype_t)va_arg(arg, size_t));
                 } else if (lwi->m.flags.umax_t) {
-                    prv_umaxt_to_str(lwi, (uintmax_t)va_arg(arg, uintmax_t));
+                    prv_longest_unsigned_int_to_str(lwi, (uint_maxtype_t)va_arg(arg, uintmax_t));
                 } else if (lwi->m.flags.longlong == 0 || lwi->m.base == 2) {
-                    unsigned int v;
+                    uint_maxtype_t v;
                     switch (lwi->m.flags.char_short) {
-                        case 2: v = (unsigned int)((unsigned char)va_arg(arg, unsigned int)); break;
-                        case 1: v = (unsigned int)((unsigned short int)va_arg(arg, unsigned int)); break;
-                        default: v = (unsigned int)((unsigned int)va_arg(arg, unsigned int)); break;
+                        case 2: v = (uint_maxtype_t)va_arg(arg, unsigned int); break;
+                        case 1: v = (uint_maxtype_t)va_arg(arg, unsigned int); break;
+                        default: v = (uint_maxtype_t)va_arg(arg, unsigned int); break;
                     }
-                    prv_unsigned_int_to_str(lwi, v);
+                    prv_longest_unsigned_int_to_str(lwi, v);
                 } else if (lwi->m.flags.longlong == 1) {
-                    prv_unsigned_long_int_to_str(lwi, (unsigned long int)va_arg(arg, unsigned long int));
+                    prv_longest_unsigned_int_to_str(lwi, (uint_maxtype_t)va_arg(arg, unsigned long int));
 #if LWPRINTF_CFG_SUPPORT_LONG_LONG
                 } else if (lwi->m.flags.longlong == 2) {
-                    prv_unsigned_longlong_int_to_str(lwi, (unsigned long long int)va_arg(arg, unsigned long long int));
+                    prv_longest_unsigned_int_to_str(lwi, (uint_maxtype_t)va_arg(arg, unsigned long long int));
 #endif /* LWPRINTF_CFG_SUPPORT_LONG_LONG */
                 }
                 break;
@@ -1054,7 +952,7 @@ prv_format(lwprintf_int_t* lwi, va_list arg) {
                 lwi->m.width =
                     sizeof(uintptr_t) * 2; /* Number is in hex format and byte is represented with 2 letters */
 
-                prv_uintptr_to_str(lwi, (uintptr_t)va_arg(arg, uintptr_t));
+                prv_longest_unsigned_int_to_str(lwi, (uint_maxtype_t)va_arg(arg, uintptr_t));
                 break;
             }
 #endif /* LWPRINTF_CFG_SUPPORT_TYPE_POINTER */
