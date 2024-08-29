@@ -4,6 +4,7 @@
 
 - Add `lwprintf_debug` and `lwprintf_debug_cond` functions
 - Add single integral type with maximum parameter width for all shorter types
+- Fix `lwsnprintf` return type
 
 ## v1.0.5
 
