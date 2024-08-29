@@ -197,7 +197,7 @@ prv_out_fn_print(lwprintf_int_t* lwi, const char chr) {
  */
 static int
 prv_out_fn_write_buff(lwprintf_int_t* lwi, const char chr) {
-    if (lwi->n_len < (lwi->buff_size - 1) && lwi->buff != NULL) {
+    if (lwi->buff_size > 0 && lwi->n_len < (lwi->buff_size - 1) && lwi->buff != NULL) {
         lwi->buff[lwi->n_len] = chr;
         if (chr != '\0') {
             lwi->buff[lwi->n_len + 1] = '\0';
