@@ -226,14 +226,16 @@ prv_out_fn_print(lwprintf_int_t* lwi, const char chr) {
  */
 static int
 prv_out_fn_write_buff(lwprintf_int_t* lwi, const char chr) {
-    if (lwi->n_len < (lwi->buff_size - 1)) {
+    if (lwi->n_len < (lwi->buff_size - 1) && lwi->buff != NULL) {
         lwi->buff[lwi->n_len] = chr;
         if (chr != '\0') {
-            lwi->buff[++lwi->n_len] = '\0';
+            lwi->buff[lwi->n_len + 1] = '\0';
         }
-        return 1;
     }
-    return 0;
+    if (chr != '\0') {
+        ++lwi->n_len;
+    }
+    return 1;
 }
 
 /**
@@ -1233,6 +1235,9 @@ lwprintf_vsnprintf_ex(lwprintf_t* const lwobj, char* s_out, size_t n_maxlen, con
         .buff = s_out,
         .buff_size = n_maxlen,
     };
+    if (s_out != NULL && n_maxlen > 0) {
+        *s_out = '\0';
+    }
     if (prv_format(&fobj, arg)) {
         return (int)fobj.n_len;
     }

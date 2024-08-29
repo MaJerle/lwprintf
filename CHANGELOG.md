@@ -3,6 +3,7 @@
 ## Develop
 
 - Add `lwprintf_debug` and `lwprintf_debug_cond` functions
+- Fix the `snprintf` return value
 
 ## v1.0.5
 

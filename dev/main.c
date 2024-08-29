@@ -313,6 +313,20 @@ main(void) {
     printf_run("0102b5", "%*k", 3, my_arr);
     printf_run("01 02 b5", "% *k", 3, my_arr);
 
+    /* Check snprintf */
+    int ret = lwprintf_snprintf(NULL, 0, "test");
+    if (ret != 4) {
+        printf("SNPRINTF test failed\r\n");
+        return 0;
+    }
+
+    char buf[5] = {0};
+    ret = lwprintf_snprintf(buf, sizeof(buf) - 1, "Hello World!");
+    if (ret != 12) {
+        printf("SNPRINTF test failed\r\n");
+        return 0;
+    }
+
     goto test_result;
 test_result:
 #if 1
