@@ -4,25 +4,6 @@
 #include "lwprintf/lwprintf.h"
 #include "windows.h"
 
-#define TEST_BUF_SIZE (255)
-
-typedef struct {
-    char* format;     /*!< Input format */
-    char* input_data; /*!< Input parameters */
-    char* p_orig;     /*!< Result with built-in library */
-    size_t c_orig;    /*!< Count returned by original lib */
-    char* p_lwpr;     /*!< Result with lwprintf library */
-    size_t c_lwpr;    /*!< Count returned by lwprintf lib */
-    char* e_resu;     /*!< Expected result (if used) */
-    uint8_t pass;     /*!< Status if test is pass or fail */
-} test_data_t;
-
-/* Array of tests */
-static test_data_t tests[500];
-
-/* Number of tests done so far */
-static size_t tests_cnt;
-
 /**
  * \brief           Output function for lwprintf printf function
  * \param[in]       ch: Character to print
@@ -43,323 +24,223 @@ lwprintf_output(int ch, lwprintf_t* lw) {
  */
 size_t tests_passed, tests_failed;
 
-#define MY_MACRO " "
-const char *text_fmt, *text_params;
-#define printf_run(exp, fmt, ...)                                                                                      \
+#define do_test(buff_ptr, buff_size, exp_out, exp_out_len, fmt, ...)                                                   \
     do {                                                                                                               \
-        text_fmt = fmt;                                                                                                \
-        text_params = #__VA_ARGS__;                                                                                    \
-        printf_run_fn(exp, fmt, ##__VA_ARGS__);                                                                        \
-    } while (0);
-
-/**
- * \brief           Run printf with built-in and custom implementation.
- * Compare results on returned length and actual content
- *
- * \param[in]       expected: Expected result
- * \param[in]       fmt: Format to use
- * \param[in]       ...: Optional parameters
- */
-static void
-printf_run_fn(const char* expected, const char* fmt, ...) {
-    HANDLE console;
-    va_list va;
-    test_data_t* test;
-
-    /* Temporary strings array */
-    char b1[TEST_BUF_SIZE] = {0}, b2[sizeof(b1)] = {0};
-    int l1, l2;
-
-    /* Set variables to non-0 values */
-    memset(b1, 0xFFFFFFFF, sizeof(b1));
-    memset(b2, 0xFFFFFFFF, sizeof(b2));
-
-    console = GetStdHandle(STD_OUTPUT_HANDLE); /* Get console */
-    (void)console;
-
-    /* Generate strings with original and custom printf */
-    va_start(va, fmt);
-    l1 = vsnprintf(b1, sizeof(b1), fmt, va);
-    l2 = lwprintf_vsnprintf(b2, sizeof(b2), fmt, va);
-    va_end(va);
-
-    /* Get test handle */
-    test = &tests[tests_cnt++];
-
-    /* Dynamic allocation, we assume if didn't fail anywhere for the sake of example... */
-    test->p_orig = malloc(sizeof(char) * (strlen(b1) + 1));
-    test->p_lwpr = malloc(sizeof(char) * (strlen(b2) + 1));
-    test->format = malloc(sizeof(char) * (strlen(fmt) + 1));
-    test->input_data = malloc(sizeof(char) * (strlen(text_params) + 1));
-
-    /* Copy data */
-    strcpy(test->p_orig, b1);
-    strcpy(test->p_lwpr, b2);
-    strcpy(test->format, fmt);
-    strcpy(test->input_data, text_params);
-    test->c_orig = l1;
-    test->c_lwpr = l2;
-
-    /* Expected result is optional */
-    if (expected != NULL && strlen(expected) > 0) {
-        test->e_resu = malloc(sizeof(char) * (strlen(expected) + 1));
-        strcpy(test->e_resu, expected);
-    }
-
-    /* Check for pass */
-    /* When expected parameter is used, then compare expected data vs generated data only */
-    if (expected != NULL) {
-        test->pass = !strcmp(expected, b2);
-    } else {
-        test->pass = !(strcmp(b1, b2) || l1 != l2);
-    }
-    if (test->pass) {
-        ++tests_passed;
-    } else {
-        ++tests_failed;
-    }
-
-    /*
-    printf("Format: \"%s\"\r\n", fmt);
-    printf("R: Len: %3d, result: \"%s\"\r\n", l1, b1);
-    printf("L: Len: %3d, result: \"%s\"\r\n", l2, b2);
-    if (strcmp(b1, b2) || l1 != l2) {
-        SetConsoleTextAttribute(console, FOREGROUND_RED);
-        printf("Test failed!\r\n");
-        ++tests_failed;
-    } else {
-        SetConsoleTextAttribute(console, FOREGROUND_GREEN);
-        printf("Test passed!\r\n");
-        ++tests_passed;
-    }
-    SetConsoleTextAttribute(console, FOREGROUND_RED | FOREGROUND_GREEN | FOREGROUND_BLUE);
-    printf("----\r\n");
-*/
-}
-
-void
-output_test_result(test_data_t* t) {
-    printf("----\n");
-    printf("Format: \"%s\"\n", t->format);
-    printf("Params: \"%s\"\n", t->input_data);
-    if (t->e_resu != NULL) {
-        printf("Result expected: \"%s\"\nLength expected: %d\n", t->e_resu, (int)strlen(t->e_resu));
-    } else {
-        printf("Result VSprintf: \"%s\"\nLength VSprintf: %d\n", t->p_orig, (int)t->c_orig);
-    }
-    printf("Result LwPRINTF: \"%s\"\nLength LwPRINTF: %d\n", t->p_lwpr, (int)t->c_lwpr);
-
-    SetConsoleTextAttribute(GetStdHandle(STD_OUTPUT_HANDLE), t->pass ? FOREGROUND_GREEN : FOREGROUND_RED);
-    printf("Test result: %s\n", t->pass ? "Pass" : "Fail");
-    SetConsoleTextAttribute(GetStdHandle(STD_OUTPUT_HANDLE), FOREGROUND_RED | FOREGROUND_GREEN | FOREGROUND_BLUE);
-}
-
-int n;
+        char my_buffer[1234];                                                                                          \
+        int len = lwprintf_snprintf((buff_ptr), (buff_size), (fmt), ##__VA_ARGS__);                                    \
+        if (len != (exp_out_len)) {                                                                                    \
+            printf("Test error on line: %d\r\n", __LINE__);                                                            \
+            printf("Exp output len: %d, actual len: %d\r\n", (int)(exp_out_len), len);                                 \
+            tests_failed++;                                                                                            \
+        } else if ((buff_ptr) != NULL && strcmp(buff_ptr, exp_out) != 0) {                                             \
+            printf("Test error on line: %d\r\n", __LINE__);                                                            \
+            printf("Buffers do not match, expected: \"%s\", actual: \"%s\"\r\n", exp_out, buff_ptr);                   \
+            tests_failed++;                                                                                            \
+        } else {                                                                                                       \
+            tests_passed++;                                                                                            \
+        }                                                                                                              \
+                                                                                                                       \
+    } while (0)
 
 int
 main(void) {
     double num = 2123213213142.032;
     char test[123];
-
-    lwprintf_sprintf(test, "%d", 123);
-
-    (void)num;
+    char buffer[1024];
 
     lwprintf_init(lwprintf_output);
 
-    printf_run(NULL, "Precision: %3d, %.*g", 17, 17, 0.0001234567);
-    for (size_t i = 0; i < 20; ++i) {
-        printf_run(NULL, "Precision: %3d, %20.*g", i, i, 432432423.342321321);
-    }
-    for (size_t i = 0; i < 20; ++i) {
-        printf_run(NULL, "Precision: %3d, %20.*g", i, i, 0.0001234567);
-    }
-    for (size_t i = 0; i < strlen("Text string 123"); ++i) {
-        printf_run(NULL, "%.*s", i, "Text string 123");
-    }
+    /* Good tests */
+    do_test(buffer, sizeof(buffer), "               4e+08", 20, "%20.*g", 0, 432432423.342321321);
+    do_test(buffer, sizeof(buffer), "               4e+08", 20, "%20.*g", 1, 432432423.342321321);
+    do_test(buffer, sizeof(buffer), "             4.3e+08", 20, "%20.*g", 2, 432432423.342321321);
+    do_test(buffer, sizeof(buffer), "            4.32e+08", 20, "%20.*g", 3, 432432423.342321321);
+    do_test(buffer, sizeof(buffer), "           4.324e+08", 20, "%20.*g", 4, 432432423.342321321);
+    do_test(buffer, sizeof(buffer), "          4.3243e+08", 20, "%20.*g", 5, 432432423.342321321);
+    do_test(buffer, sizeof(buffer), "         4.32432e+08", 20, "%20.*g", 6, 432432423.342321321);
+    do_test(buffer, sizeof(buffer), "        4.324324e+08", 20, "%20.*g", 7, 432432423.342321321);
+    do_test(buffer, sizeof(buffer), "       4.3243242e+08", 20, "%20.*g", 8, 432432423.342321321);
+    do_test(buffer, sizeof(buffer), "           432432423", 20, "%20.*g", 9, 432432423.342321321);
+    do_test(buffer, sizeof(buffer), "         432432423.3", 20, "%20.*g", 10, 432432423.342321321);
+    do_test(buffer, sizeof(buffer), "        432432423.34", 20, "%20.*g", 11, 432432423.342321321);
+    do_test(buffer, sizeof(buffer), "       432432423.342", 20, "%20.*g", 12, 432432423.342321321);
+    do_test(buffer, sizeof(buffer), "      432432423.3423", 20, "%20.*g", 13, 432432423.342321321);
+    do_test(buffer, sizeof(buffer), "     432432423.34232", 20, "%20.*g", 14, 432432423.342321321);
+    do_test(buffer, sizeof(buffer), "    432432423.342321", 20, "%20.*g", 15, 432432423.342321321);
+    do_test(buffer, sizeof(buffer), "   432432423.3423213", 20, "%20.*g", 16, 432432423.342321321);
+    do_test(buffer, sizeof(buffer), "  432432423.34232134", 20, "%20.*g", 17, 432432423.342321321);
+    do_test(buffer, sizeof(buffer), " 432432423.342321336", 20, "%20.*g", 18, 432432423.342321321);
 
-    printf_run(NULL, "%.4f", 3.23321321);
-    printf_run(NULL, "%.45f", 3.23321321);
-    printf_run(NULL, "%.4F", 3.23321321);
-    printf_run(NULL, "%.45F", 3.23321321);
+    do_test(buffer, sizeof(buffer), "              0.0001", 20, "%20.*g", 0, 0.0001234567);
+    do_test(buffer, sizeof(buffer), "              0.0001", 20, "%20.*g", 1, 0.0001234567);
+    do_test(buffer, sizeof(buffer), "             0.00012", 20, "%20.*g", 2, 0.0001234567);
+    do_test(buffer, sizeof(buffer), "            0.000123", 20, "%20.*g", 3, 0.0001234567);
+    do_test(buffer, sizeof(buffer), "           0.0001235", 20, "%20.*g", 4, 0.0001234567);
+    do_test(buffer, sizeof(buffer), "          0.00012346", 20, "%20.*g", 5, 0.0001234567);
+    do_test(buffer, sizeof(buffer), "         0.000123457", 20, "%20.*g", 6, 0.0001234567);
+    do_test(buffer, sizeof(buffer), "        0.0001234567", 20, "%20.*g", 7, 0.0001234567);
+    do_test(buffer, sizeof(buffer), "        0.0001234567", 20, "%20.*g", 8, 0.0001234567);
+    do_test(buffer, sizeof(buffer), "        0.0001234567", 20, "%20.*g", 9, 0.0001234567);
+    do_test(buffer, sizeof(buffer), "        0.0001234567", 20, "%20.*g", 10, 0.0001234567);
+    do_test(buffer, sizeof(buffer), "        0.0001234567", 20, "%20.*g", 11, 0.0001234567);
+    do_test(buffer, sizeof(buffer), "        0.0001234567", 20, "%20.*g", 12, 0.0001234567);
+    do_test(buffer, sizeof(buffer), "        0.0001234567", 20, "%20.*g", 13, 0.0001234567);
+    do_test(buffer, sizeof(buffer), "        0.0001234567", 20, "%20.*g", 14, 0.0001234567);
+    do_test(buffer, sizeof(buffer), "        0.0001234567", 20, "%20.*g", 15, 0.0001234567);
+    do_test(buffer, sizeof(buffer), "        0.0001234567", 20, "%20.*g", 16, 0.0001234567);
+    do_test(buffer, sizeof(buffer), "        0.0001234567", 20, "%20.*g", 17, 0.0001234567);
+    do_test(buffer, sizeof(buffer), "        0.0001234567", 20, "%20.*g", 18, 0.0001234567);
+    do_test(buffer, sizeof(buffer), "        0.0001234567", 20, "%20.*g", 19, 0.0001234567);
 
-    printf_run(NULL, "%g", 1.23342);
-    printf_run(NULL, "%g", 12334.2);
-    printf_run(NULL, "%.8g", 0.000000123342);
-    printf_run(NULL, "%.8G", 0.000000123342);
+    do_test(buffer, sizeof(buffer), "3.2332", 6, "%.4f", 3.23321321);
+    do_test(buffer, sizeof(buffer), "1.23342", 7, "%g", 1.23342);
+    do_test(buffer, sizeof(buffer), "12334.2", 7, "%g", 12334.2);
+    do_test(buffer, sizeof(buffer), "1.23342e-07", 11, "%.8g", 0.000000123342);
+    do_test(buffer, sizeof(buffer), "1.23342E-07", 11, "%.8G", 0.000000123342);
+    do_test(buffer, sizeof(buffer), "323243432432432.4375", 20, "%.4f", 323243432432432.432);
+    do_test(buffer, sizeof(buffer), "-1.234560e+02", 13, "%e", -123.456);
+    do_test(buffer, sizeof(buffer), "1.000000e-06", 12, "%e", 0.000001);
+    do_test(buffer, sizeof(buffer), "1.234560e-01", 12, "%e", 0.123456);
+    do_test(buffer, sizeof(buffer), "-1.234560e-01", 13, "%e", -0.123456);
+    do_test(buffer, sizeof(buffer), "1.2346e+02", 10, "%.4e", 123.456);
+    do_test(buffer, sizeof(buffer), "-1.2346e+02", 11, "%.4e", -123.456);
+    do_test(buffer, sizeof(buffer), "1.2346e-01", 10, "%.4e", 0.123456);
+    do_test(buffer, sizeof(buffer), "-1.2346e-01", 11, "%.4e", -0.123456);
+    do_test(buffer, sizeof(buffer), "1e+02", 5, "%.0e", 123.456);
+    do_test(buffer, sizeof(buffer), "-1e+02", 6, "%.0e", -123.456);
+    do_test(buffer, sizeof(buffer), "1e-01", 5, "%.0e", 0.123456);
+    do_test(buffer, sizeof(buffer), "-1e-01", 6, "%.0e", -0.123456);
+    do_test(buffer, sizeof(buffer), "            1.2346e+02", 22, "%22.4e", 123.456);
+    do_test(buffer, sizeof(buffer), "           -1.2346e+02", 22, "%22.4e", -123.456);
+    do_test(buffer, sizeof(buffer), "            1.2346e-01", 22, "%22.4e", 0.123456);
+    do_test(buffer, sizeof(buffer), "           -1.2346e-01", 22, "%22.4e", -0.123456);
+    do_test(buffer, sizeof(buffer), "0000000000001.2346e+02", 22, "%022.4e", 123.456);
+    do_test(buffer, sizeof(buffer), "-000000000001.2346e+02", 22, "%022.4e", -123.456);
+    do_test(buffer, sizeof(buffer), "0000000000001.2346e-01", 22, "%022.4e", 0.123456);
+    do_test(buffer, sizeof(buffer), "1.234560e-09", 12, "%e", 0.00000000123456);
+    do_test(buffer, sizeof(buffer), "-000000000001.2346e-01", 22, "%022.4e", -0.123456);
+    do_test(buffer, sizeof(buffer), "-1.2346E+02", 11, "%.4E", -123.456);
+    do_test(buffer, sizeof(buffer), " 28", 3, "% 3u", (unsigned)28);
+    do_test(buffer, sizeof(buffer), "028", 3, "%03d", 28);
+    do_test(buffer, sizeof(buffer), "+28", 3, "%+03d", 28);
+    do_test(buffer, sizeof(buffer), "+28", 3, "%+3d", 28);
+    do_test(buffer, sizeof(buffer), "-28", 3, "%03d", -28);
+    do_test(buffer, sizeof(buffer), "-28", 3, "%+03d", -28);
+    do_test(buffer, sizeof(buffer), "-28", 3, "%+3d", -28);
+    do_test(buffer, sizeof(buffer), "123456", 6, "%03u", (unsigned)123456);
+    do_test(buffer, sizeof(buffer), "123456    abc", 13, "%-010uabc", (unsigned)123456);
+    do_test(buffer, sizeof(buffer), "0000123456abc", 13, "%010uabc", (unsigned)123456);
+    do_test(buffer, sizeof(buffer), "-123      ", 10, "%-10d", -123);
+    do_test(buffer, sizeof(buffer), "      -123", 10, "%10d", -123);
+    do_test(buffer, sizeof(buffer), "-1234567", 8, "%-06d", -1234567);
+    do_test(buffer, sizeof(buffer), "-1234567", 8, "%06d", -1234567);
+    do_test(buffer, sizeof(buffer), "-1234567  ", 10, "%-10d", -1234567);
+    do_test(buffer, sizeof(buffer), "  -1234567", 10, "%10d", -1234567);
+    do_test(buffer, sizeof(buffer), "-1234567  ", 10, "%-010d", -1234567);
+    do_test(buffer, sizeof(buffer), "-001234567", 10, "%010d", -1234567);
+    do_test(buffer, sizeof(buffer), "-000000123", 10, "%0*d", 10, -123);
+    do_test(buffer, sizeof(buffer), "10", 2, "%zu", (size_t)10);
+    do_test(buffer, sizeof(buffer), "10", 2, "%ju", (uintmax_t)10);
+    do_test(buffer, sizeof(buffer), " 1024", 5, "% d", 1024);
+    do_test(buffer, sizeof(buffer), " 1024", 5, "% 4d", 1024);
+    do_test(buffer, sizeof(buffer), " 1024", 5, "% 3d", 1024);
+    do_test(buffer, sizeof(buffer), " 32.687000", 10, "% 3f", 32.687);
 
-    printf_run(NULL, "%.4f", 323243432432432.432);
+    /* Strings */
+    do_test(buffer, sizeof(buffer), "", 0, "%.*s", 0, "Text string 123");
+    do_test(buffer, sizeof(buffer), "T", 1, "%.*s", 1, "Text string 123");
+    do_test(buffer, sizeof(buffer), "Te", 2, "%.*s", 2, "Text string 123");
+    do_test(buffer, sizeof(buffer), "Tex", 3, "%.*s", 3, "Text string 123");
+    do_test(buffer, sizeof(buffer), "Text", 4, "%.*s", 4, "Text string 123");
+    do_test(buffer, sizeof(buffer), "Text ", 5, "%.*s", 5, "Text string 123");
+    do_test(buffer, sizeof(buffer), "Text s", 6, "%.*s", 6, "Text string 123");
+    do_test(buffer, sizeof(buffer), "Text st", 7, "%.*s", 7, "Text string 123");
+    do_test(buffer, sizeof(buffer), "Text str", 8, "%.*s", 8, "Text string 123");
+    do_test(buffer, sizeof(buffer), "Text stri", 9, "%.*s", 9, "Text string 123");
+    do_test(buffer, sizeof(buffer), "Text strin", 10, "%.*s", 10, "Text string 123");
+    do_test(buffer, sizeof(buffer), "Text string", 11, "%.*s", 11, "Text string 123");
+    do_test(buffer, sizeof(buffer), "Text string ", 12, "%.*s", 12, "Text string 123");
+    do_test(buffer, sizeof(buffer), "Text string 1", 13, "%.*s", 13, "Text string 123");
+    do_test(buffer, sizeof(buffer), "Text string 12", 14, "%.*s", 14, "Text string 123");
 
-    /* Engineering tests */
-    printf_run(NULL, "%e", -123.456);
-    printf_run(NULL, "%e", 0.000001);
-    printf_run(NULL, "%e", 0.123456);
-    printf_run(NULL, "%e", -0.123456);
-    printf_run(NULL, "%.4e", 123.456);
-    printf_run(NULL, "%.4e", -123.456);
-    printf_run(NULL, "%.4e", 0.123456);
-    printf_run(NULL, "%.4e", -0.123456);
-    printf_run(NULL, "%.0e", 123.456);
-    printf_run(NULL, "%.0e", -123.456);
-    printf_run(NULL, "%.0e", 0.123456);
-    printf_run(NULL, "%.0e", -0.123456);
-    printf_run(NULL, "%22.4e", 123.456);
-    printf_run(NULL, "%22.4e", -123.456);
-    printf_run(NULL, "%22.4e", 0.123456);
-    printf_run(NULL, "%22.4e", -0.123456);
-    printf_run(NULL, "%022.4e", 123.456);
-    printf_run(NULL, "%022.4e", -123.456);
-    printf_run(NULL, "%022.4e", 0.123456);
-    printf_run(NULL, "%e", 0.00000000123456);
-    printf_run(NULL, "%022.4e", -0.123456);
+    do_test(buffer, sizeof(buffer), "This is my string", 17, "%s", "This is my string");
+    do_test(buffer, sizeof(buffer), "This is my string", 17, "%10s", "This is my string");
+    do_test(buffer, sizeof(buffer), "This is my s", 12, "%*.*s", 8, 12, "This is my string");
+    do_test(buffer, sizeof(buffer), "    Stri", 8, "%*.*s", 8, 12, "Stri");
+    do_test(buffer, sizeof(buffer), "This is my", 10, "%-6.10s", "This is my string");
+    do_test(buffer, sizeof(buffer), "This is my", 10, "%6.10s", "This is my string");
+    do_test(buffer, sizeof(buffer), "This is my", 10, "%-6.10s", "This is my string");
+    do_test(buffer, sizeof(buffer), "    Th", 6, "%6.10s", "Th");
+    do_test(buffer, sizeof(buffer), "Th    ", 6, "%-6.10s", "Th");
+    do_test(buffer, sizeof(buffer), "Th    ", 6, "%*.*s", -6, 10, "Th");
+    do_test(buffer, sizeof(buffer), "    Th", 6, "%*.*s", 6, 10, "Th");
+    do_test(buffer, sizeof(buffer), "This", 4, "%.4s", "This is my string");
+    do_test(buffer, sizeof(buffer), "1234", 4, "%.6s", "1234");
+    do_test(buffer, sizeof(buffer), "stri", 4, "%.4s", "stri");
+    do_test(buffer, sizeof(buffer), "1234ab", 6, "%.4s%.2s", "123456", "abcdef");
+    do_test(buffer, sizeof(buffer), "123", 3, "%.*s", 3, "123456");
+    do_test(buffer, sizeof(buffer), "", 0, "%.3s", "");
 
-    /* Add zeros if unused... tbd */
-    printf_run(NULL, "%22.33e", 123.456);
-    printf_run(NULL, "%22.33e", -123.456);
-    printf_run(NULL, "%22.33e", 0.123456);
-    printf_run(NULL, "%22.33e", -0.123456);
-    printf_run(NULL, "%.4E", -123.456);
+    /* Hexadecimal */
+    do_test(buffer, sizeof(buffer), "0X7B", 4, "%#2X", 123);
+    do_test(buffer, sizeof(buffer), "0x7b", 4, "%#2x", 123);
+    do_test(buffer, sizeof(buffer), "0173", 4, "%#2o", 123);
+    do_test(buffer, sizeof(buffer), "0X1", 3, "%#2X", 1);
+    do_test(buffer, sizeof(buffer), "0x1", 3, "%#2x", 1);
+    do_test(buffer, sizeof(buffer), "01", 2, "%#2o", 1);
+    do_test(buffer, sizeof(buffer), " 0", 2, "%#2X", 0);
+    do_test(buffer, sizeof(buffer), " 0", 2, "%#2x", 0);
+    do_test(buffer, sizeof(buffer), " 0", 2, "%#2o", 0);
 
-    printf_run(NULL, "% 3u", (unsigned)28);
-    printf_run(NULL, "% 3u", (unsigned)123456);
-    printf_run(NULL, "%03d", 28);
-    printf_run(NULL, "%+03d", 28);
-    printf_run(NULL, "%+3d", 28);
-    printf_run(NULL, "%03d", -28);
-    printf_run(NULL, "%+03d", -28);
-    printf_run(NULL, "%+3d", -28);
-    printf_run(NULL, "%03u", (unsigned)123456);
-    printf_run(NULL, "%-010uabc", (unsigned)123456);
-    printf_run(NULL, "%010uabc", (unsigned)123456);
-    printf_run(NULL, "%-10d", -123);
-    printf_run(NULL, "%10d", -123);
-    printf_run(NULL, "%-06d", -1234567);
-    printf_run(NULL, "%06d", -1234567);
-    printf_run(NULL, "%-10d", -1234567);
-    printf_run(NULL, "%10d", -1234567);
-    printf_run(NULL, "%-010d", -1234567);
-    printf_run(NULL, "%010d", -1234567);
-    printf_run(NULL, "%s", "This is my string");
-    printf_run(NULL, "%10s", "This is my string");
-    printf_run(NULL, "%0*d", 10, -123);
-    printf_run(NULL, "%zu", (size_t)10);
-    printf_run(NULL, "%ju", (uintmax_t)10);
-    printf_run(NULL, "% d", 1024);
-    printf_run(NULL, "% 4d", 1024);
-    printf_run(NULL, "% 3d", 1024);
-    printf_run(NULL, "% 3f", 32.687);
+    /* Pointer */
+    void* my_pointer = (void*)0x12345678;
+    do_test(buffer, sizeof(buffer), "12345678", 8, "%p", my_pointer);
+    do_test(buffer, sizeof(buffer), "0X12345678", 10, "0X%p", my_pointer);
+    do_test(buffer, sizeof(buffer), "0x12345678", 10, "0x%p", my_pointer);
 
-    /* string */
-    printf_run(NULL, "%*.*s", 8, 12, "This is my string");
-    printf_run(NULL, "%*.*s", 8, 12, "Stri");
-    printf_run(NULL, "%-6.10s", "This is my string");
-    printf_run(NULL, "%6.10s", "This is my string");
-    printf_run(NULL, "%-6.10s", "This is my string");
-    printf_run(NULL, "%6.10s", "Th");
-    printf_run(NULL, "%-6.10s", "Th");
-    printf_run(NULL, "%*.*s", -6, 10, "Th");
-    printf_run(NULL, "%*.*s", 6, 10, "Th");
+    /* Binary data */
+    do_test(buffer, sizeof(buffer), "1111011 abc", 11, "%llb abc", 123);
+    do_test(buffer, sizeof(buffer), "100", 3, "%b", 4);
+    do_test(buffer, sizeof(buffer), "0B1", 3, "%#2B", 1);
+    do_test(buffer, sizeof(buffer), "0b1", 3, "%#2b", 1);
+    do_test(buffer, sizeof(buffer), " 0", 2, "%#2B", 0);
+    do_test(buffer, sizeof(buffer), " 0", 2, "%#2b", 0);
+    do_test(buffer, sizeof(buffer), "0", 1, "%#B", 0);
+    do_test(buffer, sizeof(buffer), "0", 1, "%#b", 0);
+    do_test(buffer, sizeof(buffer), "0B110", 5, "%#B", 6);
+    do_test(buffer, sizeof(buffer), "0b110", 5, "%#b", 6);
 
-    printf_run(NULL, "%.4s", "This is my string");
-    printf_run(NULL, "%.6s", "1234");
-    printf_run(NULL, "%.4s", "stri");
-    printf_run(NULL, "%.4s%.2s", "123456", "abcdef");
-    printf_run(NULL, "%.4.2s", "123456");
-    printf_run(NULL, "%.*s", 3, "123456");
-    printf_run(NULL, "%.3s", "");
-    printf_run(NULL, "%yunknown", "");
-
-    /* Source string which exceeds output buffer size */
-    //  char c[TEST_BUF_SIZE + 10];
-    //  memset(c, 0x5a5a5a5a, sizeof(c));
-    //  printf_run(NULL, "%s", c);
-
-    /* Alternate form */
-    printf_run(NULL, "%#2X", 123);
-    printf_run(NULL, "%#2x", 123);
-    printf_run(NULL, "%#2o", 123);
-    printf_run(NULL, "%#2X", 1);
-    printf_run(NULL, "%#2x", 1);
-    printf_run(NULL, "%#2o", 1);
-    printf_run(NULL, "%#2X", 0);
-    printf_run(NULL, "%#2x", 0);
-    printf_run(NULL, "%#2o", 0);
-
-    /* Pointers */
-    printf_run(NULL, "%p", &tests_passed);
-    printf_run(NULL, "0X%p", &tests_passed);
-    printf_run(NULL, "0x%p", &tests_passed);
-
-    /* Those are additional, not supported in classic printf implementation */
-
-    /* Binary */
-    printf_run("1111011 abc", "%llb abc", 123);
-    printf_run("100", "%b", 4);
-    printf_run("0B1", "%#2B", 1);
-    printf_run("0b1", "%#2b", 1);
-    printf_run(" 0", "%#2B", 0);
-    printf_run(" 0", "%#2b", 0);
-    printf_run("0", "%#B", 0);
-    printf_run("0", "%#b", 0);
-    printf_run("0B110", "%#B", 6);
-    printf_run("0b110", "%#b", 6);
-
-    /* Array test */
+    /* Hex data */
     uint8_t my_arr[] = {0x01, 0x02, 0xB5, 0xC6, 0xD7};
-    printf_run("0102B5C6D7", "%5K", my_arr);
-    printf_run("0102B5", "%*K", 3, my_arr);
-    printf_run("01 02 B5", "% *K", 3, my_arr);
-    printf_run("0102b5c6d7", "%5k", my_arr);
-    printf_run("0102b5", "%*k", 3, my_arr);
-    printf_run("01 02 b5", "% *k", 3, my_arr);
+    do_test(buffer, sizeof(buffer), "0102B5C6D7", 10, "%5K", my_arr);
+    do_test(buffer, sizeof(buffer), "0102B5", 6, "%*K", 3, my_arr);
+    do_test(buffer, sizeof(buffer), "01 02 B5", 8, "% *K", 3, my_arr);
+    do_test(buffer, sizeof(buffer), "0102b5c6d7", 10, "%5k", my_arr);
+    do_test(buffer, sizeof(buffer), "0102b5", 6, "%*k", 3, my_arr);
+    do_test(buffer, sizeof(buffer), "01 02 b5", 8, "% *k", 3, my_arr);
 
-    /* Check snprintf */
-    int ret = lwprintf_snprintf(NULL, 0, "test");
-    if (ret != 4) {
-        printf("SNPRINTF test failed\r\n");
-        return 0;
-    }
-
-    char buf[5] = {0};
-    ret = lwprintf_snprintf(buf, sizeof(buf) - 1, "Hello World!");
-    if (ret != 12) {
-        printf("SNPRINTF test failed\r\n");
-        return 0;
-    }
-
-    goto test_result;
-test_result:
-#if 1
-    /* Tests that failed */
-    printf("------------------------\n\n");
-    printf("Negative tests\n\n");
-    for (size_t i = 0; i < tests_cnt; ++i) {
-        test_data_t* t = &tests[i];
-
-        if (!t->pass) {
-            output_test_result(t);
-        }
-    }
-#endif
+    /* Length and data return */
+    do_test(NULL, 0, "", 4, "test");
+    do_test(buffer, sizeof(buffer), "Hello World!", 12, "Hello World!");
 
 #if 0
-    /* Tests that went through */
-    printf("------------------------\n\n");
-    printf("Positive tests\n\n");
-    for (size_t i = 0; i < tests_cnt; ++i) {
-        test_data_t* t = &tests[i];
+    /* Problematic tests */
+    do_test(buffer, sizeof(buffer), "0.000123456700005", 17, "%.*g", 17, 17, 0.0001234567);
 
-        if (t->pass) {
-            output_test_result(t);
-        }
-    }
+    do_test(buffer, sizeof(buffer), "3.233213210000005056000000000000000000000000000", 47, "%.45f", 3.23321321);
+    do_test(buffer, sizeof(buffer), "3.233213210000005056000000000000000000000000000", 47, "%.45F", 3.23321321);
+    do_test(buffer, sizeof(buffer), "123456", 6, "% 3u", (unsigned)123456);
+    do_test(buffer, sizeof(buffer), "1.234560000000005216000000000000000e+02", 39, "%22.33e", 123.456);
+    do_test(buffer, sizeof(buffer), "-1.234560000000005216000000000000000e+02", 40, "%22.33e", -123.456);
+    do_test(buffer, sizeof(buffer), "1.234560000000004992000000000000000e-01", 39, "%22.33e", 0.123456);
+    do_test(buffer, sizeof(buffer), "-1.234560000000004992000000000000000e-01", 40, "%22.33e", -0.123456);
+    do_test(buffer, sizeof(buffer), ".2s", 3, "%.4.2s", "123456");
+    do_test(buffer, sizeof(buffer), "yunknown", 8, "%yunknown", "");
 #endif
 
-    /* Print final output */
-    printf("------------------------\n");
-    printf("Number of tests run: %d\n", (int)(tests_passed + tests_failed));
-    printf("Number of tests passed: %d\n", (int)tests_passed);
-    printf("Number of tests failed: %d\n", (int)tests_failed);
-    printf("Coverage: %f %%\n", (float)((tests_passed * 100) / ((float)(tests_passed + tests_failed))));
-    return 0;
+    printf("--------\r\n");
+    printf("Tests passed: %u\r\n", (unsigned)(tests_passed));
+    printf("Tests failed: %u\r\n", (unsigned)(tests_failed));
+    printf("Tests total : %u\r\n", (unsigned)(tests_passed + tests_failed));
+    printf("Coverage    : %f\r\n", (float)(tests_passed) / (float)(tests_passed + tests_failed));
 }
