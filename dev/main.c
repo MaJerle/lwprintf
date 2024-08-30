@@ -26,7 +26,6 @@ size_t tests_passed, tests_failed;
 
 #define do_test(buff_ptr, buff_size, exp_out, exp_out_len, fmt, ...)                                                   \
     do {                                                                                                               \
-        char my_buffer[1234];                                                                                          \
         int len = lwprintf_snprintf((buff_ptr), (buff_size), (fmt), ##__VA_ARGS__);                                    \
         if (len != (exp_out_len)) {                                                                                    \
             printf("Test error on line: %d\r\n", __LINE__);                                                            \
@@ -120,6 +119,10 @@ main(void) {
     do_test(buffer, sizeof(buffer), "1.234560e-09", 12, "%e", 0.00000000123456);
     do_test(buffer, sizeof(buffer), "-000000000001.2346e-01", 22, "%022.4e", -0.123456);
     do_test(buffer, sizeof(buffer), "-1.2346E+02", 11, "%.4E", -123.456);
+    do_test(buffer, sizeof(buffer), "0", 1, "%d", 0);
+    do_test(buffer, sizeof(buffer), "1", 1, "%d", 1);
+    do_test(buffer, sizeof(buffer), "10", 2, "%d", 10);
+    do_test(buffer, sizeof(buffer), "140", 3, "%d", 140);
     do_test(buffer, sizeof(buffer), " 28", 3, "% 3u", (unsigned)28);
     do_test(buffer, sizeof(buffer), "028", 3, "%03d", 28);
     do_test(buffer, sizeof(buffer), "+28", 3, "%+03d", 28);

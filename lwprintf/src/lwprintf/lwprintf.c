@@ -359,30 +359,27 @@ prv_out_str(lwprintf_int_t* lwi, const char* buff, size_t buff_size) {
  */
 static int
 prv_longest_unsigned_int_to_str(lwprintf_int_t* lwi, uint_maxtype_t num) {
-    uint_maxtype_t den, digit;
-    uint8_t digits_cnt;
-    char chr;
+    /* Start with digits length, support binary with int, that is 32-bits maximum width */
+    char num_buf[33], *num_buf_ptr = &num_buf[sizeof(num_buf)];
 
     /* Check if number is zero */
-    lwi->m.flags.is_num_zero = (num) == 0;
-    if ((num) == 0) {
-        prv_out_str_before(lwi, 1);
-        lwi->out_fn(lwi, '0');
-        prv_out_str_after(lwi, 1);
-    } else { /* Start with digits length */
-        for (digits_cnt = 0, den = (num); den > 0; ++digits_cnt, den /= lwi->m.base) {}
-        for (den = 1; ((num) / den) >= lwi->m.base; den *= lwi->m.base) {}
+    lwi->m.flags.is_num_zero = num == 0;
 
-        prv_out_str_before(lwi, digits_cnt);
-        for (; den > 0;) {
-            digit = (num) / den;
-            (num) = (num) % den;
-            den = den / lwi->m.base;
-            chr = (char)digit + (char)(digit >= 10 ? ((lwi->m.flags.uc ? 'A' : 'a') - 10) : '0');
-            lwi->out_fn(lwi, chr);
-        }
-        prv_out_str_after(lwi, digits_cnt);
+    /* Fill the buffer backward */
+    *--num_buf_ptr = '\0';
+    do {
+        int digit = num % lwi->m.base;
+        num /= lwi->m.base;
+        *--num_buf_ptr = (char)digit + (char)(digit >= 10 ? ((lwi->m.flags.uc ? 'A' : 'a') - 10) : '0');
+    } while (num > 0);
+
+    /* Calculate and generate the output */
+    size_t len = sizeof(num_buf) - (size_t)((uintptr_t)num_buf_ptr - (uintptr_t)num_buf) - 1;
+    prv_out_str_before(lwi, len);
+    for (; *num_buf_ptr;) {
+        lwi->out_fn(lwi, *num_buf_ptr++);
     }
+    prv_out_str_after(lwi, len);
     return 1;
 }
 
