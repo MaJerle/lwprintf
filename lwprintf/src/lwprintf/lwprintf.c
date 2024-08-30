@@ -909,11 +909,11 @@ prv_format(lwprintf_int_t* lwi, va_list arg) {
                 } else if (lwi->m.flags.umax_t) {
                     prv_longest_unsigned_int_to_str(lwi, (uint_maxtype_t)va_arg(arg, uintmax_t));
                 } else if (lwi->m.flags.longlong == 0 || lwi->m.base == 2) {
-                    uint_maxtype_t v;
+                    uint_maxtype_t v = va_arg(arg, unsigned int);
                     switch (lwi->m.flags.char_short) {
-                        case 2: v = (uint_maxtype_t)va_arg(arg, unsigned int); break;
-                        case 1: v = (uint_maxtype_t)va_arg(arg, unsigned int); break;
-                        default: v = (uint_maxtype_t)va_arg(arg, unsigned int); break;
+                        case 2: v = (uint_maxtype_t)((unsigned char)v); break;
+                        case 1: v = (uint_maxtype_t)((unsigned short int)v); break;
+                        default: v = (uint_maxtype_t)((unsigned int)v); break;
                     }
                     prv_longest_unsigned_int_to_str(lwi, v);
                 } else if (lwi->m.flags.longlong == 1) {
