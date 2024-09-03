@@ -1,4 +1,4 @@
-# 
+#
 # LIB_PREFIX: LWPRINTF
 #
 # This file provides set of variables for end user
@@ -16,7 +16,7 @@
 set(LWPRINTF_CUSTOM_INC_DIR ${CMAKE_CURRENT_BINARY_DIR}/lib_inc)
 
 # Library core sources
-set(lwprintf_core_SRCS 
+set(lwprintf_core_SRCS
     ${CMAKE_CURRENT_LIST_DIR}/src/lwprintf/lwprintf.c
 )
 
@@ -35,9 +35,9 @@ set(lwprintf_include_DIRS
 )
 
 # Register library to the system
-add_library(lwprintf INTERFACE)
-target_sources(lwprintf INTERFACE ${lwprintf_core_SRCS})
-target_include_directories(lwprintf INTERFACE ${lwprintf_include_DIRS})
+add_library(lwprintf)
+target_sources(lwprintf PRIVATE ${lwprintf_core_SRCS})
+target_include_directories(lwprintf PUBLIC ${lwprintf_include_DIRS})
 target_compile_options(lwprintf PRIVATE ${LWPRINTF_COMPILE_OPTIONS})
 target_compile_definitions(lwprintf PRIVATE ${LWPRINTF_COMPILE_DEFINITIONS})
 
@@ -48,4 +48,5 @@ if(NOT LWPRINTF_OPTS_FILE)
 else()
     message(STATUS "Using custom lwprintf_opts.h file from ${LWPRINTF_OPTS_FILE}")
 endif()
+
 configure_file(${LWPRINTF_OPTS_FILE} ${LWPRINTF_CUSTOM_INC_DIR}/lwprintf_opts.h COPYONLY)

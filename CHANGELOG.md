@@ -2,6 +2,8 @@
 
 ## Develop
 
+- Rework library CMake with removed INTERFACE type
+
 ## v1.0.6
 
 - Add `lwprintf_debug` and `lwprintf_debug_cond` functions
