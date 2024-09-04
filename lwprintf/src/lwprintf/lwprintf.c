@@ -390,9 +390,9 @@ prv_longest_unsigned_int_to_str(lwprintf_int_t* lwi, uint_maxtype_t num) {
  * \return          `1` on success, `0` otherwise
  */
 static int
-prv_longest_signed_int_to_str(lwprintf_int_t* lwi, signed long int num) {
+prv_longest_signed_int_to_str(lwprintf_int_t* lwi, int_maxtype_t num) {
     SIGNED_CHECK_NEGATIVE(lwi, num);
-    return prv_longest_unsigned_int_to_str(lwi, num);
+    return prv_longest_unsigned_int_to_str(lwi, (uint_maxtype_t)num);
 }
 
 /**
