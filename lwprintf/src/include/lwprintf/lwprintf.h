@@ -81,6 +81,7 @@ typedef int (*lwprintf_output_fn)(int ch, struct lwprintf* lwobj);
  */
 typedef struct lwprintf {
     lwprintf_output_fn out_fn; /*!< Output function for direct print operations */
+    void* arg;                 /*!< Custom user argument */
 #if LWPRINTF_CFG_OS || __DOXYGEN__
     LWPRINTF_CFG_OS_MUTEX_HANDLE mutex; /*!< OS mutex handle */
 #endif                                  /* LWPRINTF_CFG_OS || __DOXYGEN__ */
@@ -93,6 +94,10 @@ int lwprintf_vsnprintf_ex(lwprintf_t* const lwobj, char* s, size_t n, const char
 int lwprintf_snprintf_ex(lwprintf_t* const lwobj, char* s, size_t n, const char* format, ...);
 uint8_t lwprintf_protect_ex(lwprintf_t* const lwobj);
 uint8_t lwprintf_unprotect_ex(lwprintf_t* const lwobj);
+
+/* Argument management */
+#define lwprintf_set_arg(lwobj, argval)            (lwobj)->arg = (argval)
+#define lwprintf_get_arg(lwobj)                    ((lwobj)->arg)
 
 /**
  * \brief           Write formatted data from variable argument list to sized buffer
