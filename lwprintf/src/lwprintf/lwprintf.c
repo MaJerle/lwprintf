@@ -361,6 +361,8 @@ static int
 prv_longest_unsigned_int_to_str(lwprintf_int_t* lwi, uint_maxtype_t num) {
     /* Start with digits length, support binary with int, that is 32-bits maximum width */
     char num_buf[33], *num_buf_ptr = &num_buf[sizeof(num_buf)];
+    char adder_ch = (lwi->m.flags.uc ? 'A' : 'a') - 10;
+    size_t len = 0;
 
     /* Check if number is zero */
     lwi->m.flags.is_num_zero = num == 0;
@@ -370,11 +372,11 @@ prv_longest_unsigned_int_to_str(lwprintf_int_t* lwi, uint_maxtype_t num) {
     do {
         int digit = num % lwi->m.base;
         num /= lwi->m.base;
-        *--num_buf_ptr = (char)digit + (char)(digit >= 10 ? ((lwi->m.flags.uc ? 'A' : 'a') - 10) : '0');
+        *--num_buf_ptr = (char)digit + (char)(digit >= 10 ? adder_ch : '0');
     } while (num > 0);
 
     /* Calculate and generate the output */
-    size_t len = sizeof(num_buf) - (size_t)((uintptr_t)num_buf_ptr - (uintptr_t)num_buf) - 1;
+    len = sizeof(num_buf) - (size_t)((uintptr_t)num_buf_ptr - (uintptr_t)num_buf) - 1;
     prv_out_str_before(lwi, len);
     for (; *num_buf_ptr;) {
         lwi->out_fn(lwi, *num_buf_ptr++);
