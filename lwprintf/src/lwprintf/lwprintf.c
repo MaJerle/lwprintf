@@ -179,7 +179,8 @@ prv_out_fn_print(lwprintf_int_t* lwi, const char chr) {
     if (lwi->is_print_cancelled) {
         return 0;
     }
-    /*!< Send character to output */
+
+    /* Send character to output */
     if (!lwi->lwobj->out_fn(chr, lwi->lwobj)) {
         lwi->is_print_cancelled = 1;
     }
@@ -216,13 +217,11 @@ prv_out_fn_write_buff(lwprintf_int_t* lwi, const char chr) {
  */
 static int
 prv_parse_num(const char** format) {
-    const char* fmt = *format;
     int num = 0;
 
-    for (; CHARISNUM(*fmt); ++fmt) {
-        num = (int)10 * num + CHARTONUM(*fmt);
+    for (; CHARISNUM(**format); ++(*format)) {
+        num = (int)10 * num + CHARTONUM(**format);
     }
-    *format = fmt;
     return num;
 }
 
@@ -615,13 +614,8 @@ prv_double_to_str(lwprintf_int_t* lwi, double in_num) {
     if (def_type == 'g') {
         /* As per standard to decide level of precision */
         if (exp_cnt >= -4 && exp_cnt < lwi->m.precision) {
-            if (lwi->m.precision > exp_cnt) {
-                lwi->m.precision -= exp_cnt + 1;
-                chosen_precision -= exp_cnt + 1;
-            } else {
-                lwi->m.precision = 0;
-                chosen_precision = 0;
-            }
+            lwi->m.precision -= exp_cnt + 1;
+            chosen_precision -= exp_cnt + 1;
             lwi->m.type = 'f';
             in_num = orig_num;
         } else {
