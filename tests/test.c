@@ -215,6 +215,29 @@ test_printf(void) {
     do_test(buffer, sizeof(buffer), "0B110", 5, "%#B", 6);
     do_test(buffer, sizeof(buffer), "0b110", 5, "%#b", 6);
 
+    /*
+     * Regression: full-width binary output must not underflow num_buf (previously fixed
+     * 33-byte buffer regardless of type width) nor silently truncate a "ll"-qualified
+     * argument to 32-bit. Expected strings are sized off the real type width so the test
+     * stays correct on both 32-bit and 64-bit builds.
+     */
+    {
+        char full_ones[8 * sizeof(unsigned long long) + 1];
+
+        memset(full_ones, '1', 8 * sizeof(size_t));
+        full_ones[8 * sizeof(size_t)] = '\0';
+        do_test(buffer, sizeof(buffer), full_ones, (int)(8 * sizeof(size_t)), "%zb", (size_t)-1);
+
+        memset(full_ones, '1', 8 * sizeof(uintmax_t));
+        full_ones[8 * sizeof(uintmax_t)] = '\0';
+        do_test(buffer, sizeof(buffer), full_ones, (int)(8 * sizeof(uintmax_t)), "%jb", (uintmax_t)-1);
+
+        memset(full_ones, '1', 8 * sizeof(unsigned long long));
+        full_ones[8 * sizeof(unsigned long long)] = '\0';
+        do_test(buffer, sizeof(buffer), full_ones, (int)(8 * sizeof(unsigned long long)), "%llb",
+                (unsigned long long)-1);
+    }
+
     /* Hex data */
     uint8_t my_arr[] = {0x01, 0x02, 0xB5, 0xC6, 0xD7};
     do_test(buffer, sizeof(buffer), "0102B5C6D7", 10, "%5K", my_arr);

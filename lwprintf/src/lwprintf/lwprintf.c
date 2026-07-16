@@ -358,8 +358,8 @@ prv_out_str(lwprintf_int_t* lwi, const char* buff, size_t buff_size) {
  */
 static int
 prv_longest_unsigned_int_to_str(lwprintf_int_t* lwi, uint_maxtype_t num) {
-    /* Start with digits length, support binary with int, that is 32-bits maximum width */
-    char num_buf[33], *num_buf_ptr = &num_buf[sizeof(num_buf)];
+    /* Size buffer for the widest supported type (binary base needs one char per bit) */
+    char num_buf[8 * sizeof(uint_maxtype_t) + 1], *num_buf_ptr = &num_buf[sizeof(num_buf)];
     char adder_ch = (lwi->m.flags.uc ? 'A' : 'a') - 10;
     size_t len = 0;
 
@@ -906,7 +906,7 @@ prv_format(lwprintf_int_t* lwi, va_list arg) {
                     prv_longest_unsigned_int_to_str(lwi, (uint_maxtype_t)va_arg(arg, size_t));
                 } else if (lwi->m.flags.umax_t) {
                     prv_longest_unsigned_int_to_str(lwi, (uint_maxtype_t)va_arg(arg, uintmax_t));
-                } else if (lwi->m.flags.longlong == 0 || lwi->m.base == 2) {
+                } else if (lwi->m.flags.longlong == 0) {
                     uint_maxtype_t v = va_arg(arg, unsigned int);
                     switch (lwi->m.flags.char_short) {
                         case 2: v = (uint_maxtype_t)((unsigned char)v); break;
