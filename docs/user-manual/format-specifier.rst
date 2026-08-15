@@ -153,17 +153,29 @@ Notes about float types
 ^^^^^^^^^^^^^^^^^^^^^^^
 
 It is important to understand how library works under the hood to understand limitations on floating-point numbers.
+Conversion uses plain integer/``double`` math only, with no arbitrary-precision (bignum) support,
+in order to keep the implementation small and fast enough for embedded systems.
 When it comes to level of precision, maximum number of digits is linked to support ``long`` or ``long long`` integer types.
 
 .. note::
     When ``long long`` type is supported by the compiler (usually part of C99 or later),
     maximum number of valid digits is ``18``, or ``9`` digits if system supports only ``long`` data types.
 
-If application tries to use more precision digits than maximum, remaining digits are automatically printed as all ``0``.
-As a consequence, output using LwPRINTF library may be different in comparison to other ``printf`` implementations.
+If application requests more precision digits than the maximum, only the digits up to that maximum are computed;
+any remaining requested digits beyond it are printed as ``0``.
+Digits *within* the supported maximum are computed using native ``double`` arithmetic, which itself only carries
+about 15-17 significant decimal digits, so requesting close to the maximum precision can still return digits
+that do not exactly match a correctly-rounding ``printf`` implementation (glibc, MSVC, ...).
+As a consequence, output using LwPRINTF library may be different in comparison to other ``printf`` implementations
+once you get close to or beyond this range - this is a deliberate trade-off for code size and speed, not a bug.
+
+Separately, once the *magnitude* of a number exceeds the maximum digit count above (i.e. ``>= 1e18`` with
+``long long`` support, or ``>= 1e9`` without it), ``%f``/``%F`` falls back to scientific (``%e``-style)
+notation instead of printing the full integer part. Standard ``printf`` implementations always keep ``%f`` in
+fixed-point notation regardless of magnitude, so this is another point where output can diverge.
 
 .. tip::
-    Float data type supports up to ``7`` and double up to ``15``.
+    Float data type supports up to ``7`` and double up to ``15`` digits of precision.
 
 Additional specifier types
 **************************

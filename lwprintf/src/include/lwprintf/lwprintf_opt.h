@@ -117,8 +117,18 @@ extern "C" {
 
 /**
  * \brief           Enables `1` or disables `0` support `%f` and  basic float type.
- * 
+ *
  * This feature is a prerequisite feature be enabled for any floating point types (`%e`, `%E`, `%g`, `%G`, `%a`, `%A`, `%f`, `%F`).
+ *
+ * \note            Numbers are split into integer and decimal part using native integer math,
+ *                  with no arbitrary-precision (bignum) support, to keep the implementation simple
+ *                  and fast enough for embedded systems.
+ *                  Maximum number of representable integer digits therefore depends on
+ *                  \ref LWPRINTF_CFG_SUPPORT_LONG_LONG: `18` digits when enabled, or `9` when disabled.
+ *                  Once the magnitude of the number exceeds this limit, `%f`/`%F` silently falls back
+ *                  to scientific (`%e`-style) notation instead of printing the full integer part,
+ *                  which is different from standard `printf` implementations that always keep `%f` in
+ *                  fixed-point notation regardless of magnitude.
  */
 #ifndef LWPRINTF_CFG_SUPPORT_TYPE_FLOAT
 #define LWPRINTF_CFG_SUPPORT_TYPE_FLOAT 1

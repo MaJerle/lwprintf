@@ -440,6 +440,10 @@ prv_calculate_dbl_num_data(lwprintf_int_t* lwi, float_num_t* n, double num, cons
      * decimal_part = 3456          -> Integer part of decimal number
      * diff = 0.78                  -> Difference between actual decimal and integer part of decimal
      *                                  This is used for rounding of last digit (if necessary)
+     *
+     * Note: the epsilon below is a fixed constant, not scaled to `num`, so it can occasionally round
+     * a non-tie value the "wrong" way. Also, exact ties always round away from zero here, while
+     * glibc/MSVC round ties to even. Both cause output to differ from those libraries in edge cases.
      */
     num += 0.000000000000005;
     n->integer_part = (float_long_t)num;
@@ -545,7 +549,7 @@ prv_double_to_str(lwprintf_int_t* lwi, double in_num) {
 #endif                                /* LWPRINTF_CFG_SUPPORT_TYPE_ENGINEERING */
     }
 
-    /* Check sign of the number */
+    /* Check sign of the number. Note: -0.0 is not caught by `< 0`, so it prints as "0.0" instead of "-0.0" */
     SIGNED_CHECK_NEGATIVE(lwi, in_num);
     orig_num = in_num;
 
