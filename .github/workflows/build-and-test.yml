@@ -1,35 +1,26 @@
-name: Windows CMake Build & Test
+name: CMake Build & Test
 
 on:
   push:
     branches:
       - develop
+      - test
   pull_request:
     branches:
       - develop
 
 jobs:
   build:
-    runs-on: windows-latest
+    runs-on: ubuntu-latest
 
     steps:
       - name: Checkout Repository
         uses: actions/checkout@v4
 
-      - name: Install MinGW
-        run: |
-          choco install mingw --version=12.2.0 -y
-          echo "C:\ProgramData\chocolatey\lib\mingw\tools\install\mingw64\bin" >> $GITHUB_PATH
-          gcc --version
-
-      - name: Build for 32-bit
-        run: |
-          mkdir __build__
-          cd __build__
-          cmake -S.. -T host=x86 -A Win32
-          cmake --build .
+      - name: Install build tools
+        run: sudo apt-get update && sudo apt-get install -y ninja-build gcc-multilib g++-multilib
 
       - name: Run Tests
-        working-directory: __build__
+        working-directory: tests
         run: |
-          ctest . --output-on-failure -C Debug
+          python3 test.py --github

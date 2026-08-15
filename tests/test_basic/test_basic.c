@@ -2,7 +2,6 @@
 #include <stdio.h>
 #include <string.h>
 #include "lwprintf/lwprintf.h"
-#include "windows.h"
 
 /**
  * \brief           Output function for lwprintf printf function
@@ -42,7 +41,7 @@ size_t tests_passed, tests_failed;
     } while (0)
 
 int
-test_printf(void) {
+test_run(void) {
     double num = 2123213213142.032;
     char buffer[1024];
 
