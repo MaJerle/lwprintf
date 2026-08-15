@@ -723,7 +723,7 @@ prv_double_to_str(lwprintf_int_t* lwi, double in_num) {
         }
         if (exp_cnt >= 100) {
             lwi->out_fn(lwi, (char)'0' + (char)(exp_cnt / 100));
-            exp_cnt /= 100;
+            exp_cnt %= 100; /* Leave remainder */
         }
         lwi->out_fn(lwi, (char)'0' + (char)(exp_cnt / 10));
         lwi->out_fn(lwi, (char)'0' + (char)(exp_cnt % 10));
