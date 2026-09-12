@@ -1,6 +1,6 @@
 # Lightweight printf stdio manager
 
-<h3>Read first: <a href="http://docs.majerle.eu/projects/lwprintf/">Documentation</a></h3>
+[Open documentation](https://docs.majerle.eu/projects/lwprintf/)
 
 ## Features
 
