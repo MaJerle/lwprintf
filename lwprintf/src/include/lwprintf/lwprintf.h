@@ -4,7 +4,7 @@
  */
 
 /*
- * Copyright (c) 2024 Tilen MAJERLE
+ * Copyright (c) 2026 Tilen MAJERLE
  *
  * Permission is hereby granted, free of charge, to any person
  * obtaining a copy of this software and associated documentation
@@ -104,7 +104,8 @@ uint8_t lwprintf_unprotect_ex(lwprintf_t* const lwobj);
  * \param[in,out]   lwobj: LwPRINTF instance. Set to `NULL` to use default instance
  * \param[in]       s: Pointer to a buffer where the resulting C-string is stored.
  *                      The buffer should have a size of at least `n` characters
- * \param[in]       format: C string that contains a format string that follows the same specifications as format in printf
+ * \param[in]       format: C string that contains a format string that follows the same specifications as format in
+ * printf
  * \param[in]       ...: Optional arguments for format string
  * \return          The number of characters that would have been written,
  *                      not counting the terminating null character.
@@ -145,7 +146,8 @@ uint8_t lwprintf_unprotect_ex(lwprintf_t* const lwobj);
  * \param[in]       n: Maximum number of bytes to be used in the buffer.
  *                      The generated string has a length of at most `n - 1`,
  *                      leaving space for the additional terminating null character
- * \param[in]       format: C string that contains a format string that follows the same specifications as format in printf
+ * \param[in]       format: C string that contains a format string that follows the same specifications as format in
+ * printf
  * \param[in]       arg: A value identifying a variable arguments list initialized with `va_start`.
  *                      `va_list` is a special type defined in `<cstdarg>`.
  * \return          The number of characters that would have been written if `n` had been sufficiently large,
@@ -160,7 +162,8 @@ uint8_t lwprintf_unprotect_ex(lwprintf_t* const lwobj);
  * \param[in]       n: Maximum number of bytes to be used in the buffer.
  *                      The generated string has a length of at most `n - 1`,
  *                      leaving space for the additional terminating null character
- * \param[in]       format: C string that contains a format string that follows the same specifications as format in printf
+ * \param[in]       format: C string that contains a format string that follows the same specifications as format in
+ * printf
  * \param[in]       ...: Optional arguments for format string
  * \return          The number of characters that would have been written if `n` had been sufficiently large,
  *                      not counting the terminating null character.
@@ -171,7 +174,8 @@ uint8_t lwprintf_unprotect_ex(lwprintf_t* const lwobj);
  * \brief           Write formatted data from variable argument list to sized buffer with default LwPRINTF instance
  * \param[in]       s: Pointer to a buffer where the resulting C-string is stored.
  *                      The buffer should have a size of at least `n` characters
- * \param[in]       format: C string that contains a format string that follows the same specifications as format in printf
+ * \param[in]       format: C string that contains a format string that follows the same specifications as format in
+ * printf
  * \param[in]       ...: Optional arguments for format string
  * \return          The number of characters that would have been written,
  *                      not counting the terminating null character.
@@ -272,10 +276,10 @@ uint8_t lwprintf_unprotect_ex(lwprintf_t* const lwobj);
 #if !defined(NDEBUG)
 /**
  * \brief           Debug output function
- * 
+ *
  *                  Its purpose is to have a debug printout to the defined output,
  *                  which will get disabled for the release build (when NDEBUG is defined).
- * 
+ *
  * \note            It calls \ref lwprintf_printf to execute the print
  * \note            Defined as empty when \ref NDEBUG is enabled
  * \param[in]       fmt: Format text
@@ -284,12 +288,12 @@ uint8_t lwprintf_unprotect_ex(lwprintf_t* const lwobj);
 #define lwprintf_debug(fmt, ...) lwprintf_printf((fmt), ##__VA_ARGS__)
 /**
  * \brief           Conditional debug output
- * 
+ *
  *                  It prints the formatted text only if condition is true
- * 
+ *
  *                  Its purpose is to have a debug printout to the defined output,
  *                  which will get disabled for the release build (when NDEBUG is defined).
- * 
+ *
  * \note            It calls \ref lwprintf_debug to execute the print
  * \note            Defined as empty when \ref NDEBUG is enabled
  * \param[in]       cond: Condition to check before outputing the message

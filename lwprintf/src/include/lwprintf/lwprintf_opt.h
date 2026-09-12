@@ -4,7 +4,7 @@
  */
 
 /*
- * Copyright (c) 2024 Tilen MAJERLE
+ * Copyright (c) 2026 Tilen MAJERLE
  *
  * Permission is hereby granted, free of charge, to any person
  * obtaining a copy of this software and associated documentation
@@ -79,7 +79,8 @@ extern "C" {
  * - System mutex is kept created during init phase
  * - Calls to direct printing functions are not thread-safe by default anymore
  * - Calls to sprintf (buffer functions) are kept thread-safe
- * - User must manually call \ref lwprintf_protect or \ref lwprintf_protect_ex functions to protect direct printing operation
+ * - User must manually call \ref lwprintf_protect or \ref lwprintf_protect_ex functions to protect direct printing
+ * operation
  * - User must manually call \ref lwprintf_unprotect or \ref lwprintf_unprotect_ex functions to exit protected area
  *
  * \note            If you prefer to completely disable locking mechanism with this library,
@@ -118,7 +119,8 @@ extern "C" {
 /**
  * \brief           Enables `1` or disables `0` support `%f` and  basic float type.
  *
- * This feature is a prerequisite feature be enabled for any floating point types (`%e`, `%E`, `%g`, `%G`, `%a`, `%A`, `%f`, `%F`).
+ * This feature is a prerequisite feature be enabled for any floating point types (`%e`, `%E`, `%g`, `%G`, `%a`, `%A`,
+ * `%f`, `%F`).
  *
  * \note            Numbers are split into integer and decimal part using native integer math,
  *                  with no arbitrary-precision (bignum) support, to keep the implementation simple

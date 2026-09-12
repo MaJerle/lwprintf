@@ -4,7 +4,7 @@
  */
 
 /*
- * Copyright (c) 2024 Tilen MAJERLE
+ * Copyright (c) 2026 Tilen MAJERLE
  *
  * Permission is hereby granted, free of charge, to any person
  * obtaining a copy of this software and associated documentation
@@ -255,7 +255,8 @@ prv_out_str_before(lwprintf_int_t* lwi, size_t buff_size) {
         }
     }
 
-    /* Add negative sign (or positive in case of + flag or space in case of space flag) before when zeros are used to fill width */
+    /* Add negative sign (or positive in case of + flag or space in case of space flag) before when zeros are used to
+     * fill width */
     if (lwi->m.flags.zero) {
         if (lwi->m.flags.is_negative) {
             lwi->out_fn(lwi, '-');
@@ -398,9 +399,9 @@ prv_longest_signed_int_to_str(lwprintf_int_t* lwi, int_maxtype_t num) {
 
 /**
  * \brief           Calculate string length, limited to the maximum value.
- * 
+ *
  * \note            Use custom implementation to support potential `< C11` versions
- * 
+ *
  * \param           str: String to calculate
  * \param           max_n: Max number of bytes at which length is cut
  * \return          String length in bytes
@@ -607,7 +608,8 @@ prv_double_to_str(lwprintf_int_t* lwi, double in_num) {
      * any trailing zeros are removed from the fractional portion of the result
      * and the decimal-point character is removed if there is no fractional portion remaining.
      *
-     * A double argument representing an infinity or 'NaN' is converted in the style of an 'f' or 'F' conversion specifier.
+     * A double argument representing an infinity or 'NaN' is converted in the style of an 'f' or 'F' conversion
+     * specifier.
      */
 
     /* Calculate data for number */
@@ -942,11 +944,11 @@ prv_format(lwprintf_int_t* lwi, va_list arg) {
 #endif /* LWPRINTF_CFG_SUPPORT_TYPE_STRING */
 #if LWPRINTF_CFG_SUPPORT_TYPE_POINTER
             case 'p': {
-                lwi->m.base = 16;      /* Go to hex format */
-                lwi->m.flags.uc = 0;   /* Uppercase characters */
-                lwi->m.flags.zero = 1; /* Zero padding */
-                lwi->m.width =
-                    sizeof(uintptr_t) * 2; /* Number is in hex format and byte is represented with 2 letters */
+                lwi->m.base = 16;                     /* Go to hex format */
+                lwi->m.flags.uc = 0;                  /* Uppercase characters */
+                lwi->m.flags.zero = 1;                /* Zero padding */
+                lwi->m.width = sizeof(uintptr_t) * 2; /* Number is in hex format and byte is represented with 2 letters
+                                                       */
 
                 prv_longest_unsigned_int_to_str(lwi, (uint_maxtype_t)va_arg(arg, uintptr_t));
                 break;
@@ -981,8 +983,8 @@ prv_format(lwprintf_int_t* lwi, va_list arg) {
              */
             case 'k':
             case 'K': {
-                unsigned char* ptr =
-                    (void*)va_arg(arg, unsigned char*); /* Get input parameter as unsigned char pointer */
+                unsigned char* ptr = (void*)va_arg(arg, unsigned char*); /* Get input parameter as unsigned char pointer
+                                                                          */
                 int len = lwi->m.width, full_width;
                 uint8_t is_space = lwi->m.flags.space == 1;
 
@@ -1114,7 +1116,8 @@ lwprintf_printf_ex(lwprintf_t* const lwobj, const char* format, ...) {
  * \param[in]       n_maxlen: Maximum number of bytes to be used in the buffer.
  *                      The generated string has a length of at most `n - 1`,
  *                      leaving space for the additional terminating null character
- * \param[in]       format: C string that contains a format string that follows the same specifications as format in printf
+ * \param[in]       format: C string that contains a format string that follows the same specifications as format in
+ * printf
  * \param[in]       arg: A value identifying a variable arguments list initialized with `va_start`.
  *                      `va_list` is a special type defined in `<cstdarg>`.
  * \return          The number of characters that would have been written if `n` had been sufficiently large,
@@ -1146,7 +1149,8 @@ lwprintf_vsnprintf_ex(lwprintf_t* const lwobj, char* s_out, size_t n_maxlen, con
  * \param[in]       n_maxlen: Maximum number of bytes to be used in the buffer.
  *                      The generated string has a length of at most `n - 1`,
  *                      leaving space for the additional terminating null character
- * \param[in]       format: C string that contains a format string that follows the same specifications as format in printf
+ * \param[in]       format: C string that contains a format string that follows the same specifications as format in
+ * printf
  * \param[in]       ...: Optional arguments for format string
  * \return          The number of characters that would have been written if `n` had been sufficiently large,
  *                      not counting the terminating null character.
