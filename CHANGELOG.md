@@ -2,6 +2,8 @@
 
 ## Develop
 
+- Fix exponent when rounding carries into the next power of 10 in `%e` and `%g` (`9.96` with `%.1e` printed `10.0e+00`)
+
 ## v1.1.0
 
 - Rework library CMake with removed INTERFACE type and placed with STATIC

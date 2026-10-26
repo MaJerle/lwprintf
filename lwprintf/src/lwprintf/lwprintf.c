@@ -612,6 +612,26 @@ prv_double_to_str(lwprintf_int_t* lwi, double in_num) {
      * specifier.
      */
 
+#if LWPRINTF_CFG_SUPPORT_TYPE_ENGINEERING
+    /*
+     * Rounding can carry into a new digit (9.96 with "%.1e" becomes 10.0),
+     * so the exponent must be taken after rounding, for 'e' output and for the 'g' decision.
+     * 'g' decides with 'e' style and precision 'P - 1'.
+     */
+    if (def_type == 'e' || def_type == 'g') {
+        int prec = lwi->m.precision;
+        if (def_type == 'g' && lwi->m.precision > 0) {
+            --lwi->m.precision;
+        }
+        prv_calculate_dbl_num_data(lwi, &dblnum, in_num, 'e');
+        if (dblnum.integer_part >= 10) {
+            in_num = 1; /* Rounded value is exactly 1.000... with next exponent */
+            ++exp_cnt;
+        }
+        lwi->m.precision = prec;
+    }
+#endif /* LWPRINTF_CFG_SUPPORT_TYPE_ENGINEERING */
+
     /* Calculate data for number */
     prv_calculate_dbl_num_data(lwi, &dblnum, def_type == 'e' ? in_num : orig_num, def_type);
 
