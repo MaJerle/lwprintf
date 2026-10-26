@@ -109,6 +109,18 @@ test_run(void) {
     do_test(buffer, sizeof(buffer), "-1e+02", 6, "%.0e", -123.456);
     do_test(buffer, sizeof(buffer), "1e-01", 5, "%.0e", 0.123456);
     do_test(buffer, sizeof(buffer), "-1e-01", 6, "%.0e", -0.123456);
+
+    /* Rounding carries into the next exponent */
+    do_test(buffer, sizeof(buffer), "1e+01", 5, "%.0e", 9.96);
+    do_test(buffer, sizeof(buffer), "1.0e+01", 7, "%.1e", 9.96);
+    do_test(buffer, sizeof(buffer), "-1.0e+02", 8, "%.1e", -99.96);
+    do_test(buffer, sizeof(buffer), "1.00e-03", 8, "%.2e", 0.00099996);
+    do_test(buffer, sizeof(buffer), "1.000000e+01", 12, "%e", 9.9999999);
+    do_test(buffer, sizeof(buffer), "1e+02", 5, "%.1g", 95.436);
+    do_test(buffer, sizeof(buffer), "1e+02", 5, "%.2g", 99.96);
+    do_test(buffer, sizeof(buffer), "1e+06", 5, "%g", 999999.7);
+    do_test(buffer, sizeof(buffer), "0.0001", 6, "%.1g", 0.0000997);
+    do_test(buffer, sizeof(buffer), "10", 2, "%.2g", 9.96);
     do_test(buffer, sizeof(buffer), "            1.2346e+02", 22, "%22.4e", 123.456);
     do_test(buffer, sizeof(buffer), "           -1.2346e+02", 22, "%22.4e", -123.456);
     do_test(buffer, sizeof(buffer), "            1.2346e-01", 22, "%22.4e", 0.123456);
