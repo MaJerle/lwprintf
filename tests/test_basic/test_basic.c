@@ -208,11 +208,17 @@ test_run(void) {
     do_test(buffer, sizeof(buffer), " 0", 2, "%#2x", 0);
     do_test(buffer, sizeof(buffer), " 0", 2, "%#2o", 0);
 
-    /* Pointer, 32-bit system */
+    /* Pointer */
     void* my_pointer = (void*)0x12345678;
+#if UINTPTR_MAX > UINT32_MAX
+    do_test(buffer, sizeof(buffer), "0000000012345678", 16, "%p", my_pointer);
+    do_test(buffer, sizeof(buffer), "0X0000000012345678", 18, "0X%p", my_pointer);
+    do_test(buffer, sizeof(buffer), "0x0000000012345678", 18, "0x%p", my_pointer);
+#else
     do_test(buffer, sizeof(buffer), "12345678", 8, "%p", my_pointer);
     do_test(buffer, sizeof(buffer), "0X12345678", 10, "0X%p", my_pointer);
     do_test(buffer, sizeof(buffer), "0x12345678", 10, "0x%p", my_pointer);
+#endif
 
     /* Binary data */
     do_test(buffer, sizeof(buffer), "1111011 abc", 11, "%llb abc", 123);
