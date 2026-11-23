@@ -666,7 +666,7 @@ prv_double_to_str(lwprintf_int_t* lwi, double in_num) {
         }
 #endif /* LWPRINTF_CFG_SUPPORT_TYPE_ENGINEERING */
     } else {
-        if (chosen_precision > 0 && lwi->m.flags.precision) {
+        if (chosen_precision > 0) {
             /* Add precision digits + dot separator */
             digits_cnt += chosen_precision + 1;
         }
