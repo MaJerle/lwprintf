@@ -129,6 +129,13 @@ test_run(void) {
     do_test(buffer, sizeof(buffer), "-000000000001.2346e+02", 22, "%022.4e", -123.456);
     do_test(buffer, sizeof(buffer), "0000000000001.2346e-01", 22, "%022.4e", 0.123456);
     do_test(buffer, sizeof(buffer), "1.234560e-09", 12, "%e", 0.00000000123456);
+
+    /* Width without precision counts the default 6 decimals */
+    do_test(buffer, sizeof(buffer), "  3.500000", 10, "%10f", 3.5);
+    do_test(buffer, sizeof(buffer), "3.500000  ", 10, "%-10f", 3.5);
+    do_test(buffer, sizeof(buffer), "-03.500000", 10, "%010f", -3.5);
+    do_test(buffer, sizeof(buffer), "737499.353000", 13, "%9f", 737499.353);
+    do_test(buffer, sizeof(buffer), "  1.234560e+02", 14, "%14e", 123.456);
     do_test(buffer, sizeof(buffer), "-000000000001.2346e-01", 22, "%022.4e", -0.123456);
     do_test(buffer, sizeof(buffer), "-1.2346E+02", 11, "%.4E", -123.456);
     do_test(buffer, sizeof(buffer), "0", 1, "%d", 0);
